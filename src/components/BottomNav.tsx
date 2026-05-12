@@ -21,7 +21,7 @@ export function BottomNav() {
           return (
             <Link
               key={to}
-              to={to}
+              to={to as never}
               className={cn(
                 "flex flex-col items-center gap-1 px-3 py-3 text-xs font-medium transition-colors",
                 active ? "text-primary" : "text-muted-foreground hover:text-foreground"
