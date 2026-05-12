@@ -14,16 +14,202 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assessments: {
+        Row: {
+          chw_user_id: string
+          condition: string | null
+          confidence: number | null
+          created_at: string
+          follow_up_questions: Json | null
+          id: string
+          images: string[] | null
+          key_visual_features: Json | null
+          language: string | null
+          patient_id: string
+          possible_conditions: Json | null
+          recommendation: string | null
+          referral_advised: boolean | null
+          referral_status: string
+          synced_at: string | null
+          urgency: string | null
+          voice_log: string | null
+        }
+        Insert: {
+          chw_user_id: string
+          condition?: string | null
+          confidence?: number | null
+          created_at?: string
+          follow_up_questions?: Json | null
+          id?: string
+          images?: string[] | null
+          key_visual_features?: Json | null
+          language?: string | null
+          patient_id: string
+          possible_conditions?: Json | null
+          recommendation?: string | null
+          referral_advised?: boolean | null
+          referral_status?: string
+          synced_at?: string | null
+          urgency?: string | null
+          voice_log?: string | null
+        }
+        Update: {
+          chw_user_id?: string
+          condition?: string | null
+          confidence?: number | null
+          created_at?: string
+          follow_up_questions?: Json | null
+          id?: string
+          images?: string[] | null
+          key_visual_features?: Json | null
+          language?: string | null
+          patient_id?: string
+          possible_conditions?: Json | null
+          recommendation?: string | null
+          referral_advised?: boolean | null
+          referral_status?: string
+          synced_at?: string | null
+          urgency?: string | null
+          voice_log?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chw_profiles: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          id: string
+          language: string
+          last_sync: string | null
+          location_lat: number | null
+          location_lng: number | null
+          name: string
+          region: string | null
+          supervisor_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          language?: string
+          last_sync?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          name: string
+          region?: string | null
+          supervisor_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          language?: string
+          last_sync?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          name?: string
+          region?: string | null
+          supervisor_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chw_profiles_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "chw_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patients: {
+        Row: {
+          age_years: number | null
+          chw_user_id: string
+          created_at: string
+          id: string
+          identifier: string
+          location_lat: number | null
+          location_lng: number | null
+          notes: string | null
+          sex: string | null
+          updated_at: string
+        }
+        Insert: {
+          age_years?: number | null
+          chw_user_id: string
+          created_at?: string
+          id?: string
+          identifier: string
+          location_lat?: number | null
+          location_lng?: number | null
+          notes?: string | null
+          sex?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age_years?: number | null
+          chw_user_id?: string
+          created_at?: string
+          id?: string
+          identifier?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          notes?: string | null
+          sex?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "chw" | "supervisor" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +336,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["chw", "supervisor", "admin"],
+    },
   },
 } as const
