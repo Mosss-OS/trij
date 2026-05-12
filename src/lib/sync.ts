@@ -72,7 +72,7 @@ export async function processSyncQueue(): Promise<{ ok: number; failed: number }
           language: a.language,
           referral_status: a.referralStatus,
           referral_advised: a.referralAdvised ?? false,
-          follow_up_questions: a.followUpQuestions ?? null,
+          follow_up_questions: (a.followUpQuestions ?? null) as never,
           created_at: a.createdAt,
           synced_at: new Date().toISOString(),
         });
