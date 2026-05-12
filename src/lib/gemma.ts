@@ -29,11 +29,10 @@ export function getModelId() {
 
 export async function supportsWebGPU(): Promise<boolean> {
   if (typeof navigator === "undefined") return false;
-  // @ts-expect-error - webgpu types
-  if (!navigator.gpu) return false;
+  const gpu = (navigator as unknown as { gpu?: { requestAdapter: () => Promise<unknown> } }).gpu;
+  if (!gpu) return false;
   try {
-    // @ts-expect-error
-    const adapter = await navigator.gpu.requestAdapter();
+    const adapter = await gpu.requestAdapter();
     return !!adapter;
   } catch {
     return false;
