@@ -9,38 +9,141 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppTriageRouteImport } from './routes/_app.triage'
+import { Route as AppSupervisorRouteImport } from './routes/_app.supervisor'
+import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppDocumentRouteImport } from './routes/_app.document'
+import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppPatientsIndexRouteImport } from './routes/_app.patients.index'
+import { Route as AppPatientsPatientIdRouteImport } from './routes/_app.patients.$patientId'
 
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppTriageRoute = AppTriageRouteImport.update({
+  id: '/triage',
+  path: '/triage',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSupervisorRoute = AppSupervisorRouteImport.update({
+  id: '/supervisor',
+  path: '/supervisor',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDocumentRoute = AppDocumentRouteImport.update({
+  id: '/document',
+  path: '/document',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPatientsIndexRoute = AppPatientsIndexRouteImport.update({
+  id: '/patients/',
+  path: '/patients/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPatientsPatientIdRoute = AppPatientsPatientIdRouteImport.update({
+  id: '/patients/$patientId',
+  path: '/patients/$patientId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/document': typeof AppDocumentRoute
+  '/settings': typeof AppSettingsRoute
+  '/supervisor': typeof AppSupervisorRoute
+  '/triage': typeof AppTriageRoute
+  '/patients/$patientId': typeof AppPatientsPatientIdRoute
+  '/patients/': typeof AppPatientsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/document': typeof AppDocumentRoute
+  '/settings': typeof AppSettingsRoute
+  '/supervisor': typeof AppSupervisorRoute
+  '/triage': typeof AppTriageRoute
+  '/patients/$patientId': typeof AppPatientsPatientIdRoute
+  '/patients': typeof AppPatientsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/document': typeof AppDocumentRoute
+  '/_app/settings': typeof AppSettingsRoute
+  '/_app/supervisor': typeof AppSupervisorRoute
+  '/_app/triage': typeof AppTriageRoute
+  '/_app/patients/$patientId': typeof AppPatientsPatientIdRoute
+  '/_app/patients/': typeof AppPatientsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/document'
+    | '/settings'
+    | '/supervisor'
+    | '/triage'
+    | '/patients/$patientId'
+    | '/patients/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/document'
+    | '/settings'
+    | '/supervisor'
+    | '/triage'
+    | '/patients/$patientId'
+    | '/patients'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/dashboard'
+    | '/_app/document'
+    | '/_app/settings'
+    | '/_app/supervisor'
+    | '/_app/triage'
+    | '/_app/patients/$patientId'
+    | '/_app/patients/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +151,94 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/triage': {
+      id: '/_app/triage'
+      path: '/triage'
+      fullPath: '/triage'
+      preLoaderRoute: typeof AppTriageRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/supervisor': {
+      id: '/_app/supervisor'
+      path: '/supervisor'
+      fullPath: '/supervisor'
+      preLoaderRoute: typeof AppSupervisorRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings': {
+      id: '/_app/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/document': {
+      id: '/_app/document'
+      path: '/document'
+      fullPath: '/document'
+      preLoaderRoute: typeof AppDocumentRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/patients/': {
+      id: '/_app/patients/'
+      path: '/patients'
+      fullPath: '/patients/'
+      preLoaderRoute: typeof AppPatientsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/patients/$patientId': {
+      id: '/_app/patients/$patientId'
+      path: '/patients/$patientId'
+      fullPath: '/patients/$patientId'
+      preLoaderRoute: typeof AppPatientsPatientIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppDocumentRoute: typeof AppDocumentRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppSupervisorRoute: typeof AppSupervisorRoute
+  AppTriageRoute: typeof AppTriageRoute
+  AppPatientsPatientIdRoute: typeof AppPatientsPatientIdRoute
+  AppPatientsIndexRoute: typeof AppPatientsIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppDashboardRoute: AppDashboardRoute,
+  AppDocumentRoute: AppDocumentRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppSupervisorRoute: AppSupervisorRoute,
+  AppTriageRoute: AppTriageRoute,
+  AppPatientsPatientIdRoute: AppPatientsPatientIdRoute,
+  AppPatientsIndexRoute: AppPatientsIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
