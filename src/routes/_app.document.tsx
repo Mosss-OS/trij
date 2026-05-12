@@ -1,10 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { CameraCapture } from "@/components/CameraCapture";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { analyzeDocument, isLoaded, loadEngine } from "@/lib/gemma";
+import { analyzeDocument, detectEngine } from "@/lib/gemma";
 import type { DocumentResult } from "@/types/trij";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Loader2, AlertTriangle } from "lucide-react";
@@ -17,6 +17,8 @@ export const Route = createFileRoute("/_app/document")({
 
 function DocumentScan() {
   const language = useSettingsStore((s) => s.language);
+  const engineKind = useSettingsStore((s) => s.engineKind);
+  const ollamaUrl = useSettingsStore((s) => s.ollamaUrl);
   const navigate = useNavigate();
   const [step, setStep] = useState<"capture" | "analyzing" | "result">("capture");
   const [image, setImage] = useState<string | null>(null);
@@ -28,15 +30,10 @@ function DocumentScan() {
     setImage(dataUrl);
     setStep("analyzing");
     try {
-      if (!isLoaded()) {
-        await loadEngine((r) => {
-          setProgress(Math.round((r.progress || 0) * 100));
-          setProgressText(r.text || "Loading model...");
-        });
-      }
       setProgressText("Reading document...");
       setProgress(100);
-      const r = await analyzeDocument(dataUrl, language);
+      const kind = engineKind === "auto" ? await detectEngine() : engineKind;
+      const r = await analyzeDocument(dataUrl, language, kind, ollamaUrl);
       setResult(r);
       setStep("result");
     } catch (err) {

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, ScanLine, ChevronRight, Save, Volume2 } from "lucide-react";
-import { triageImage, loadEngine, isLoaded, supportsWebGPU } from "@/lib/gemma";
+import { triageImage, detectEngine, supportsWebGPU, isLoaded, loadEngine } from "@/lib/gemma";
 import type { TriageResult, Patient, Assessment } from "@/types/trij";
 import { getDB } from "@/lib/db";
 import { queuePatient, queueAssessment } from "@/lib/sync";
@@ -27,6 +27,8 @@ type Step = "patient" | "capture" | "analyzing" | "result";
 function TriagePage() {
   const user = useSessionStore((s) => s.user);
   const language = useSettingsStore((s) => s.language);
+  const engineKind = useSettingsStore((s) => s.engineKind);
+  const ollamaUrl = useSettingsStore((s) => s.ollamaUrl);
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("patient");
   const [patient, setPatient] = useState<Patient | null>(null);
@@ -63,15 +65,17 @@ function TriagePage() {
     setImage(dataUrl);
     setStep("analyzing");
     try {
-      if (!isLoaded()) {
-        await loadEngine((r) => {
+      const kind = engineKind === "auto" ? await detectEngine() : engineKind;
+
+      if (kind === "webllm" && !isLoaded(kind)) {
+        await loadEngine(kind, (r) => {
           setProgress(Math.round((r.progress || 0) * 100));
           setProgressText(r.text || "Loading model...");
         });
       }
       setProgressText("Analyzing image...");
       setProgress(100);
-      const r = await triageImage(dataUrl, language);
+      const r = await triageImage(dataUrl, language, kind, ollamaUrl);
       setResult(r);
       setStep("result");
     } catch (err) {
