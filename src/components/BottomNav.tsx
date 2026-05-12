@@ -2,12 +2,13 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { LayoutGrid, Camera, Users, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const items = [
+type NavItem = { to: string; label: string; icon: typeof LayoutGrid; primary?: boolean };
+const items: NavItem[] = [
   { to: "/dashboard", label: "Home", icon: LayoutGrid },
   { to: "/triage", label: "Triage", icon: Camera, primary: true },
   { to: "/patients", label: "Patients", icon: Users },
   { to: "/settings", label: "Settings", icon: SettingsIcon },
-] as const;
+];
 
 export function BottomNav() {
   const router = useRouter();
