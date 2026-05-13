@@ -18,10 +18,44 @@ async function getServerEntry(): Promise<ServerEntry> {
   return serverEntryPromise;
 }
 
+function securityHeaders(): Record<string, string> {
+  return {
+    "content-type": "text/html; charset=utf-8",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "DENY",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "permissions-policy": "camera=(self), microphone=(self), gyroscope=()",
+    "content-security-policy": [
+      "default-src 'self'",
+      "script-src 'self' 'wasm-unsafe-eval'",
+      "worker-src 'self' blob:",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+      "img-src 'self' data: blob:",
+      "media-src 'self' blob:",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self' data:",
+    ].join("; "),
+  };
+}
+
 function brandedErrorResponse(): Response {
   return new Response(renderErrorPage(), {
     status: 500,
-    headers: { "content-type": "text/html; charset=utf-8" },
+    headers: securityHeaders(),
+  });
+}
+
+function addSecurityHeaders(response: Response): Response {
+  const headers = new Headers(response.headers);
+  for (const [key, value] of Object.entries(securityHeaders())) {
+    if (key !== "content-type" && !headers.has(key)) {
+      headers.set(key, value);
+    }
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
   });
 }
 
@@ -71,7 +105,7 @@ export default {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return addSecurityHeaders(await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       console.error(error);
       return brandedErrorResponse();
