@@ -69,13 +69,7 @@ export const TRIAGE_TOOL: ToolDefinition = {
           items: { type: "string" },
         },
       },
-      required: [
-        "condition",
-        "confidence",
-        "urgency",
-        "recommendation",
-        "referral_advised",
-      ],
+      required: ["condition", "confidence", "urgency", "recommendation", "referral_advised"],
     },
   },
 };
@@ -128,12 +122,7 @@ export const DOCUMENT_TOOL: ToolDefinition = {
           description: "Recommended next steps",
         },
       },
-      required: [
-        "document_type",
-        "key_findings",
-        "summary",
-        "plain_language_explanation",
-      ],
+      required: ["document_type", "key_findings", "summary", "plain_language_explanation"],
     },
   },
 };
@@ -142,7 +131,8 @@ export const FOLLOW_UP_TOOL: ToolDefinition = {
   type: "function",
   function: {
     name: "generate_follow_up",
-    description: "Generate a single follow-up question for the patient based on the suspected condition and already-asked questions.",
+    description:
+      "Generate a single follow-up question for the patient based on the suspected condition and already-asked questions.",
     parameters: {
       type: "object",
       properties: {
@@ -163,7 +153,7 @@ export function parseToolCall<T>(
     }>;
     content?: string | null;
   },
-  fallback: T
+  fallback: T,
 ): T | null {
   if (message.tool_calls && message.tool_calls.length > 0) {
     try {
@@ -194,7 +184,10 @@ export function parseToolCall<T>(
 }
 
 export function triesJson<T>(raw: string, fallback: T): T {
-  const trimmed = raw.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+  const trimmed = raw
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/i, "")
+    .trim();
   try {
     return JSON.parse(trimmed) as T;
   } catch {

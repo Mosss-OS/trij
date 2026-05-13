@@ -153,7 +153,9 @@ function LoginPage() {
       const record = records[records.length - 1];
       if (record.locked) {
         setLocked(true);
-        setPinError("Account locked due to too many failed attempts. Connect to the internet to reset.");
+        setPinError(
+          "Account locked due to too many failed attempts. Connect to the internet to reset.",
+        );
         return;
       }
       const ok = await verifyPin(record.userId, pin);
@@ -163,7 +165,9 @@ function LoginPage() {
         setRemainingAttempts(nowLocked ? 0 : remaining);
         if (nowLocked) {
           setLocked(true);
-          setPinError("Account locked due to too many failed attempts. Connect to the internet to reset.");
+          setPinError(
+            "Account locked due to too many failed attempts. Connect to the internet to reset.",
+          );
         } else {
           setPinError(`Incorrect PIN. ${remaining} attempt(s) remaining.`);
         }
@@ -236,7 +240,10 @@ function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handlePinSubmit} className="mt-10 space-y-4 rounded-3xl border bg-card p-6 shadow-sm">
+          <form
+            onSubmit={handlePinSubmit}
+            className="mt-10 space-y-4 rounded-3xl border bg-card p-6 shadow-sm"
+          >
             <div className="space-y-1.5">
               <Label htmlFor="pin">Offline PIN</Label>
               <Input
@@ -257,9 +264,7 @@ function LoginPage() {
                 className="text-center text-2xl tracking-[0.5em]"
                 maxLength={6}
               />
-              {pinError && (
-                <p className="text-xs text-destructive">{pinError}</p>
-              )}
+              {pinError && <p className="text-xs text-destructive">{pinError}</p>}
               {!locked && (
                 <p className="text-xs text-muted-foreground">
                   {remainingAttempts} attempt(s) remaining
@@ -325,15 +330,8 @@ function LoginPage() {
                   maxLength={6}
                 />
               </div>
-              {setupPinError && (
-                <p className="text-xs text-destructive">{setupPinError}</p>
-              )}
-              <Button
-                onClick={handleSetupPin}
-                disabled={busy}
-                className="w-full"
-                size="lg"
-              >
+              {setupPinError && <p className="text-xs text-destructive">{setupPinError}</p>}
+              <Button onClick={handleSetupPin} disabled={busy} className="w-full" size="lg">
                 {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save PIN
               </Button>
@@ -367,8 +365,8 @@ function LoginPage() {
             <span className="text-primary">on every device.</span>
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Gemma runs entirely on your device. Patient data never leaves the
-            phone for AI inference.
+            Gemma runs entirely on your device. Patient data never leaves the phone for AI
+            inference.
           </p>
         </div>
 
@@ -420,9 +418,7 @@ function LoginPage() {
             onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
             className="block w-full text-center text-xs text-muted-foreground hover:text-foreground"
           >
-            {mode === "signin"
-              ? "First time? Register a CHW account"
-              : "Have an account? Sign in"}
+            {mode === "signin" ? "First time? Register a CHW account" : "Have an account? Sign in"}
           </button>
         </form>
 
@@ -475,15 +471,8 @@ function LoginPage() {
                 maxLength={6}
               />
             </div>
-            {setupPinError && (
-              <p className="text-xs text-destructive">{setupPinError}</p>
-            )}
-            <Button
-              onClick={handleSetupPin}
-              disabled={busy}
-              className="w-full"
-              size="lg"
-            >
+            {setupPinError && <p className="text-xs text-destructive">{setupPinError}</p>}
+            <Button onClick={handleSetupPin} disabled={busy} className="w-full" size="lg">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save PIN
             </Button>
