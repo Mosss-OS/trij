@@ -1,6 +1,6 @@
 import type { TriageResult } from "@/types/trij";
 import { UrgencyPill } from "./UrgencyPill";
-import { Volume2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Volume2, AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
@@ -97,6 +97,15 @@ export function AssessmentResult({ result, onSpeak }: Props) {
           </ul>
         </div>
       )}
+
+      <div className="flex items-start gap-3 rounded-2xl border border-urgency-yellow/20 bg-urgency-yellow/5 p-4 text-xs text-muted-foreground">
+        <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-yellow" />
+        <p>
+          This is a <strong>preliminary AI-assisted assessment</strong> and does
+          not constitute a clinical diagnosis. Always verify with clinical
+          judgment and refer when in doubt.
+        </p>
+      </div>
     </div>
   );
 }

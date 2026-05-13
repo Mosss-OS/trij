@@ -10,6 +10,9 @@ interface SettingsState {
   engineKind: EngineKind | "auto";
   ollamaUrl: string;
   ollamaModel: string;
+  disclaimerAccepted: boolean;
+  disclaimerAcceptedAt: string | null;
+  chwName: string;
   setLanguage: (l: string) => void;
   setModelId: (id: string) => void;
   setVoiceEnabled: (b: boolean) => void;
@@ -17,6 +20,8 @@ interface SettingsState {
   setEngineKind: (k: EngineKind | "auto") => void;
   setOllamaUrl: (u: string) => void;
   setOllamaModel: (m: string) => void;
+  acceptDisclaimer: (chwName: string) => void;
+  setChwName: (name: string) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -29,6 +34,9 @@ export const useSettingsStore = create<SettingsState>()(
       engineKind: "auto",
       ollamaUrl: "http://localhost:11434",
       ollamaModel: "gemma4:latest",
+      disclaimerAccepted: false,
+      disclaimerAcceptedAt: null,
+      chwName: "",
       setLanguage: (language) => set({ language }),
       setModelId: (modelId) => set({ modelId }),
       setVoiceEnabled: (voiceEnabled) => set({ voiceEnabled }),
@@ -36,6 +44,13 @@ export const useSettingsStore = create<SettingsState>()(
       setEngineKind: (engineKind) => set({ engineKind }),
       setOllamaUrl: (ollamaUrl) => set({ ollamaUrl }),
       setOllamaModel: (ollamaModel) => set({ ollamaModel }),
+      acceptDisclaimer: (chwName) =>
+        set({
+          disclaimerAccepted: true,
+          disclaimerAcceptedAt: new Date().toISOString(),
+          chwName,
+        }),
+      setChwName: (chwName) => set({ chwName }),
     }),
     {
       name: "trij-settings",
