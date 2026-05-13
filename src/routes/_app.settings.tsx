@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppHeader } from "@/components/AppHeader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { LANGUAGES } from "@/lib/voice";
 import { Label } from "@/components/ui/label";
@@ -22,7 +23,11 @@ import { useGemma } from "@/hooks/useGemma";
 
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({ meta: [{ title: "Settings — Trij" }] }),
-  component: SettingsPage,
+  component: () => (
+    <ErrorBoundary kind="engine">
+      <SettingsPage />
+    </ErrorBoundary>
+  ),
 });
 
 function SettingsPage() {

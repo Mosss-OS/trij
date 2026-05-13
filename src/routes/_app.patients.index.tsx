@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getDB } from "@/lib/db";
 import type { Patient } from "@/types/trij";
 import { Search, UserRound } from "lucide-react";
@@ -9,7 +10,11 @@ import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_app/patients/")({
   head: () => ({ meta: [{ title: "Patients — Trij" }] }),
-  component: PatientsList,
+  component: () => (
+    <ErrorBoundary kind="database">
+      <PatientsList />
+    </ErrorBoundary>
+  ),
 });
 
 function PatientsList() {

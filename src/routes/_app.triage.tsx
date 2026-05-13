@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CameraCapture } from "@/components/CameraCapture";
 import { AssessmentResult } from "@/components/AssessmentResult";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,11 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/triage")({
   head: () => ({ meta: [{ title: "New triage — Trij" }] }),
-  component: TriagePage,
+  component: () => (
+    <ErrorBoundary kind="triage">
+      <TriagePage />
+    </ErrorBoundary>
+  ),
 });
 
 type Step = "patient" | "capture" | "analyzing" | "result";
