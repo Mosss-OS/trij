@@ -14,7 +14,7 @@ export function BottomNav() {
   const router = useRouter();
   const current = router.state.location.pathname;
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur safe-area-bottom">
+    <nav aria-label="Main navigation" className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur safe-area-bottom">
       <div className="mx-auto grid max-w-2xl grid-cols-4">
         {items.map(({ to, label, icon: Icon, primary }) => {
           const active = current === to || current.startsWith(to + "/");

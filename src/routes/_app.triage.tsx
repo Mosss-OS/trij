@@ -116,7 +116,7 @@ function TriagePage() {
   return (
     <>
       <AppHeader title="New triage" subtitle="Step by step" />
-      <main className="mx-auto max-w-2xl px-5 py-6">
+      <div className="mx-auto max-w-2xl px-5 py-6">
         <Stepper step={step} />
 
         {step === "patient" && (
@@ -216,7 +216,7 @@ function TriagePage() {
             </div>
           </div>
         )}
-      </main>
+      </div>
     </>
   );
 }
