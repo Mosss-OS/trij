@@ -6,7 +6,8 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { getDB } from "@/lib/db";
 import type { Assessment, Patient } from "@/types/trij";
 import { UrgencyPill } from "@/components/UrgencyPill";
-import { Camera, FileText, Stethoscope, Map as MapIcon, ArrowRight } from "lucide-react";
+import { Camera, FileText, Stethoscope, Map as MapIcon, ArrowRight, HardDrive } from "lucide-react";
+import { StorageMonitor } from "@/components/StorageMonitor";
 import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_app/dashboard")({
@@ -89,6 +90,15 @@ function DashboardPage() {
           <QuickTile to="/_app/document" icon={FileText} label="Scan doc" />
           <QuickTile to="/_app/patients" icon={Stethoscope} label="Patients" />
           <QuickTile to="/_app/supervisor" icon={MapIcon} label="Map" />
+        </section>
+
+        <section className="mt-8">
+          <div className="flex items-center gap-2 rounded-2xl border bg-card p-4">
+            <HardDrive className="h-5 w-5 text-primary" />
+            <div className="min-w-0 flex-1">
+              <StorageMonitor />
+            </div>
+          </div>
         </section>
 
         <section className="mt-8">

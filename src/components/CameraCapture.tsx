@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, RotateCw, X } from "lucide-react";
+import { Camera, RotateCw, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { compressImage } from "@/lib/camera";
 
 interface Props {
   onCapture: (dataUrl: string) => void;
@@ -12,6 +13,7 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facing, setFacing] = useState<"environment" | "user">("environment");
   const [error, setError] = useState<string | null>(null);
+  const [compressing, setCompressing] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -39,7 +41,7 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [facing]);
 
-  const capture = () => {
+  const capture = async () => {
     const v = videoRef.current;
     if (!v) return;
     const canvas = document.createElement("canvas");
@@ -48,9 +50,12 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.drawImage(v, 0, 0);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+    const raw = canvas.toDataURL("image/jpeg", 0.85);
     stream?.getTracks().forEach((t) => t.stop());
-    onCapture(dataUrl);
+    setCompressing(true);
+    const compressed = await compressImage(raw);
+    setCompressing(false);
+    onCapture(compressed);
   };
 
   if (error) {
@@ -75,6 +80,12 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
       />
       {/* framing guides */}
       <div className="pointer-events-none absolute inset-6 rounded-2xl border-2 border-white/40" />
+      {compressing && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/70 text-white">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-sm font-medium">Compressing image...</p>
+        </div>
+      )}
       <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between gap-3 bg-gradient-to-t from-black/70 to-transparent p-5">
         {onCancel ? (
           <Button size="icon" variant="ghost" className="text-white hover:bg-white/10" onClick={onCancel}>
