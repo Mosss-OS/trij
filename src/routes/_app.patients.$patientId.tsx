@@ -42,9 +42,9 @@ function PatientDetail() {
     return (
       <>
         <AppHeader title="Patient" />
-        <main className="mx-auto max-w-2xl px-5 py-10 text-center text-sm text-muted-foreground">
+        <div className="mx-auto max-w-2xl px-5 py-10 text-center text-sm text-muted-foreground">
           Patient not found locally.
-        </main>
+        </div>
       </>
     );
   }
@@ -52,7 +52,7 @@ function PatientDetail() {
   return (
     <>
       <AppHeader title={patient.identifier} subtitle={`${patient.ageYears ?? "?"}y · ${patient.sex ?? "—"}`} />
-      <main className="mx-auto max-w-2xl px-5 py-6">
+      <div className="mx-auto max-w-2xl px-5 py-6">
         <div className="rounded-3xl border bg-card p-5">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
@@ -110,7 +110,7 @@ function PatientDetail() {
             ))}
           </ul>
         )}
-      </main>
+      </div>
     </>
   );
 }

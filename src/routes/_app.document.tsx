@@ -45,7 +45,7 @@ function DocumentScan() {
   return (
     <>
       <AppHeader title="Scan document" subtitle="Lab, prescription, referral" />
-      <main className="mx-auto max-w-2xl px-5 py-6">
+      <div className="mx-auto max-w-2xl px-5 py-6">
         {step === "capture" && (
           <CameraCapture onCapture={onCapture} onCancel={() => navigate({ to: "/_app/dashboard" })} />
         )}
@@ -95,7 +95,7 @@ function DocumentScan() {
             </Button>
           </div>
         )}
-      </main>
+      </div>
     </>
   );
 }

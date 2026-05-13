@@ -57,7 +57,7 @@ function Supervisor() {
   return (
     <>
       <AppHeader title="Supervisor" subtitle="Region overview" />
-      <main className="mx-auto max-w-2xl space-y-6 px-5 py-6">
+      <div className="mx-auto max-w-2xl space-y-6 px-5 py-6">
         {!online && (
           <div className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
             Supervisor view requires connectivity.
@@ -110,7 +110,7 @@ function Supervisor() {
             Map placeholder — no CHW coordinates yet.
           </div>
         </div>
-      </main>
+      </div>
     </>
   );
 }
