@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CameraCapture } from "@/components/CameraCapture";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -12,7 +13,11 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/document")({
   head: () => ({ meta: [{ title: "Document scan — Trij" }] }),
-  component: DocumentScan,
+  component: () => (
+    <ErrorBoundary kind="document">
+      <DocumentScan />
+    </ErrorBoundary>
+  ),
 });
 
 function DocumentScan() {

@@ -8,10 +8,18 @@ function record(error: unknown) {
   lastCapturedError = { error, at: Date.now() };
 }
 
+async function handleError(error: unknown) {
+  record(error);
+  try {
+    const { logError } = await import("./error-logger");
+    await logError(error);
+  } catch {}
+}
+
 if (typeof globalThis.addEventListener === "function") {
-  globalThis.addEventListener("error", (event) => record((event as ErrorEvent).error ?? event));
+  globalThis.addEventListener("error", (event) => handleError((event as ErrorEvent).error ?? event));
   globalThis.addEventListener("unhandledrejection", (event) =>
-    record((event as PromiseRejectionEvent).reason),
+    handleError((event as PromiseRejectionEvent).reason),
   );
 }
 
