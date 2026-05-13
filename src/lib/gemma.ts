@@ -146,22 +146,60 @@ export async function detectEngine(prefer: EngineKind | "auto" = "auto"): Promis
 
 /* ─── Ollama detection ────────────────────────────────────── */
 
-let _ollamaOk: boolean | null = null;
+interface OllamaCache {
+  ok: boolean;
+  ts: number;
+}
+
+let _ollamaCache: OllamaCache | null = null;
+const OLLAMA_CACHE_TTL = 30_000;
 
 export async function detectOllama(url = "http://localhost:11434"): Promise<boolean> {
-  if (_ollamaOk !== null) return _ollamaOk;
+  const now = Date.now();
+  if (_ollamaCache && now - _ollamaCache.ts < OLLAMA_CACHE_TTL) return _ollamaCache.ok;
   try {
     const res = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(3000) });
-    _ollamaOk = res.ok;
-    return _ollamaOk;
+    _ollamaCache = { ok: res.ok, ts: now };
+    return _ollamaCache.ok;
   } catch {
-    _ollamaOk = false;
+    _ollamaCache = { ok: false, ts: now };
     return false;
   }
 }
 
 export function clearOllamaCache() {
-  _ollamaOk = null;
+  _ollamaCache = null;
+}
+
+export interface OllamaModelInfo {
+  name: string;
+  size: string;
+  digest: string;
+}
+
+export async function listOllamaModels(url = "http://localhost:11434"): Promise<OllamaModelInfo[]> {
+  try {
+    const res = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return [];
+    const data = await res.json() as { models?: Array<{ name: string; size?: number; digest: string }> };
+    return (data.models ?? []).map((m) => ({
+      name: m.name,
+      size: m.size ? formatBytes(m.size) : "unknown",
+      digest: m.digest.slice(0, 12),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function detectOllamaModel(model: string, url = "http://localhost:11434"): Promise<boolean> {
+  const models = await listOllamaModels(url);
+  return models.some((m) => m.name === model || m.name.startsWith(model + ":"));
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(0)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
 }
 
 /* ─── WebLLM engine ──────────────────────────────────────── */
