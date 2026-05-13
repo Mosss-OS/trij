@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "lhci": "lhci autorun"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
@@ -75,6 +76,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@lhci/cli": "^0.15.1",
     "@lovable.dev/vite-tanstack-config": "^1.5.1",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^22.16.5",
