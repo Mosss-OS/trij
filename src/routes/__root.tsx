@@ -67,7 +67,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }, { rel: "manifest", href: "/manifest.webmanifest" }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "dns-prefetch", href: "https://api.supabase.com" },
+      { rel: "preconnect", href: "https://api.supabase.com", crossOrigin: "anonymous" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
