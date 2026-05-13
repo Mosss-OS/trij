@@ -1,12 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { MergeDialog } from "@/components/MergeDialog";
-import { getDB } from "@/lib/db";
 import { findPotentialDuplicates, runDedup, type MatchScore } from "@/lib/dedup";
-import type { Patient } from "@/types/trij";
-import { Search, UserRound, GitMerge, BadgeInfo } from "lucide-react";
+import { usePatientSearch } from "@/hooks/usePatientSearch";
+import { Search, UserRound, GitMerge, BadgeInfo, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
@@ -22,26 +21,18 @@ export const Route = createFileRoute("/_app/patients/")({
 });
 
 function PatientsList() {
-  const [patients, setPatients] = useState<Patient[]>([]);
   const [q, setQ] = useState("");
+  const { patients, results, indexReady, reload } = usePatientSearch(q);
   const [matches, setMatches] = useState<MatchScore[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<MatchScore | null>(null);
   const [dedupBusy, setDedupBusy] = useState(false);
 
-  const loadPatients = async () => {
-    try {
-      const all = await getDB().patients.orderBy("createdAt").reverse().toArray();
-      setPatients(all);
-      const m = findPotentialDuplicates(all);
-      setMatches(m.filter((x) => x.score >= 0.8));
-    } catch {
-      /* db unavailable */
-    }
-  };
-
   useEffect(() => {
-    loadPatients();
-  }, []);
+    if (patients.length > 0) {
+      const m = findPotentialDuplicates(patients);
+      setMatches(m.filter((x) => x.score >= 0.8));
+    }
+  }, [patients]);
 
   const handleAutoDedup = async () => {
     setDedupBusy(true);
@@ -51,7 +42,7 @@ function PatientsList() {
       if (mergedCount > 0) {
         toast.success(`Auto-merged ${mergedCount} duplicate pair(s)`);
       }
-      await loadPatients();
+      reload();
     } catch {
       toast.error("Dedup failed");
     } finally {
@@ -59,22 +50,11 @@ function PatientsList() {
     }
   };
 
-  const mergedIds = new Set(patients.filter((p) => p.mergedInto).map((p) => p.mergedInto!));
-  const duplicateIds = new Set<string>();
-  for (const m of matches) {
-    duplicateIds.add(m.patientA.id);
-    duplicateIds.add(m.patientB.id);
-  }
-
   const matchByPatient = new Map<string, MatchScore>();
   for (const m of matches) {
     matchByPatient.set(m.patientA.id, m);
     matchByPatient.set(m.patientB.id, m);
   }
-
-  const filtered = patients.filter((p) =>
-    !p.mergedInto && p.identifier.toLowerCase().includes(q.toLowerCase())
-  );
 
   return (
     <>
@@ -85,7 +65,7 @@ function PatientsList() {
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by identifier"
+            placeholder="Search name, notes, age\u2026"
             className="pl-9"
           />
         </div>
@@ -111,14 +91,21 @@ function PatientsList() {
           </div>
         )}
 
-        {filtered.length === 0 ? (
+        {!indexReady ? (
+          <div className="mt-10 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Building search index...
+          </div>
+        ) : results.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-dashed p-8 text-center">
             <UserRound className="mx-auto h-8 w-8 text-muted-foreground" />
-            <p className="mt-3 text-sm text-muted-foreground">No patients yet.</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {q ? "No patients match your search." : "No patients yet."}
+            </p>
           </div>
         ) : (
           <ul className="mt-5 space-y-2">
-            {filtered.map((p) => {
+            {results.map((p) => {
               const match = matchByPatient.get(p.id);
               return (
                 <li key={p.id}>
@@ -179,7 +166,7 @@ function PatientsList() {
           onOpenChange={(open) => {
             if (!open) setSelectedMatch(null);
           }}
-          onMerged={loadPatients}
+          onMerged={reload}
         />
       )}
     </>
