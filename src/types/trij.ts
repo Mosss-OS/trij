@@ -13,6 +13,7 @@ export interface Patient {
   createdAt: string;
   updatedAt: string;
   syncedAt?: string;
+  mergedInto?: string;
 }
 
 export interface PossibleCondition {
