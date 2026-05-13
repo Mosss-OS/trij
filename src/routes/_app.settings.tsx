@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import { detectOllama, type EngineKind } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import { OllamaSetup } from "@/components/OllamaSetup";
+import { StorageMonitor } from "@/components/StorageMonitor";
 import { useGemma } from "@/hooks/useGemma";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -155,6 +156,10 @@ function SettingsPage() {
               />
             </div>
           )}
+        </Section>
+
+        <Section title="Storage">
+          <StorageMonitor />
         </Section>
 
         <Section title="Medical">
