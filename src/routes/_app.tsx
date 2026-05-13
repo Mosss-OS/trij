@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_app")({
 
 function AppLayout() {
   useAuthSession();
-  const { session, loading } = useSessionStore();
+  const { session, offlineUser, loading } = useSessionStore();
   if (loading) {
     return (
       <div className="grid min-h-screen place-items-center">
@@ -18,7 +18,8 @@ function AppLayout() {
       </div>
     );
   }
-  if (!session) return <Navigate to="/" />;
+  const authed = !!(session || offlineUser);
+  if (!authed) return <Navigate to="/" />;
   return (
     <div className="min-h-screen pb-24">
       <a

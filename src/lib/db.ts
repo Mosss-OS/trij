@@ -9,24 +9,33 @@ export interface ErrorLog {
   timestamp: number;
 }
 
+export interface PinAuthRecord {
+  userId: string;
+  email: string;
+  pinHash: string;
+  salt: string;
+  failedAttempts: number;
+  lastFailedAttempt: string | null;
+  locked: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export class TrijDB extends Dexie {
   patients!: Table<Patient, string>;
   assessments!: Table<Assessment, string>;
   syncQueue!: Table<SyncQueueItem, number>;
   errorLogs!: Table<ErrorLog, number>;
+  pinAuth!: Table<PinAuthRecord, string>;
 
   constructor() {
     super("TrijDB");
-    this.version(1).stores({
-      patients: "id, chwUserId, identifier, createdAt, syncedAt",
-      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
-      syncQueue: "++id, table, action, recordId, createdAt",
-    });
-    this.version(2).stores({
+    this.version(3).stores({
       patients: "id, chwUserId, identifier, createdAt, syncedAt",
       assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
       syncQueue: "++id, table, action, recordId, createdAt",
       errorLogs: "++id, timestamp",
+      pinAuth: "userId, email",
     });
   }
 }
