@@ -1,6 +1,7 @@
 import { getDB } from "./db";
 import { supabase } from "@/integrations/supabase/client";
 import type { Patient, Assessment } from "@/types/trij";
+import { registerBackgroundSync } from "./sw-register";
 
 export async function queuePatient(patient: Patient) {
   const db = getDB();
@@ -13,6 +14,7 @@ export async function queuePatient(patient: Patient) {
     createdAt: new Date().toISOString(),
     attempts: 0,
   });
+  registerBackgroundSync().catch(() => {});
 }
 
 export async function queueAssessment(a: Assessment) {
@@ -26,6 +28,7 @@ export async function queueAssessment(a: Assessment) {
     createdAt: new Date().toISOString(),
     attempts: 0,
   });
+  registerBackgroundSync().catch(() => {});
 }
 
 export async function pendingCount(): Promise<number> {
