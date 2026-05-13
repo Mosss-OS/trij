@@ -7,9 +7,13 @@ import { Progress } from "@/components/ui/progress";
 interface Props {
   result: TriageResult;
   onSpeak?: (text: string) => void;
+  minConfidenceForLocalCare?: number;
 }
 
-export function AssessmentResult({ result, onSpeak }: Props) {
+export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 70 }: Props) {
+  const belowThreshold = result.confidence < minConfidenceForLocalCare;
+  const effectiveReferral = belowThreshold || result.referral_advised;
+
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border bg-card p-6 shadow-sm">
@@ -29,17 +33,35 @@ export function AssessmentResult({ result, onSpeak }: Props) {
             <span className="font-mono font-semibold">{Math.round(result.confidence)}%</span>
           </div>
           <Progress value={result.confidence} className="h-2" />
+          {belowThreshold && (
+            <p className="mt-1.5 text-xs text-urgency-red flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Below {minConfidenceForLocalCare}% threshold — referral recommended
+            </p>
+          )}
         </div>
 
         {result.recommendation && (
-          <div className="mt-5 flex items-start gap-3 rounded-2xl bg-secondary/50 p-4">
-            {result.referral_advised ? (
-              <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-yellow" />
-            ) : (
-              <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-green" />
+          <>
+            {effectiveReferral && (
+              <div className="mt-5 flex items-start gap-3 rounded-2xl border border-urgency-red/30 bg-urgency-red/5 p-4">
+                <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-red" />
+                <div>
+                  <p className="text-sm font-medium text-urgency-red">Referral advised</p>
+                  <p className="mt-1 text-sm leading-relaxed text-foreground">{result.recommendation}</p>
+                </div>
+              </div>
             )}
-            <p className="text-sm leading-relaxed text-foreground">{result.recommendation}</p>
-          </div>
+            {!effectiveReferral && (
+              <div className="mt-5 flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-50/50 p-4">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
+                <div>
+                  <p className="text-sm font-medium text-emerald-700">Treat locally</p>
+                  <p className="mt-1 text-sm leading-relaxed text-foreground">{result.recommendation}</p>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {onSpeak && (

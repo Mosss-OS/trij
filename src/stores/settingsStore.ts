@@ -13,6 +13,7 @@ interface SettingsState {
   disclaimerAccepted: boolean;
   disclaimerAcceptedAt: string | null;
   chwName: string;
+  minConfidenceForLocalCare: number;
   setLanguage: (l: string) => void;
   setModelId: (id: string) => void;
   setVoiceEnabled: (b: boolean) => void;
@@ -22,6 +23,7 @@ interface SettingsState {
   setOllamaModel: (m: string) => void;
   acceptDisclaimer: (chwName: string) => void;
   setChwName: (name: string) => void;
+  setMinConfidenceForLocalCare: (v: number) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -37,6 +39,7 @@ export const useSettingsStore = create<SettingsState>()(
       disclaimerAccepted: false,
       disclaimerAcceptedAt: null,
       chwName: "",
+      minConfidenceForLocalCare: 70,
       setLanguage: (language) => set({ language }),
       setModelId: (modelId) => set({ modelId }),
       setVoiceEnabled: (voiceEnabled) => set({ voiceEnabled }),
@@ -51,6 +54,7 @@ export const useSettingsStore = create<SettingsState>()(
           chwName,
         }),
       setChwName: (chwName) => set({ chwName }),
+      setMinConfidenceForLocalCare: (minConfidenceForLocalCare) => set({ minConfidenceForLocalCare }),
     }),
     {
       name: "trij-settings",
