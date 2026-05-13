@@ -25,18 +25,18 @@ export async function registerBackgroundSync(): Promise<void> {
   try {
     const reg = await navigator.serviceWorker.ready;
     if ("sync" in reg) {
-      await (reg as unknown as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } }).sync.register(
-        "trij-sync"
-      );
+      await (
+        reg as unknown as ServiceWorkerRegistration & {
+          sync: { register: (tag: string) => Promise<void> };
+        }
+      ).sync.register("trij-sync");
     }
   } catch {
     // background sync not supported
   }
 }
 
-export function listenForSyncMessages(
-  handler: (event: MessageEvent) => void
-): () => void {
+export function listenForSyncMessages(handler: (event: MessageEvent) => void): () => void {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return () => {};
   const listener = (event: MessageEvent) => {
     if (event.data?.type === "process-sync") {

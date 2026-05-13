@@ -37,6 +37,8 @@ export interface Assessment {
   referralStatus: "none" | "pending" | "active" | "resolved";
   referralAdvised?: boolean;
   followUpQuestions?: string[];
+  patientConsent?: boolean;
+  consentTimestamp?: string;
   createdAt: string;
   syncedAt?: string;
 }

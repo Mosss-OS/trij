@@ -1,18 +1,8 @@
 import { CreateMLCEngine, type MLCEngine, type InitProgressReport } from "@mlc-ai/web-llm";
 export type { InitProgressReport };
-import {
-  getTriageSystemPrompt,
-  getDocumentSystemPrompt,
-  getFollowUpPrompt,
-} from "./gemma-prompt";
+import { getTriageSystemPrompt, getDocumentSystemPrompt, getFollowUpPrompt } from "./gemma-prompt";
 import type { TriageResult, DocumentResult, Urgency } from "@/types/trij";
-import {
-  TRIAGE_TOOL,
-  DOCUMENT_TOOL,
-  FOLLOW_UP_TOOL,
-  parseToolCall,
-  triesJson,
-} from "./tools";
+import { TRIAGE_TOOL, DOCUMENT_TOOL, FOLLOW_UP_TOOL, parseToolCall, triesJson } from "./tools";
 
 /* ─── Engine type ─────────────────────────────────────────── */
 
@@ -49,9 +39,7 @@ export async function supportsWebGPU(): Promise<boolean> {
 
 /* ─── Engine auto-detection ──────────────────────────────── */
 
-export async function detectEngine(
-  prefer: EngineKind | "auto" = "auto"
-): Promise<EngineKind> {
+export async function detectEngine(prefer: EngineKind | "auto" = "auto"): Promise<EngineKind> {
   if (prefer !== "auto") return prefer;
   if (await supportsWebGPU()) return "webllm";
   if (await detectOllama()) return "ollama";
@@ -80,9 +68,7 @@ export function clearOllamaCache() {
 
 /* ─── WebLLM engine ──────────────────────────────────────── */
 
-async function loadWebLLM(
-  onProgress?: (p: InitProgressReport) => void
-): Promise<MLCEngine> {
+async function loadWebLLM(onProgress?: (p: InitProgressReport) => void): Promise<MLCEngine> {
   if (webllmEngine) return webllmEngine;
   if (webllmLoading) return webllmLoading;
   webllmLoading = CreateMLCEngine(WEBLLM_MODEL_ID, {
@@ -135,7 +121,7 @@ async function ollamaChat(
   messages: OllamaMessage[],
   baseUrl: string,
   tools?: unknown[],
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<OllamaChatResponse> {
   const body: Record<string, unknown> = {
     model: _ollamaModel,
@@ -168,35 +154,45 @@ const DEMO_CONDITIONS: Array<{
     urgency: "yellow",
     confidence: 84,
     features: ["Honey-coloured crusts", "Perioral distribution", "Erythematous base"],
-    recommendation: "Clean with antiseptic. Topical mupirocin TID for 5 days. Refer if no improvement in 48 hours.",
+    recommendation:
+      "Clean with antiseptic. Topical mupirocin TID for 5 days. Refer if no improvement in 48 hours.",
   },
   {
     condition: "Contact dermatitis",
     urgency: "green",
     confidence: 76,
     features: ["Well-demarcated erythema", "Itchy papules", "Linear distribution"],
-    recommendation: "Avoid irritant. Topical hydrocortisone 1% BID for 7 days. Antihistamine for itching.",
+    recommendation:
+      "Avoid irritant. Topical hydrocortisone 1% BID for 7 days. Antihistamine for itching.",
   },
   {
     condition: "Cellulitis",
     urgency: "red",
     confidence: 72,
     features: ["Diffuse swelling", "Warm to touch", "Ill-defined margin", "Red streaking"],
-    recommendation: "URGENT: Refer to clinic for oral antibiotics. Elevate affected limb. Paracetamol for fever.",
+    recommendation:
+      "URGENT: Refer to clinic for oral antibiotics. Elevate affected limb. Paracetamol for fever.",
   },
   {
     condition: "Tinea corporis (ringworm)",
     urgency: "green",
     confidence: 88,
     features: ["Annular plaque", "Raised border", "Central clearing", "Scaly surface"],
-    recommendation: "Topical terbinafine 1% once daily for 2 weeks. Keep area dry. Treat close contacts if symptomatic.",
+    recommendation:
+      "Topical terbinafine 1% once daily for 2 weeks. Keep area dry. Treat close contacts if symptomatic.",
   },
   {
     condition: "Herpes zoster (shingles)",
     urgency: "yellow",
     confidence: 79,
-    features: ["Vesicular rash", "Dermatomal distribution", "Erythematous base", "Grouped vesicles"],
-    recommendation: "Refer for antiviral (acyclovir) within 72 hours of onset. Pain management with paracetamol. Avoid contact with immunocompromised.",
+    features: [
+      "Vesicular rash",
+      "Dermatomal distribution",
+      "Erythematous base",
+      "Grouped vesicles",
+    ],
+    recommendation:
+      "Refer for antiviral (acyclovir) within 72 hours of onset. Pain management with paracetamol. Avoid contact with immunocompromised.",
   },
 ];
 
@@ -237,7 +233,8 @@ const DEMO_DOCUMENTS: DocumentResult[] = [
     plain_language_explanation:
       "Your red blood cells are slightly low (anaemia), which can make you feel tired. Your blood sugar is higher than normal, which could be a sign of diabetes. The other values are within normal range.",
     abnormal_flags: ["Low haemoglobin", "High fasting glucose"],
-    recommendation: "Refer for iron studies and HbA1c. Dietary counselling for blood sugar management.",
+    recommendation:
+      "Refer for iron studies and HbA1c. Dietary counselling for blood sugar management.",
   },
   {
     document_type: "prescription",
@@ -261,7 +258,7 @@ function demoDocument(): DocumentResult {
 
 export async function loadEngine(
   kind: EngineKind,
-  onProgress?: (p: InitProgressReport) => void
+  onProgress?: (p: InitProgressReport) => void,
 ): Promise<void> {
   if (kind === "webllm") {
     await loadWebLLM(onProgress);
@@ -290,7 +287,7 @@ export async function triageImage(
   imageDataUrl: string,
   language: string,
   kind: EngineKind,
-  ollamaUrl?: string
+  ollamaUrl?: string,
 ): Promise<TriageResult> {
   if (kind === "demo") {
     await sleep(2000 + Math.random() * 1500);
@@ -308,7 +305,7 @@ export async function triageImage(
         },
       ],
       ollamaUrl ?? "http://localhost:11434",
-      [TRIAGE_TOOL]
+      [TRIAGE_TOOL],
     );
     const result = parseToolCall<TriageResult>(response.message, null);
     if (result) return result;
@@ -357,7 +354,7 @@ export async function analyzeDocument(
   imageDataUrl: string,
   language: string,
   kind: EngineKind,
-  ollamaUrl?: string
+  ollamaUrl?: string,
 ): Promise<DocumentResult> {
   if (kind === "demo") {
     await sleep(1500 + Math.random() * 1000);
@@ -375,7 +372,7 @@ export async function analyzeDocument(
         },
       ],
       ollamaUrl ?? "http://localhost:11434",
-      [DOCUMENT_TOOL]
+      [DOCUMENT_TOOL],
     );
     const result = parseToolCall<DocumentResult>(response.message, null);
     if (result) return result;
@@ -416,7 +413,7 @@ export async function nextFollowUp(
   condition: string,
   history: string[],
   kind: EngineKind,
-  ollamaUrl?: string
+  ollamaUrl?: string,
 ): Promise<string> {
   if (kind === "demo") {
     const pool = [
@@ -439,11 +436,12 @@ export async function nextFollowUp(
         { role: "user", content: "Generate the next follow-up question." },
       ],
       ollamaUrl ?? "http://localhost:11434",
-      [FOLLOW_UP_TOOL]
+      [FOLLOW_UP_TOOL],
     );
     const result = parseToolCall<{ question: string }>(response.message, null);
     if (result?.question) return result.question;
-    return triesJson<{ question: string }>(response.message.content ?? "", { question: "" }).question;
+    return triesJson<{ question: string }>(response.message.content ?? "", { question: "" })
+      .question;
   }
 
   const e = await loadWebLLM();
