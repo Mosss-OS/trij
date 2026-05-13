@@ -6,6 +6,7 @@ import { CameraCapture } from "@/components/CameraCapture";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { analyzeDocument, detectEngine } from "@/lib/gemma";
+import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { DocumentResult } from "@/types/trij";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Loader2, AlertTriangle } from "lucide-react";
@@ -52,7 +53,10 @@ function DocumentScan() {
       <AppHeader title="Scan document" subtitle="Lab, prescription, referral" />
       <div className="mx-auto max-w-2xl px-5 py-6">
         {step === "capture" && (
-          <CameraCapture onCapture={onCapture} onCancel={() => navigate({ to: "/_app/dashboard" })} />
+          <div className="space-y-4">
+            <WebGPUCheck engineKind={engineKind} ollamaUrl={ollamaUrl} compact />
+            <CameraCapture onCapture={onCapture} onCancel={() => navigate({ to: "/_app/dashboard" })} />
+          </div>
         )}
         {step === "analyzing" && (
           <div className="mt-10 flex flex-col items-center gap-5 text-center">

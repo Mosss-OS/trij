@@ -37,6 +37,104 @@ export async function supportsWebGPU(): Promise<boolean> {
   }
 }
 
+export interface WebGPUCompatibility {
+  supported: boolean;
+  browser: string;
+  version: string;
+  minimumVersion: string;
+  upgradeUrl: string;
+  reason: string | null;
+}
+
+function detectBrowser(): { name: string; version: string } {
+  if (typeof navigator === "undefined") return { name: "Unknown", version: "0" };
+  const ua = navigator.userAgent;
+  if (/SamsungBrowser/i.test(ua)) {
+    const m = ua.match(/SamsungBrowser\/([\d.]+)/);
+    return { name: "Samsung Internet", version: m ? m[1] : "unknown" };
+  }
+  if (/Edg\//i.test(ua)) {
+    const m = ua.match(/Edg\/([\d.]+)/);
+    return { name: "Edge", version: m ? m[1] : "unknown" };
+  }
+  if (/Chrome\//i.test(ua)) {
+    const m = ua.match(/Chrome\/([\d.]+)/);
+    return { name: "Chrome", version: m ? m[1] : "unknown" };
+  }
+  if (/Firefox\//i.test(ua)) {
+    const m = ua.match(/Firefox\/([\d.]+)/);
+    return { name: "Firefox", version: m ? m[1] : "unknown" };
+  }
+  if (/Version\/([\d.]+).*Safari/i.test(ua)) {
+    const m = ua.match(/Version\/([\d.]+).*Safari/);
+    return { name: "Safari", version: m ? m[1] : "unknown" };
+  }
+  return { name: "Unknown", version: "unknown" };
+}
+
+const BROWSER_REQUIREMENTS: Record<string, { minimum: string; url: string; note: string }> = {
+  Chrome: {
+    minimum: "113",
+    url: "https://www.google.com/chrome/",
+    note: "Chrome 113+ supports WebGPU on desktop and Android.",
+  },
+  Edge: {
+    minimum: "113",
+    url: "https://www.microsoft.com/edge/",
+    note: "Edge 113+ supports WebGPU on desktop.",
+  },
+  Firefox: {
+    minimum: "—",
+    url: "https://www.mozilla.org/firefox/",
+    note: "Firefox has WebGPU behind the dom.webgpu.enabled flag. Use Chrome or Edge instead.",
+  },
+  Safari: {
+    minimum: "—",
+    url: "https://support.apple.com/en-us/HT204416",
+    note: "Safari does not currently support WebGPU. Use Chrome or Edge on a compatible device.",
+  },
+  "Samsung Internet": {
+    minimum: "—",
+    url: "https://www.samsung.com/in/apps/samsung-internet/",
+    note: "Samsung Internet does not support WebGPU. Use Chrome on Android instead.",
+  },
+};
+
+export async function checkWebGPUCompatibility(): Promise<WebGPUCompatibility> {
+  const { name: browser, version } = detectBrowser();
+  const gpuAvail = await supportsWebGPU();
+
+  if (gpuAvail) {
+    return {
+      supported: true,
+      browser,
+      version,
+      minimumVersion: BROWSER_REQUIREMENTS[browser]?.minimum ?? "—",
+      upgradeUrl: BROWSER_REQUIREMENTS[browser]?.url ?? "",
+      reason: null,
+    };
+  }
+
+  const req = BROWSER_REQUIREMENTS[browser];
+  let reason: string;
+  if (browser === "Unknown") {
+    reason = "Your browser does not appear to support WebGPU. Try Chrome 113+ or Edge 113+.";
+  } else if (req) {
+    reason = `${req.note} Your version: ${version}.`;
+  } else {
+    reason = `${browser} does not support WebGPU. Use Chrome or Edge instead.`;
+  }
+
+  return {
+    supported: false,
+    browser,
+    version,
+    minimumVersion: req?.minimum ?? "—",
+    upgradeUrl: req?.url ?? "https://www.google.com/chrome/",
+    reason,
+  };
+}
+
 /* ─── Engine auto-detection ──────────────────────────────── */
 
 export async function detectEngine(prefer: EngineKind | "auto" = "auto"): Promise<EngineKind> {
