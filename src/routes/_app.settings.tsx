@@ -17,10 +17,11 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
-import { LogOut, Cpu, AlertTriangle, ShieldCheck, FlaskConical, Rabbit } from "lucide-react";
+import { LogOut, AlertTriangle, ShieldCheck, FlaskConical, Rabbit } from "lucide-react";
 import { useEffect, useState } from "react";
-import { detectOllama, clearOllamaCache, type EngineKind } from "@/lib/gemma";
+import { detectOllama, type EngineKind } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
+import { OllamaSetup } from "@/components/OllamaSetup";
 import { useGemma } from "@/hooks/useGemma";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -125,39 +126,7 @@ function SettingsPage() {
         </Section>
 
         <Section title="Ollama configuration">
-          <div className="space-y-1.5">
-            <Label>Ollama URL</Label>
-            <Input
-              value={s.ollamaUrl}
-              onChange={(e) => {
-                s.setOllamaUrl(e.target.value);
-                clearOllamaCache();
-              }}
-              placeholder="http://localhost:11434"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>Ollama model</Label>
-            <Input
-              value={s.ollamaModel}
-              onChange={(e) => s.setOllamaModel(e.target.value)}
-              placeholder="gemma4:latest"
-            />
-            <p className="text-xs text-muted-foreground">
-              Pull the model first: <code>ollama pull gemma4</code>
-            </p>
-          </div>
-          {ollamaOk === true && (
-            <p className="text-xs text-emerald-600">
-              Ollama server reachable. Model must be pulled separately.
-            </p>
-          )}
-          {ollamaOk === false && s.engineKind !== "demo" && (
-            <p className="text-xs text-muted-foreground">
-              Ollama not detected at {s.ollamaUrl}. Install Ollama and pull Gemma 4,
-              or switch to Demo mode.
-            </p>
-          )}
+          <OllamaSetup />
         </Section>
 
         <Section title="Privacy">
