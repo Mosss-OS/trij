@@ -143,6 +143,12 @@ src/
 
 ---
 
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, code conventions, and pull request process.
+
+---
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
