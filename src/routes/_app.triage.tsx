@@ -36,6 +36,7 @@ function TriagePage() {
   const language = useSettingsStore((s) => s.language);
   const engineKind = useSettingsStore((s) => s.engineKind);
   const ollamaUrl = useSettingsStore((s) => s.ollamaUrl);
+  const minConfidenceForLocalCare = useSettingsStore((s) => s.minConfidenceForLocalCare);
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("patient");
   const [patient, setPatient] = useState<Patient | null>(null);
@@ -213,7 +214,7 @@ function TriagePage() {
             {image && (
               <img src={image} alt="" className="aspect-video w-full rounded-2xl object-cover" />
             )}
-            <AssessmentResult result={result} onSpeak={speak} />
+            <AssessmentResult result={result} onSpeak={speak} minConfidenceForLocalCare={minConfidenceForLocalCare} />
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1 gap-2" onClick={() => speak(result.recommendation)}>
                 <Volume2 className="h-4 w-4" /> Read
