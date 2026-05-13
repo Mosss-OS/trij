@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppHeader } from "@/components/AppHeader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ModelDownloadManager } from "@/components/ModelDownloadManager";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { LANGUAGES } from "@/lib/voice";
 import { Label } from "@/components/ui/label";
@@ -233,6 +234,8 @@ function SettingsPage() {
             )}
           </pre>
         </div>
+
+        <ModelDownloadManager />
 
         <Button variant="outline" className="w-full gap-2" onClick={signOut}>
           <LogOut className="h-4 w-4" /> Sign out
