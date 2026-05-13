@@ -55,7 +55,7 @@ function SettingsPage() {
   return (
     <>
       <AppHeader title="Settings" />
-      <main className="mx-auto max-w-2xl space-y-6 px-5 py-6">
+      <div className="mx-auto max-w-2xl space-y-6 px-5 py-6">
         <Section title="Language & voice">
           <div className="space-y-1.5">
             <Label>Interface & speech language</Label>
@@ -232,7 +232,7 @@ function SettingsPage() {
         <Button variant="outline" className="w-full gap-2" onClick={signOut}>
           <LogOut className="h-4 w-4" /> Sign out
         </Button>
-      </main>
+      </div>
     </>
   );
 }

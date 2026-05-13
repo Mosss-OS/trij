@@ -33,21 +33,20 @@ export function SyncStatus({ className }: { className?: string }) {
     processSyncQueue().finally(() => setSyncing(false));
   }, [online, pending, syncing]);
 
-  if (pending === 0 && !syncing) {
-    return (
-      <span className={cn("inline-flex items-center gap-1.5 text-xs text-muted-foreground", className)}>
-        <CheckCircle2 className="h-3.5 w-3.5 text-urgency-green" /> Synced
-      </span>
-    );
-  }
   return (
-    <span className={cn("inline-flex items-center gap-1.5 text-xs font-medium text-foreground", className)}>
-      {syncing ? (
-        <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-      ) : (
-        <CloudUpload className="h-3.5 w-3.5 text-primary" />
+    <span
+      role="status"
+      aria-live="polite"
+      className={cn(
+        "inline-flex items-center gap-1.5 text-xs",
+        pending === 0 && !syncing ? "text-muted-foreground" : "font-medium text-foreground",
+        className,
       )}
-      {pending} pending
+    >
+      {syncing && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
+      {!syncing && pending > 0 && <CloudUpload className="h-3.5 w-3.5 text-primary" />}
+      {!syncing && pending === 0 && <CheckCircle2 className="h-3.5 w-3.5 text-urgency-green" />}
+      {syncing ? "Syncing" : pending > 0 ? `${pending} pending` : "Synced"}
     </span>
   );
 }

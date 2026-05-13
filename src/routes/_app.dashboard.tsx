@@ -47,7 +47,7 @@ function DashboardPage() {
   return (
     <>
       <AppHeader title="Trij" subtitle="On-device triage" />
-      <main className="mx-auto max-w-2xl px-5 pb-10">
+      <div className="mx-auto max-w-2xl px-5 pb-10">
         <section className="pt-6">
           <p className="text-sm text-muted-foreground">{greeting},</p>
           <h1 className="mt-1 font-display text-3xl font-bold leading-tight">{name}.</h1>
@@ -128,7 +128,7 @@ function DashboardPage() {
             </ul>
           )}
         </section>
-      </main>
+      </div>
     </>
   );
 }
