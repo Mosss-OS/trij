@@ -7,6 +7,7 @@ import { AssessmentResult } from "@/components/AssessmentResult";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, ScanLine, ChevronRight, Save, Volume2 } from "lucide-react";
 import { triageImage, detectEngine, supportsWebGPU, isLoaded, loadEngine } from "@/lib/gemma";
@@ -41,6 +42,7 @@ function TriagePage() {
   const [age, setAge] = useState("");
   const [sex, setSex] = useState<"M" | "F" | "other">("F");
   const [image, setImage] = useState<string | null>(null);
+  const [consent, setConsent] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
   const [result, setResult] = useState<TriageResult | null>(null);
@@ -105,6 +107,8 @@ function TriagePage() {
       followUpQuestions: result.follow_up_questions,
       referralAdvised: result.referral_advised,
       referralStatus: result.referral_advised ? "pending" : "none",
+      patientConsent: consent,
+      consentTimestamp: new Date().toISOString(),
       language,
       createdAt: new Date().toISOString(),
     };
@@ -160,7 +164,17 @@ function TriagePage() {
                 </div>
               </div>
             </div>
-            <Button onClick={startPatient} disabled={!identifier.trim()} size="lg" className="w-full gap-2">
+            <label className="flex items-start gap-3 rounded-xl border bg-secondary/20 p-4">
+              <Checkbox
+                checked={consent}
+                onCheckedChange={(v) => setConsent(v === true)}
+              />
+              <span className="text-xs leading-relaxed text-muted-foreground">
+                The patient has been informed and consents to this AI-assisted
+                preliminary assessment.
+              </span>
+            </label>
+            <Button onClick={startPatient} disabled={!identifier.trim() || !consent} size="lg" className="w-full gap-2">
               Continue <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

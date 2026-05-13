@@ -235,6 +235,26 @@ function SettingsPage() {
           </pre>
         </div>
 
+        <Section title="About Trij">
+          <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
+            <p>
+              <strong>Trij</strong> is an AI-assisted preliminary triage tool for
+              community health workers. It is <strong>not</strong> a clinical
+              diagnostic device.
+            </p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>All assessments are preliminary and must be verified with clinical judgment.</li>
+              <li>Trij does not replace professional medical evaluation.</li>
+              <li>Always refer patients when in doubt or when urgency is indicated.</li>
+              <li>Patient data is stored on-device and synced to your encrypted backend.</li>
+              <li>You are responsible for complying with local health data privacy regulations.</li>
+            </ul>
+            <p className="text-xs">
+              Trij &mdash; Gemma 4 Good Hackathon 2026
+            </p>
+          </div>
+        </Section>
+
         <ModelDownloadManager />
 
         <Button variant="outline" className="w-full gap-2" onClick={signOut}>

@@ -1,7 +1,9 @@
 import { createFileRoute, Outlet, Navigate } from "@tanstack/react-router";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useSessionStore } from "@/stores/sessionStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { BottomNav } from "@/components/BottomNav";
+import { DisclaimerDialog } from "@/components/DisclaimerDialog";
 import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app")({
@@ -11,6 +13,7 @@ export const Route = createFileRoute("/_app")({
 function AppLayout() {
   useAuthSession();
   const { session, offlineUser, loading } = useSessionStore();
+  const disclaimerAccepted = useSettingsStore((s) => s.disclaimerAccepted);
   if (loading) {
     return (
       <div className="grid min-h-screen place-items-center">
@@ -20,6 +23,7 @@ function AppLayout() {
   }
   const authed = !!(session || offlineUser);
   if (!authed) return <Navigate to="/" />;
+  if (!disclaimerAccepted) return <DisclaimerDialog />;
   return (
     <div className="min-h-screen pb-24">
       <a
