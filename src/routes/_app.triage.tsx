@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, ScanLine, ChevronRight, Save, Volume2 } from "lucide-react";
-import { triageImage, detectEngine, supportsWebGPU, isLoaded, loadEngine } from "@/lib/gemma";
+import { triageImage, detectEngine, isLoaded, loadEngine } from "@/lib/gemma";
+import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { TriageResult, Patient, Assessment } from "@/types/trij";
 import { getDB } from "@/lib/db";
 import { queuePatient, queueAssessment } from "@/lib/sync";
@@ -46,11 +47,6 @@ function TriagePage() {
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
   const [result, setResult] = useState<TriageResult | null>(null);
-  const [webgpu, setWebgpu] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    supportsWebGPU().then(setWebgpu);
-  }, []);
 
   const startPatient = async () => {
     if (!user || !identifier.trim()) return;
@@ -191,14 +187,7 @@ function TriagePage() {
                 </p>
               </div>
             </div>
-            {webgpu === false && (
-              <div className="rounded-2xl border border-urgency-yellow/30 bg-urgency-yellow-bg/40 p-4 text-sm">
-                <p className="font-medium text-urgency-yellow">WebGPU not available</p>
-                <p className="mt-1 text-muted-foreground text-xs">
-                  This device can't run on-device AI. Inference will fail until WebGPU is enabled or a cloud fallback is configured in Settings.
-                </p>
-              </div>
-            )}
+            <WebGPUCheck engineKind={engineKind} ollamaUrl={ollamaUrl} compact />
             <CameraCapture onCapture={onCapture} onCancel={() => setStep("patient")} />
           </div>
         )}
