@@ -1,10 +1,19 @@
 import Dexie, { type Table } from "dexie";
 import type { Patient, Assessment, SyncQueueItem } from "@/types/trij";
 
+export interface ErrorLog {
+  id?: number;
+  message: string;
+  stack?: string;
+  route?: string;
+  timestamp: number;
+}
+
 export class TrijDB extends Dexie {
   patients!: Table<Patient, string>;
   assessments!: Table<Assessment, string>;
   syncQueue!: Table<SyncQueueItem, number>;
+  errorLogs!: Table<ErrorLog, number>;
 
   constructor() {
     super("TrijDB");
@@ -12,6 +21,12 @@ export class TrijDB extends Dexie {
       patients: "id, chwUserId, identifier, createdAt, syncedAt",
       assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
       syncQueue: "++id, table, action, recordId, createdAt",
+    });
+    this.version(2).stores({
+      patients: "id, chwUserId, identifier, createdAt, syncedAt",
+      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
+      syncQueue: "++id, table, action, recordId, createdAt",
+      errorLogs: "++id, timestamp",
     });
   }
 }
