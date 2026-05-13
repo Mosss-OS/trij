@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
+import { Slider } from "@/components/ui/slider";
 import { LogOut, AlertTriangle, ShieldCheck, FlaskConical, Rabbit } from "lucide-react";
 import { useEffect, useState } from "react";
 import { detectOllama, type EngineKind } from "@/lib/gemma";
@@ -156,6 +157,32 @@ function SettingsPage() {
           )}
         </Section>
 
+        <Section title="Medical">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Minimum confidence for local care</Label>
+                <span className="font-mono text-sm font-semibold">{s.minConfidenceForLocalCare}%</span>
+              </div>
+              <Slider
+                min={0}
+                max={100}
+                step={5}
+                value={[s.minConfidenceForLocalCare]}
+                onValueChange={([v]) => s.setMinConfidenceForLocalCare(v)}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>0% — always refer</span>
+                <span>100% — never refer</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                When AI confidence is below this threshold, the app will recommend
+                referral regardless of the model&apos;s assessment. Default: 70%.
+              </p>
+            </div>
+          </div>
+        </Section>
+
         <div className="rounded-3xl border bg-card p-6">
           <h2 className="font-display text-base font-semibold">Engine status</h2>
           <pre className="mt-3 overflow-x-auto rounded-xl bg-muted p-4 text-xs leading-relaxed">
@@ -164,7 +191,6 @@ function SettingsPage() {
                 kind: gemma.kind,
                 loaded: gemma.loaded,
                 loading: gemma.loading,
-                webgpu: webgpu,
                 error: gemma.error,
               },
               null,
