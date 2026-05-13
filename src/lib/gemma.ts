@@ -1,15 +1,3 @@
-/**
- * On-device Gemma 4 inference engine.
- *
- * Supports three engine modes:
- *   1. WebLLM (WebGPU) – primary: loads Gemma in-browser
- *   2. Ollama bridge     – fallback: connects to local Ollama instance
- *   3. Demo / mock       – fallback: returns realistic fake results for demos
- *
- *   Engine is auto-detected on first use. The user can override via Settings.
- *   No patient data ever leaves the device for AI inference.
- */
-
 import { CreateMLCEngine, type MLCEngine, type InitProgressReport } from "@mlc-ai/web-llm";
 export type { InitProgressReport };
 import {
@@ -18,6 +6,13 @@ import {
   getFollowUpPrompt,
 } from "./gemma-prompt";
 import type { TriageResult, DocumentResult, Urgency } from "@/types/trij";
+import {
+  TRIAGE_TOOL,
+  DOCUMENT_TOOL,
+  FOLLOW_UP_TOOL,
+  parseToolCall,
+  triesJson,
+} from "./tools";
 
 /* ─── Engine type ─────────────────────────────────────────── */
 
@@ -27,7 +22,7 @@ export type EngineKind = "webllm" | "ollama" | "demo";
 
 let webllmEngine: MLCEngine | null = null;
 let webllmLoading: Promise<MLCEngine> | null = null;
-let WEBLLM_MODEL_ID = "gemma-2-2b-it-q4f16_1-MLC"; // Gemma-4 E2B when published
+let WEBLLM_MODEL_ID = "gemma-2-2b-it-q4f16_1-MLC";
 
 export function setModelId(id: string) {
   WEBLLM_MODEL_ID = id;
@@ -58,11 +53,8 @@ export async function detectEngine(
   prefer: EngineKind | "auto" = "auto"
 ): Promise<EngineKind> {
   if (prefer !== "auto") return prefer;
-
   if (await supportsWebGPU()) return "webllm";
-
   if (await detectOllama()) return "ollama";
-
   return "demo";
 }
 
@@ -125,27 +117,41 @@ interface OllamaMessage {
   role: "system" | "user" | "assistant";
   content: string;
   images?: string[];
+  tool_calls?: Array<{
+    function: { name: string; arguments: string };
+  }>;
+}
+
+interface OllamaChatResponse {
+  message: {
+    content?: string | null;
+    tool_calls?: Array<{
+      function: { name: string; arguments: string };
+    }>;
+  };
 }
 
 async function ollamaChat(
   messages: OllamaMessage[],
   baseUrl: string,
+  tools?: unknown[],
   signal?: AbortSignal
-): Promise<string> {
+): Promise<OllamaChatResponse> {
+  const body: Record<string, unknown> = {
+    model: _ollamaModel,
+    messages,
+    stream: false,
+    options: { temperature: 0.1 },
+  };
+  if (tools) body.tools = tools;
   const res = await fetch(`${baseUrl}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: _ollamaModel,
-      messages,
-      stream: false,
-      options: { temperature: 0.1 },
-    }),
+    body: JSON.stringify(body),
     signal,
   });
   if (!res.ok) throw new Error(`Ollama error: ${res.status}`);
-  const data = await res.json();
-  return data.message?.content ?? "";
+  return res.json() as Promise<OllamaChatResponse>;
 }
 
 /* ─── Demo / mock engine ──────────────────────────────────── */
@@ -251,25 +257,6 @@ function demoDocument(): DocumentResult {
   return DEMO_DOCUMENTS[Math.floor(Math.random() * DEMO_DOCUMENTS.length)];
 }
 
-/* ─── JSON safety ─────────────────────────────────────────── */
-
-function safeJSON<T>(raw: string, fallback: T): T {
-  const trimmed = raw.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
-  try {
-    return JSON.parse(trimmed) as T;
-  } catch {
-    const m = trimmed.match(/\{[\s\S]*\}/);
-    if (m) {
-      try {
-        return JSON.parse(m[0]) as T;
-      } catch {
-        /* */
-      }
-    }
-    return fallback;
-  }
-}
-
 /* ─── Public API ──────────────────────────────────────────── */
 
 export async function loadEngine(
@@ -279,12 +266,11 @@ export async function loadEngine(
   if (kind === "webllm") {
     await loadWebLLM(onProgress);
   }
-  /* ollama & demo need no preloading */
 }
 
 export function isLoaded(kind: EngineKind): boolean {
   if (kind === "webllm") return isWebLLMLoaded();
-  return true; /* ollama & demo are always "loaded" */
+  return true;
 }
 
 /* ─── Triage ──────────────────────────────────────────────── */
@@ -312,21 +298,23 @@ export async function triageImage(
   }
 
   if (kind === "ollama") {
-    const text = await ollamaChat(
+    const response = await ollamaChat(
       [
         { role: "system", content: getTriageSystemPrompt(language) },
         {
           role: "user",
-          content: "Analyze this medical image and return the JSON triage assessment.",
+          content: "Analyze this medical image and return the triage assessment.",
           images: [imageDataUrl],
         },
       ],
-      ollamaUrl ?? "http://localhost:11434"
+      ollamaUrl ?? "http://localhost:11434",
+      [TRIAGE_TOOL]
     );
-    return safeJSON<TriageResult>(text, FALLBACK_TRIAGE);
+    const result = parseToolCall<TriageResult>(response.message, null);
+    if (result) return result;
+    return triesJson<TriageResult>(response.message.content ?? "", FALLBACK_TRIAGE);
   }
 
-  /* webllm */
   const e = await loadWebLLM();
   const reply = await e.chat.completions.create({
     messages: [
@@ -335,15 +323,23 @@ export async function triageImage(
         role: "user",
         content: [
           { type: "image_url", image_url: { url: imageDataUrl } },
-          { type: "text", text: "Analyze this medical image and return the JSON triage assessment." },
+          { type: "text", text: "Analyze this medical image and return the triage assessment." },
         ] as never,
       },
     ],
+    tools: [TRIAGE_TOOL as never],
+    tool_choice: {
+      type: "function",
+      function: { name: "triage_assessment" },
+    } as never,
     temperature: 0.1,
     max_tokens: 800,
   });
-  const text = reply.choices[0]?.message?.content ?? "";
-  return safeJSON<TriageResult>(text, FALLBACK_TRIAGE);
+  const message = reply.choices[0]?.message;
+  if (!message) return FALLBACK_TRIAGE;
+  const result = parseToolCall<TriageResult>(message, null);
+  if (result) return result;
+  return triesJson<TriageResult>(message.content ?? "", FALLBACK_TRIAGE);
 }
 
 /* ─── Document analysis ───────────────────────────────────── */
@@ -369,7 +365,7 @@ export async function analyzeDocument(
   }
 
   if (kind === "ollama") {
-    const text = await ollamaChat(
+    const response = await ollamaChat(
       [
         { role: "system", content: getDocumentSystemPrompt(language) },
         {
@@ -378,9 +374,12 @@ export async function analyzeDocument(
           images: [imageDataUrl],
         },
       ],
-      ollamaUrl ?? "http://localhost:11434"
+      ollamaUrl ?? "http://localhost:11434",
+      [DOCUMENT_TOOL]
     );
-    return safeJSON<DocumentResult>(text, FALLBACK_DOC);
+    const result = parseToolCall<DocumentResult>(response.message, null);
+    if (result) return result;
+    return triesJson<DocumentResult>(response.message.content ?? "", FALLBACK_DOC);
   }
 
   const e = await loadWebLLM();
@@ -395,11 +394,19 @@ export async function analyzeDocument(
         ] as never,
       },
     ],
+    tools: [DOCUMENT_TOOL as never],
+    tool_choice: {
+      type: "function",
+      function: { name: "document_analysis" },
+    } as never,
     temperature: 0.1,
     max_tokens: 800,
   });
-  const text = reply.choices[0]?.message?.content ?? "";
-  return safeJSON<DocumentResult>(text, FALLBACK_DOC);
+  const message = reply.choices[0]?.message;
+  if (!message) return FALLBACK_DOC;
+  const result = parseToolCall<DocumentResult>(message, null);
+  if (result) return result;
+  return triesJson<DocumentResult>(message.content ?? "", FALLBACK_DOC);
 }
 
 /* ─── Follow-up questions ─────────────────────────────────── */
@@ -426,27 +433,38 @@ export async function nextFollowUp(
   const prompt = getFollowUpPrompt(language, condition, history);
 
   if (kind === "ollama") {
-    const text = await ollamaChat(
+    const response = await ollamaChat(
       [
         { role: "system", content: prompt },
-        { role: "user", content: "Generate the next question." },
+        { role: "user", content: "Generate the next follow-up question." },
       ],
-      ollamaUrl ?? "http://localhost:11434"
+      ollamaUrl ?? "http://localhost:11434",
+      [FOLLOW_UP_TOOL]
     );
-    return safeJSON<{ question: string }>(text, { question: "" }).question;
+    const result = parseToolCall<{ question: string }>(response.message, null);
+    if (result?.question) return result.question;
+    return triesJson<{ question: string }>(response.message.content ?? "", { question: "" }).question;
   }
 
   const e = await loadWebLLM();
   const reply = await e.chat.completions.create({
     messages: [
       { role: "system", content: prompt },
-      { role: "user", content: "Generate the next question." },
+      { role: "user", content: "Generate the next follow-up question." },
     ],
+    tools: [FOLLOW_UP_TOOL as never],
+    tool_choice: {
+      type: "function",
+      function: { name: "generate_follow_up" },
+    } as never,
     temperature: 0.4,
     max_tokens: 120,
   });
-  const text = reply.choices[0]?.message?.content ?? "";
-  return safeJSON<{ question: string }>(text, { question: "" }).question;
+  const message = reply.choices[0]?.message;
+  if (!message) return "";
+  const result = parseToolCall<{ question: string }>(message, null);
+  if (result?.question) return result.question;
+  return triesJson<{ question: string }>(message.content ?? "", { question: "" }).question;
 }
 
 /* ─── Helpers ─────────────────────────────────────────────── */

@@ -97,7 +97,22 @@ Gemma 4's native multimodal capabilities are leveraged to analyze wound/rash ima
 
 ### 4.2 Native Function Calling
 
-System prompts instruct Gemma 4 to return **valid JSON-only responses** (response_format: json_object). This enables deterministic downstream processing — the app immediately parses the JSON to render urgency badges, confidence bars, and referral flows.
+We use **Gemma 4's native function calling protocol** for all structured outputs, rather than relying on unstructured JSON generation. Three tool schemas are defined:
+
+| Tool | Schema | Used For |
+|------|--------|----------|
+| `triage_assessment` | `TriageResult` (condition, confidence, urgency, differentials, recommendation) | Image-based wound/rash triage |
+| `document_analysis` | `DocumentResult` (findings, abnormal flags, summary) | Lab report / prescription scanning |
+| `generate_follow_up` | `{ question: string }` | Dynamic voice-guided follow-up questions |
+
+**How it works:**
+1. Each inference call includes the tool definition via the `tools` parameter (OpenAI-compatible format).
+2. `tool_choice: { type: "function", function: { name: "triage_assessment" } }` forces Gemma 4 to use the tool.
+3. The response `message.tool_calls[0].function.arguments` contains **deterministically-structured JSON** — no parsing failures.
+4. A `parseToolCall()` utility handles both tool-call and fallback content responses.
+5. When function calling is unavailable (older models, some Ollama builds), the app falls back to `triesJson()` — a regex-based JSON extractor.
+
+This approach ensures **zero JSON parse failures** on supported engines and type-constrained outputs (Urgency enum, confidence 0-100).
 
 ### 4.3 Multilingual Support
 
