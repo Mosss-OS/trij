@@ -19,7 +19,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
 import { LogOut, Cpu, AlertTriangle, ShieldCheck, FlaskConical, Rabbit } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supportsWebGPU, detectOllama, clearOllamaCache, type EngineKind } from "@/lib/gemma";
+import { detectOllama, clearOllamaCache, type EngineKind } from "@/lib/gemma";
+import { WebGPUCheck } from "@/components/WebGPUCheck";
 import { useGemma } from "@/hooks/useGemma";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -34,13 +35,8 @@ export const Route = createFileRoute("/_app/settings")({
 function SettingsPage() {
   const s = useSettingsStore();
   const navigate = useNavigate();
-  const [webgpu, setWebgpu] = useState<boolean | null>(null);
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
   const gemma = useGemma();
-
-  useEffect(() => {
-    supportsWebGPU().then(setWebgpu);
-  }, []);
 
   useEffect(() => {
     detectOllama(s.ollamaUrl).then(setOllamaOk);
@@ -112,14 +108,9 @@ function SettingsPage() {
             </p>
           </div>
 
+          <WebGPUCheck engineKind={s.engineKind} ollamaUrl={s.ollamaUrl} />
+
           <div className="flex flex-wrap gap-4 rounded-2xl border bg-secondary/40 p-4 text-xs">
-            <div className="flex items-center gap-2">
-              <Cpu className="h-3.5 w-3.5 text-primary" />
-              <span>
-                WebGPU:{" "}
-                {webgpu === null ? "..." : webgpu ? "Available" : "Not available"}
-              </span>
-            </div>
             <div className="flex items-center gap-2">
               <Rabbit className="h-3.5 w-3.5 text-primary" />
               <span>
@@ -131,28 +122,6 @@ function SettingsPage() {
               <span>Active: {gemma.kind}</span>
             </div>
           </div>
-
-          {s.engineKind === "webllm" && webgpu === false && (
-            <p className="flex items-start gap-2 text-xs text-muted-foreground">
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-urgency-yellow" />
-              WebGPU not available. Use Chrome/Edge on Android or desktop. Switch to
-              Ollama or Demo mode to proceed.
-            </p>
-          )}
-
-          {webgpu === false && (
-            <div className="space-y-1.5">
-              <Label>WebLLM model ID</Label>
-              <Input
-                value={s.modelId}
-                onChange={(e) => s.setModelId(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Replace with Gemma 4 E2B WebLLM ID when published. Currently defaults
-                to closest published Gemma variant.
-              </p>
-            </div>
-          )}
         </Section>
 
         <Section title="Ollama configuration">
