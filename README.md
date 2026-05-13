@@ -101,6 +101,16 @@ bun run dev
 
 Open http://localhost:5173 — sign up, and you're ready.
 
+### Alternative: Docker (full stack)
+
+```bash
+cp .env.docker .env
+docker compose up
+```
+
+This starts the app (hot-reload), Ollama with Gemma 4, and a local Supabase stack.  
+Open http://localhost:5173.
+
 ---
 
 ## Project structure
