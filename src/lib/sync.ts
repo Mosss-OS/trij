@@ -1,7 +1,17 @@
 import { getDB } from "./db";
 import { supabase } from "@/integrations/supabase/client";
-import type { Patient, Assessment } from "@/types/trij";
+import type { Patient, Assessment, SyncQueueItem } from "@/types/trij";
 import { registerBackgroundSync } from "./sw-register";
+
+export interface SyncProgressItem {
+  id: number;
+  table: string;
+  recordId: string;
+  status: "pending" | "syncing" | "ok" | "failed";
+  error?: string;
+}
+
+export type SyncProgressCallback = (item: SyncProgressItem) => void;
 
 export async function queuePatient(patient: Patient) {
   const db = getDB();
@@ -35,13 +45,22 @@ export async function pendingCount(): Promise<number> {
   return getDB().syncQueue.count();
 }
 
-export async function processSyncQueue(): Promise<{ ok: number; failed: number }> {
+export async function processSyncQueue(
+  onProgress?: SyncProgressCallback,
+): Promise<{ ok: number; failed: number }> {
   if (typeof navigator !== "undefined" && !navigator.onLine) return { ok: 0, failed: 0 };
   const db = getDB();
   const items = await db.syncQueue.toArray();
   let ok = 0,
     failed = 0;
   for (const item of items) {
+    const progress: SyncProgressItem = {
+      id: item.id!,
+      table: item.table,
+      recordId: item.recordId,
+      status: "syncing",
+    };
+    onProgress?.(progress);
     try {
       if (item.table === "patients") {
         const p = item.payload as Patient;
@@ -84,12 +103,14 @@ export async function processSyncQueue(): Promise<{ ok: number; failed: number }
       }
       await db.syncQueue.delete(item.id!);
       ok++;
+      onProgress?.({ ...progress, status: "ok" });
     } catch (err) {
       failed++;
       await db.syncQueue.update(item.id!, {
         attempts: (item.attempts ?? 0) + 1,
         lastError: (err as Error).message,
       });
+      onProgress?.({ ...progress, status: "failed", error: (err as Error).message });
     }
   }
   return { ok, failed };
