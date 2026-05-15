@@ -51,7 +51,7 @@ function Supervisor() {
       if (a.urgency) acc[a.urgency]++;
       return acc;
     },
-    { green: 0, yellow: 0, red: 0 }
+    { green: 0, yellow: 0, red: 0 },
   );
 
   return (
@@ -103,8 +103,8 @@ function Supervisor() {
             <h2 className="font-display text-base font-semibold">CHW map</h2>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            Map view (Leaflet) loads when CHW location data is available.
-            Configure GPS in your profile to appear on the map.
+            Map view (Leaflet) loads when CHW location data is available. Configure GPS in your
+            profile to appear on the map.
           </p>
           <div className="mt-4 grid h-48 place-items-center rounded-2xl border border-dashed bg-muted/30 text-xs text-muted-foreground">
             Map placeholder — no CHW coordinates yet.
@@ -115,13 +115,21 @@ function Supervisor() {
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: number; tone: "green" | "yellow" | "red" }) {
+function Stat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "green" | "yellow" | "red";
+}) {
   const toneCls =
     tone === "green"
       ? "bg-urgency-green-bg text-urgency-green"
       : tone === "yellow"
-      ? "bg-urgency-yellow-bg text-urgency-yellow"
-      : "bg-urgency-red-bg text-urgency-red";
+        ? "bg-urgency-yellow-bg text-urgency-yellow"
+        : "bg-urgency-red-bg text-urgency-red";
   return (
     <div className={`rounded-2xl p-4 ${toneCls}`}>
       <p className="text-xs font-semibold uppercase tracking-wider opacity-90">{label}</p>

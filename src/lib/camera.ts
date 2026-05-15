@@ -15,7 +15,10 @@ export function compressImage(dataUrl: string): Promise<string> {
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d");
-      if (!ctx) { reject(new Error("Canvas context unavailable")); return; }
+      if (!ctx) {
+        reject(new Error("Canvas context unavailable"));
+        return;
+      }
       ctx.drawImage(img, 0, 0, width, height);
       resolve(canvas.toDataURL("image/jpeg", JPEG_QUALITY));
     };
@@ -56,8 +59,16 @@ export function analyzeVideoFrame(video: HTMLVideoElement): FrameAnalysis {
       const gray = (pixels[idx] + pixels[idx + 1] + pixels[idx + 2]) / 3;
       const left = (pixels[idx - 4] + pixels[idx - 3] + pixels[idx - 2]) / 3;
       const right = (pixels[idx + 4] + pixels[idx + 5] + pixels[idx + 6]) / 3;
-      const top = (pixels[idx - sampleSize * 4] + pixels[idx - sampleSize * 4 + 1] + pixels[idx - sampleSize * 4 + 2]) / 3;
-      const bottom = (pixels[idx + sampleSize * 4] + pixels[idx + sampleSize * 4 + 1] + pixels[idx + sampleSize * 4 + 2]) / 3;
+      const top =
+        (pixels[idx - sampleSize * 4] +
+          pixels[idx - sampleSize * 4 + 1] +
+          pixels[idx - sampleSize * 4 + 2]) /
+        3;
+      const bottom =
+        (pixels[idx + sampleSize * 4] +
+          pixels[idx + sampleSize * 4 + 1] +
+          pixels[idx + sampleSize * 4 + 2]) /
+        3;
       const laplacian = Math.abs(4 * gray - left - right - top - bottom);
       laplacianSum += laplacian;
     }

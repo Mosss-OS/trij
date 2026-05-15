@@ -2,13 +2,13 @@
 
 ## Gemma 4 Good Hackathon · Kaggle + Google DeepMind
 
-| Field | Value |
-|---|---|
-| **Project** | Trij |
-| **Track** | Health & Sciences / Global Resilience |
-| **Submission date** | May 2026 |
-| **Model** | Gemma 4 (E2B / E4B edge variants) |
-| **Prize pool** | $200,000 |
+| Field               | Value                                 |
+| ------------------- | ------------------------------------- |
+| **Project**         | Trij                                  |
+| **Track**           | Health & Sciences / Global Resilience |
+| **Submission date** | May 2026                              |
+| **Model**           | Gemma 4 (E2B / E4B edge variants)     |
+| **Prize pool**      | $200,000                              |
 
 ---
 
@@ -17,6 +17,7 @@
 **Community health workers (CHWs) in remote areas lack access to frontline diagnostic support.**
 
 In rural clinics and mobile health posts across Sub-Saharan Africa, South Asia, and other underserved regions:
+
 - There is often **no doctor or nurse** available for triage decisions
 - **Internet connectivity is unreliable** — cloud AI is not an option
 - **Language barriers** exist between CHWs and the clinical resources available
@@ -73,13 +74,13 @@ All AI inference runs **on-device via WebGPU or local Ollama**. No patient data 
 
 ### Key design decisions
 
-| Decision | Rationale |
-|---|---|
-| **PWA over native app** | No app store required; instant updates; works on any smartphone |
-| **WebLLM + Ollama over cloud API** | Privacy; full offline capability; zero inference cost |
-| **IndexedDB (Dexie) + background sync** | Resilient offline storage with automatic sync on reconnect |
-| **Supabase RLS** | Health-data-grade per-CHW data isolation |
-| **Zustand + Dexie** | Lightweight state; Dexie handles the persistence |
+| Decision                                | Rationale                                                       |
+| --------------------------------------- | --------------------------------------------------------------- |
+| **PWA over native app**                 | No app store required; instant updates; works on any smartphone |
+| **WebLLM + Ollama over cloud API**      | Privacy; full offline capability; zero inference cost           |
+| **IndexedDB (Dexie) + background sync** | Resilient offline storage with automatic sync on reconnect      |
+| **Supabase RLS**                        | Health-data-grade per-CHW data isolation                        |
+| **Zustand + Dexie**                     | Lightweight state; Dexie handles the persistence                |
 
 ---
 
@@ -88,6 +89,7 @@ All AI inference runs **on-device via WebGPU or local Ollama**. No patient data 
 ### 4.1 Multimodal Vision for Triage
 
 Gemma 4's native multimodal capabilities are leveraged to analyze wound/rash images directly in-browser. The model receives a base64-encoded image and returns **structured JSON** with:
+
 - Most likely condition (clinical name)
 - Confidence score (0–100)
 - Urgency level (green/yellow/red)
@@ -99,13 +101,14 @@ Gemma 4's native multimodal capabilities are leveraged to analyze wound/rash ima
 
 We use **Gemma 4's native function calling protocol** for all structured outputs, rather than relying on unstructured JSON generation. Three tool schemas are defined:
 
-| Tool | Schema | Used For |
-|------|--------|----------|
-| `triage_assessment` | `TriageResult` (condition, confidence, urgency, differentials, recommendation) | Image-based wound/rash triage |
-| `document_analysis` | `DocumentResult` (findings, abnormal flags, summary) | Lab report / prescription scanning |
-| `generate_follow_up` | `{ question: string }` | Dynamic voice-guided follow-up questions |
+| Tool                 | Schema                                                                         | Used For                                 |
+| -------------------- | ------------------------------------------------------------------------------ | ---------------------------------------- |
+| `triage_assessment`  | `TriageResult` (condition, confidence, urgency, differentials, recommendation) | Image-based wound/rash triage            |
+| `document_analysis`  | `DocumentResult` (findings, abnormal flags, summary)                           | Lab report / prescription scanning       |
+| `generate_follow_up` | `{ question: string }`                                                         | Dynamic voice-guided follow-up questions |
 
 **How it works:**
+
 1. Each inference call includes the tool definition via the `tools` parameter (OpenAI-compatible format).
 2. `tool_choice: { type: "function", function: { name: "triage_assessment" } }` forces Gemma 4 to use the tool.
 3. The response `message.tool_calls[0].function.arguments` contains **deterministically-structured JSON** — no parsing failures.
@@ -124,11 +127,11 @@ We target **Gemma 4 E2B (2B parameters)** for on-device use — enough capabilit
 
 ### 4.5 Fallback Strategy
 
-| Engine | When | Requirements |
-|---|---|---|
-| **WebLLM (WebGPU)** | Primary in-browser | Chrome/Edge with WebGPU + 4GB+ RAM |
-| **Ollama bridge** | Local server | Ollama running on LAN, Gemma 4 model pulled |
-| **Demo mode** | Always available | No model needed — mock data for demonstration |
+| Engine              | When               | Requirements                                  |
+| ------------------- | ------------------ | --------------------------------------------- |
+| **WebLLM (WebGPU)** | Primary in-browser | Chrome/Edge with WebGPU + 4GB+ RAM            |
+| **Ollama bridge**   | Local server       | Ollama running on LAN, Gemma 4 model pulled   |
+| **Demo mode**       | Always available   | No model needed — mock data for demonstration |
 
 ---
 
@@ -144,18 +147,18 @@ We target **Gemma 4 E2B (2B parameters)** for on-device use — enough capabilit
 
 ## 6. Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **Frontend** | Vite + TanStack Start + React 19 + TypeScript |
-| **AI Runtime** | WebLLM (@mlc-ai/web-llm) + Ollama HTTP bridge |
-| **Styling** | Tailwind CSS v4 + shadcn/ui |
-| **Offline Storage** | Dexie.js (IndexedDB) |
-| **State** | Zustand (persisted to localStorage) |
-| **Backend** | Supabase (Auth, Postgres, Storage, Edge Functions) |
-| **PWA** | vite-plugin-pwa |
-| **Voice** | Web Speech API |
-| **PDF** | jsPDF |
-| **Deployment** | Cloudflare Workers / Netlify |
+| Layer               | Technology                                         |
+| ------------------- | -------------------------------------------------- |
+| **Frontend**        | Vite + TanStack Start + React 19 + TypeScript      |
+| **AI Runtime**      | WebLLM (@mlc-ai/web-llm) + Ollama HTTP bridge      |
+| **Styling**         | Tailwind CSS v4 + shadcn/ui                        |
+| **Offline Storage** | Dexie.js (IndexedDB)                               |
+| **State**           | Zustand (persisted to localStorage)                |
+| **Backend**         | Supabase (Auth, Postgres, Storage, Edge Functions) |
+| **PWA**             | vite-plugin-pwa                                    |
+| **Voice**           | Web Speech API                                     |
+| **PDF**             | jsPDF                                              |
+| **Deployment**      | Cloudflare Workers / Netlify                       |
 
 ---
 
@@ -176,7 +179,7 @@ We target **Gemma 4 E2B (2B parameters)** for on-device use — enough capabilit
 - ✅ **Working demo**: Deployed PWA (link below)
 - ✅ **Public code repository**: [GitHub — Mosss-OS/trij](https://github.com/Mosss-OS/trij)
 - ✅ **Technical writeup**: This document
-- ✅ **Video demo**: [YouTube — Trij Demo](https://youtube.com) *(link to be added)*
+- ✅ **Video demo**: [YouTube — Trij Demo](https://youtube.com) _(link to be added)_
 - ✅ **Gemma 4 integration**: WebLLM + Ollama bridge + Demo mode
 - ✅ **Privacy**: All inference on-device; no cloud AI API used
 
@@ -184,14 +187,14 @@ We target **Gemma 4 E2B (2B parameters)** for on-device use — enough capabilit
 
 ## 9. Links
 
-| Resource | URL |
-|---|---|
-| Live demo | *https://trij.app* (add when deployed) |
-| GitHub repo | https://github.com/Mosss-OS/trij |
-| Video demo | *Add YouTube link* |
+| Resource           | URL                                                        |
+| ------------------ | ---------------------------------------------------------- |
+| Live demo          | *https://trij.app* (add when deployed)                     |
+| GitHub repo        | https://github.com/Mosss-OS/trij                           |
+| Video demo         | _Add YouTube link_                                         |
 | Kaggle competition | https://www.kaggle.com/competitions/gemma-4-good-hackathon |
-| Gemma 4 models | https://www.kaggle.com/models/google/gemma-4 |
+| Gemma 4 models     | https://www.kaggle.com/models/google/gemma-4               |
 
 ---
 
-*Trij — Field-ready triage, on every device.*
+_Trij — Field-ready triage, on every device._

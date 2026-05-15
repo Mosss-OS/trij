@@ -25,7 +25,10 @@ async function collectStorageData(): Promise<StorageData> {
   const db = getDB();
   const assessments = await db.assessments.toArray();
   const imageCount = assessments.reduce((sum, a) => sum + (a.images?.length ?? 0), 0);
-  const dates = assessments.map((a) => a.createdAt).filter(Boolean).sort();
+  const dates = assessments
+    .map((a) => a.createdAt)
+    .filter(Boolean)
+    .sort();
   const oldestRecord = dates.length > 0 ? dates[0] : null;
   return {
     used: formatBytes(info.usage),

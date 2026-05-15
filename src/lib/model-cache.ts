@@ -65,7 +65,9 @@ export async function clearModelCache(): Promise<void> {
         await caches.delete(key);
       }
     }
-  } catch {}
+  } catch {
+    // cache cleanup failure is non-critical
+  }
 }
 
 export function formatBytes(bytes: number): string {

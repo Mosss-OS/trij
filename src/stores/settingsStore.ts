@@ -57,14 +57,15 @@ export const useSettingsStore = create<SettingsState>()(
           chwName,
         }),
       setChwName: (chwName) => set({ chwName }),
-      setMinConfidenceForLocalCare: (minConfidenceForLocalCare) => set({ minConfidenceForLocalCare }),
+      setMinConfidenceForLocalCare: (minConfidenceForLocalCare) =>
+        set({ minConfidenceForLocalCare }),
       setThinkingMode: (enabled: boolean) => set({ thinkingMode: enabled }),
     }),
     {
       name: "trij-settings",
       storage: createJSONStorage(() =>
-        typeof window !== "undefined" ? localStorage : (undefined as never)
+        typeof window !== "undefined" ? localStorage : (undefined as never),
       ),
-    }
-  )
+    },
+  ),
 );

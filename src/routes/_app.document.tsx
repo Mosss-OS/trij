@@ -69,7 +69,9 @@ function DocumentScan() {
         )}
         {step === "result" && result && (
           <div className="mt-2 space-y-5">
-            {image && <img src={image} alt="" className="aspect-video w-full rounded-2xl object-cover" />}
+            {image && (
+              <img src={image} alt="" className="aspect-video w-full rounded-2xl object-cover" />
+            )}
             <div className="rounded-3xl border bg-card p-6">
               <p className="text-xs uppercase tracking-wider text-muted-foreground">
                 {result.document_type.replace("_", " ")}
@@ -90,8 +92,12 @@ function DocumentScan() {
                   {result.key_findings.map((f, i) => (
                     <li key={i} className="flex items-center justify-between gap-3 py-2.5 text-sm">
                       <div className="flex items-center gap-2">
-                        {f.is_abnormal && <AlertTriangle className="h-3.5 w-3.5 text-urgency-red" />}
-                        <span className={f.is_abnormal ? "font-semibold text-urgency-red" : ""}>{f.parameter}</span>
+                        {f.is_abnormal && (
+                          <AlertTriangle className="h-3.5 w-3.5 text-urgency-red" />
+                        )}
+                        <span className={f.is_abnormal ? "font-semibold text-urgency-red" : ""}>
+                          {f.parameter}
+                        </span>
                       </div>
                       <span className="font-mono text-xs">{f.value}</span>
                     </li>

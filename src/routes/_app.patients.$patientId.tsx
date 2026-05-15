@@ -25,7 +25,11 @@ function PatientDetail() {
       try {
         const db = getDB();
         const p = await db.patients.get(patientId);
-        const a = await db.assessments.where("patientId").equals(patientId).reverse().sortBy("createdAt");
+        const a = await db.assessments
+          .where("patientId")
+          .equals(patientId)
+          .reverse()
+          .sortBy("createdAt");
         if (!alive) return;
         setPatient(p ?? null);
         setAssessments(a);
@@ -51,7 +55,10 @@ function PatientDetail() {
 
   return (
     <>
-      <AppHeader title={patient.identifier} subtitle={`${patient.ageYears ?? "?"}y · ${patient.sex ?? "—"}`} />
+      <AppHeader
+        title={patient.identifier}
+        subtitle={`${patient.ageYears ?? "?"}y · ${patient.sex ?? "—"}`}
+      />
       <div className="mx-auto max-w-2xl px-5 py-6">
         <div className="rounded-3xl border bg-card p-5">
           <div className="flex items-center gap-3">
@@ -94,7 +101,11 @@ function PatientDetail() {
                   </p>
                 )}
                 {a.images?.[0] && (
-                  <img src={a.images[0]} alt="" className="mt-3 h-32 w-32 rounded-xl object-cover" />
+                  <img
+                    src={a.images[0]}
+                    alt=""
+                    className="mt-3 h-32 w-32 rounded-xl object-cover"
+                  />
                 )}
                 {a.referralAdvised && (
                   <Button
