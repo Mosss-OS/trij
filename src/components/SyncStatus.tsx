@@ -1,7 +1,15 @@
 import { useEffect, useState, useRef } from "react";
 import { pendingCount, processSyncQueue, type SyncProgressItem } from "@/lib/sync";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
-import { CloudUpload, CheckCircle2, Loader2, XCircle, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  CloudUpload,
+  CheckCircle2,
+  Loader2,
+  XCircle,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SyncSummary {
@@ -62,17 +70,29 @@ export function SyncStatus({ className }: { className?: string }) {
         disabled={!showSummary && pending === 0 && !syncing}
         className={cn(
           "inline-flex items-center gap-1.5 text-xs transition-colors",
-          pending === 0 && !syncing && !showSummary ? "text-muted-foreground" : "font-medium text-foreground",
+          pending === 0 && !syncing && !showSummary
+            ? "text-muted-foreground"
+            : "font-medium text-foreground",
         )}
       >
         {syncing && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
-        {!syncing && showSummary && summary.failed > 0 && <XCircle className="h-3.5 w-3.5 text-destructive" />}
-        {!syncing && showSummary && summary.failed === 0 && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />}
-        {!syncing && !showSummary && pending > 0 && <CloudUpload className="h-3.5 w-3.5 text-primary" />}
-        {!syncing && !showSummary && pending === 0 && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />}
+        {!syncing && showSummary && summary.failed > 0 && (
+          <XCircle className="h-3.5 w-3.5 text-destructive" />
+        )}
+        {!syncing && showSummary && summary.failed === 0 && (
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+        )}
+        {!syncing && !showSummary && pending > 0 && (
+          <CloudUpload className="h-3.5 w-3.5 text-primary" />
+        )}
+        {!syncing && !showSummary && pending === 0 && (
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+        )}
 
         {syncing && `Syncing ${pending} item(s)...`}
-        {!syncing && showSummary && `${summary.ok} synced` + (summary.failed > 0 ? `, ${summary.failed} failed` : "")}
+        {!syncing &&
+          showSummary &&
+          `${summary.ok} synced` + (summary.failed > 0 ? `, ${summary.failed} failed` : "")}
         {!syncing && !showSummary && (pending > 0 ? `${pending} pending` : "Synced")}
 
         {(showSummary || (!syncing && pending > 0)) && (
@@ -89,16 +109,27 @@ export function SyncStatus({ className }: { className?: string }) {
           </p>
           <ul className="max-h-48 space-y-1 overflow-y-auto">
             {summary.items.map((item) => (
-              <li key={item.id} className="flex items-start gap-2 rounded-lg bg-secondary/30 p-2 text-xs">
-                {item.status === "ok" && <CheckCircle2 className="mt-0.5 h-3 w-3 flex-shrink-0 text-emerald-600" />}
-                {item.status === "failed" && <XCircle className="mt-0.5 h-3 w-3 flex-shrink-0 text-destructive" />}
-                {item.status === "syncing" && <Loader2 className="mt-0.5 h-3 w-3 animate-spin text-primary" />}
+              <li
+                key={item.id}
+                className="flex items-start gap-2 rounded-lg bg-secondary/30 p-2 text-xs"
+              >
+                {item.status === "ok" && (
+                  <CheckCircle2 className="mt-0.5 h-3 w-3 flex-shrink-0 text-emerald-600" />
+                )}
+                {item.status === "failed" && (
+                  <XCircle className="mt-0.5 h-3 w-3 flex-shrink-0 text-destructive" />
+                )}
+                {item.status === "syncing" && (
+                  <Loader2 className="mt-0.5 h-3 w-3 animate-spin text-primary" />
+                )}
                 <div className="min-w-0">
                   <p className="truncate font-medium">
                     {item.table.slice(0, -1)}: {item.recordId.slice(0, 8)}
                   </p>
                   {item.error && (
-                    <p className="mt-0.5 break-words text-[10px] text-muted-foreground">{item.error}</p>
+                    <p className="mt-0.5 break-words text-[10px] text-muted-foreground">
+                      {item.error}
+                    </p>
                   )}
                 </div>
               </li>

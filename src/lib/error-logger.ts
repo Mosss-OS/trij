@@ -29,5 +29,7 @@ export async function clearErrorLogs(): Promise<void> {
   try {
     const db = getDB();
     await db.errorLogs.clear();
-  } catch {}
+  } catch {
+    // clearing logs must never throw
+  }
 }

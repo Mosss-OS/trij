@@ -138,7 +138,10 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
       )}
 
       {showWarning && (
-        <div className="pointer-events-none absolute left-3 right-3 z-10 rounded-xl bg-black/70 p-3 text-center text-xs text-white/90 backdrop-blur-sm" style={{ bottom: "6rem" }}>
+        <div
+          className="pointer-events-none absolute left-3 right-3 z-10 rounded-xl bg-black/70 p-3 text-center text-xs text-white/90 backdrop-blur-sm"
+          style={{ bottom: "6rem" }}
+        >
           {analysis.isTooDark && <p>Scene too dark. Move to a brighter area.</p>}
           {analysis.isBlurry && <p>Hold the camera steady.</p>}
           <button
@@ -152,7 +155,12 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
 
       <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between gap-3 bg-gradient-to-t from-black/70 to-transparent p-5">
         {onCancel ? (
-          <Button size="icon" variant="ghost" className="text-white hover:bg-white/10" onClick={onCancel}>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="text-white hover:bg-white/10"
+            onClick={onCancel}
+          >
             <X className="h-5 w-5" />
           </Button>
         ) : (
@@ -161,13 +169,13 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
         <button
           onClick={capture}
           className={`grid h-16 w-16 place-items-center rounded-full shadow-xl ring-4 transition active:scale-95 ${
-            canAutoCapture || forceCapture
-              ? "bg-white ring-white/40"
-              : "bg-white/60 ring-white/20"
+            canAutoCapture || forceCapture ? "bg-white ring-white/40" : "bg-white/60 ring-white/20"
           }`}
           aria-label="Capture photo"
         >
-          <Camera className={`h-7 w-7 ${canAutoCapture || forceCapture ? "text-primary" : "text-muted-foreground"}`} />
+          <Camera
+            className={`h-7 w-7 ${canAutoCapture || forceCapture ? "text-primary" : "text-muted-foreground"}`}
+          />
         </button>
         <Button
           size="icon"

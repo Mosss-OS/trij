@@ -48,7 +48,9 @@ export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 
                 <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-red" />
                 <div>
                   <p className="text-sm font-medium text-urgency-red">Referral advised</p>
-                  <p className="mt-1 text-sm leading-relaxed text-foreground">{result.recommendation}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-foreground">
+                    {result.recommendation}
+                  </p>
                 </div>
               </div>
             )}
@@ -57,7 +59,9 @@ export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 
                 <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
                 <div>
                   <p className="text-sm font-medium text-emerald-700">Treat locally</p>
-                  <p className="mt-1 text-sm leading-relaxed text-foreground">{result.recommendation}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-foreground">
+                    {result.recommendation}
+                  </p>
                 </div>
               </div>
             )}
@@ -69,9 +73,7 @@ export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 
             variant="outline"
             size="sm"
             className="mt-4 gap-2"
-            onClick={() =>
-              onSpeak(`${result.condition}. ${result.recommendation ?? ""}`)
-            }
+            onClick={() => onSpeak(`${result.condition}. ${result.recommendation ?? ""}`)}
           >
             <Volume2 className="h-4 w-4" /> Read aloud
           </Button>
@@ -123,9 +125,8 @@ export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 
       <div className="flex items-start gap-3 rounded-2xl border border-urgency-yellow/20 bg-urgency-yellow/5 p-4 text-xs text-muted-foreground">
         <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-yellow" />
         <p>
-          This is a <strong>preliminary AI-assisted assessment</strong> and does
-          not constitute a clinical diagnosis. Always verify with clinical
-          judgment and refer when in doubt.
+          This is a <strong>preliminary AI-assisted assessment</strong> and does not constitute a
+          clinical diagnosis. Always verify with clinical judgment and refer when in doubt.
         </p>
       </div>
     </div>

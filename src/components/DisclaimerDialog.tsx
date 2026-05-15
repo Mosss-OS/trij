@@ -34,23 +34,21 @@ export function DisclaimerDialog() {
           </p>
           <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
             <li>
-              All assessments are <strong>preliminary</strong> and must be verified with
-              clinical judgment.
+              All assessments are <strong>preliminary</strong> and must be verified with clinical
+              judgment.
             </li>
             <li>
               Trij does <strong>not</strong> replace professional medical evaluation.
             </li>
             <li>
-              Always refer patients to a clinic or hospital when in doubt or when the
-              assessment indicates urgency.
+              Always refer patients to a clinic or hospital when in doubt or when the assessment
+              indicates urgency.
             </li>
             <li>
-              Patient data is stored on-device and only synced to your authorized backend
-              when connectivity is available.
+              Patient data is stored on-device and only synced to your authorized backend when
+              connectivity is available.
             </li>
-            <li>
-              You are responsible for complying with local health data privacy regulations.
-            </li>
+            <li>You are responsible for complying with local health data privacy regulations.</li>
           </ul>
         </div>
 
@@ -72,9 +70,9 @@ export function DisclaimerDialog() {
               disabled={!name.trim()}
             />
             <span className="text-xs leading-relaxed text-muted-foreground">
-              I understand and agree that Trij provides AI-assisted preliminary assessments
-              only. I will use clinical judgment for all patient care decisions. I have
-              read and understand the above notice.
+              I understand and agree that Trij provides AI-assisted preliminary assessments only. I
+              will use clinical judgment for all patient care decisions. I have read and understand
+              the above notice.
             </span>
           </label>
         </div>

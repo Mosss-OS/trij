@@ -88,47 +88,45 @@ function SettingsPage() {
           </div>
         </Section>
 
-         <Section title="AI engine">
-           <div className="space-y-1.5">
-             <Label>Inference engine</Label>
-             <Select
-               value={s.engineKind}
-               onValueChange={(v) => s.setEngineKind(v as EngineKind | "auto")}
-             >
-               <SelectTrigger>
-                 <SelectValue />
-               </SelectTrigger>
-               <SelectContent>
-                 {engineOptions.map((opt) => (
-                   <SelectItem key={opt.value} value={opt.value}>
-                     {opt.label}
-                   </SelectItem>
-                 ))}
-               </SelectContent>
-             </Select>
-             <p className="text-xs text-muted-foreground">
-               {engineOptions.find((o) => o.value === s.engineKind)?.desc}
-             </p>
-           </div>
-           
-           <div className="flex items-center justify-between">
-             <div>
-               <Label>Enable extended reasoning</Label>
-               <p className="text-xs text-muted-foreground">
-                 Slower but more accurate step-by-step thinking (Gemma 4 only)
-               </p>
-             </div>
-             <Switch checked={s.thinkingMode} onCheckedChange={s.setThinkingMode} />
-           </div>
+        <Section title="AI engine">
+          <div className="space-y-1.5">
+            <Label>Inference engine</Label>
+            <Select
+              value={s.engineKind}
+              onValueChange={(v) => s.setEngineKind(v as EngineKind | "auto")}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {engineOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {engineOptions.find((o) => o.value === s.engineKind)?.desc}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Enable extended reasoning</Label>
+              <p className="text-xs text-muted-foreground">
+                Slower but more accurate step-by-step thinking (Gemma 4 only)
+              </p>
+            </div>
+            <Switch checked={s.thinkingMode} onCheckedChange={s.setThinkingMode} />
+          </div>
 
           <WebGPUCheck engineKind={s.engineKind} ollamaUrl={s.ollamaUrl} />
 
           <div className="flex flex-wrap gap-4 rounded-2xl border bg-secondary/40 p-4 text-xs">
             <div className="flex items-center gap-2">
               <Rabbit className="h-3.5 w-3.5 text-primary" />
-              <span>
-                Ollama: {ollamaOk === null ? "..." : ollamaOk ? "Detected" : "Not found"}
-              </span>
+              <span>Ollama: {ollamaOk === null ? "..." : ollamaOk ? "Detected" : "Not found"}</span>
             </div>
             <div className="flex items-center gap-2">
               <FlaskConical className="h-3.5 w-3.5 text-primary" />
@@ -147,8 +145,8 @@ function SettingsPage() {
             <div>
               <p className="text-sm font-medium">All AI inference runs on this device.</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Patient images are never sent to a cloud AI service. Records sync to
-                your encrypted backend only when you have connectivity.
+                Patient images are never sent to a cloud AI service. Records sync to your encrypted
+                backend only when you have connectivity.
               </p>
             </div>
           </div>
@@ -177,7 +175,9 @@ function SettingsPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Minimum confidence for local care</Label>
-                <span className="font-mono text-sm font-semibold">{s.minConfidenceForLocalCare}%</span>
+                <span className="font-mono text-sm font-semibold">
+                  {s.minConfidenceForLocalCare}%
+                </span>
               </div>
               <Slider
                 min={0}
@@ -191,8 +191,8 @@ function SettingsPage() {
                 <span>100% — never refer</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                When AI confidence is below this threshold, the app will recommend
-                referral regardless of the model&apos;s assessment. Default: 70%.
+                When AI confidence is below this threshold, the app will recommend referral
+                regardless of the model&apos;s assessment. Default: 70%.
               </p>
             </div>
           </div>
@@ -209,7 +209,7 @@ function SettingsPage() {
                 error: gemma.error,
               },
               null,
-              2
+              2,
             )}
           </pre>
         </div>
@@ -217,9 +217,8 @@ function SettingsPage() {
         <Section title="About Trij">
           <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
             <p>
-              <strong>Trij</strong> is an AI-assisted preliminary triage tool for
-              community health workers. It is <strong>not</strong> a clinical
-              diagnostic device.
+              <strong>Trij</strong> is an AI-assisted preliminary triage tool for community health
+              workers. It is <strong>not</strong> a clinical diagnostic device.
             </p>
             <ul className="list-disc space-y-1 pl-5">
               <li>All assessments are preliminary and must be verified with clinical judgment.</li>
@@ -228,9 +227,7 @@ function SettingsPage() {
               <li>Patient data is stored on-device and synced to your encrypted backend.</li>
               <li>You are responsible for complying with local health data privacy regulations.</li>
             </ul>
-            <p className="text-xs">
-              Trij &mdash; Gemma 4 Good Hackathon 2026
-            </p>
+            <p className="text-xs">Trij &mdash; Gemma 4 Good Hackathon 2026</p>
           </div>
         </Section>
 
@@ -244,13 +241,7 @@ function SettingsPage() {
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-4 rounded-3xl border bg-card p-6">
       <h2 className="font-display text-base font-semibold">{title}</h2>

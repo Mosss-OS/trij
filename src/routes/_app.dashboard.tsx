@@ -80,7 +80,8 @@ function DashboardPage() {
                 </div>
               </div>
               <div className="relative mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
-                Start <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                Start{" "}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </div>
             </div>
           </Link>
@@ -125,9 +126,12 @@ function DashboardPage() {
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate font-medium">{a.patient?.identifier ?? "Unknown patient"}</p>
+                        <p className="truncate font-medium">
+                          {a.patient?.identifier ?? "Unknown patient"}
+                        </p>
                         <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                          {a.condition ?? "Pending"} · {formatDistanceToNow(new Date(a.createdAt), { addSuffix: true })}
+                          {a.condition ?? "Pending"} ·{" "}
+                          {formatDistanceToNow(new Date(a.createdAt), { addSuffix: true })}
                         </p>
                       </div>
                       {a.urgency && <UrgencyPill urgency={a.urgency} />}
@@ -143,15 +147,7 @@ function DashboardPage() {
   );
 }
 
-function QuickTile({
-  to,
-  icon: Icon,
-  label,
-}: {
-  to: string;
-  icon: typeof Camera;
-  label: string;
-}) {
+function QuickTile({ to, icon: Icon, label }: { to: string; icon: typeof Camera; label: string }) {
   return (
     <Link
       to={to as never}

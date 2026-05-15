@@ -76,9 +76,7 @@ test.describe("Color contrast", () => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    const results = await new AxeBuilder({ page })
-      .withRules(["color-contrast"])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withRules(["color-contrast"]).analyze();
 
     expect(results.violations.length).toBe(0);
   });

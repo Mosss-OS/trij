@@ -6,21 +6,21 @@ Build the complete Trij application: an offline-first progressive web app for co
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **Frontend** | Vite + React 19 + TypeScript |
-| **Styling** | Tailwind CSS v4 |
-| **State** | Zustand |
-| **Offline Storage** | IndexedDB (via Dexie.js) |
-| **Backend** | Supabase (Auth, Postgres, Storage, Edge Functions) |
-| **AI Runtime** | WebLLM (runs Gemma 4 E2B/E4B in-browser via WebGPU) |
-| **PWA** | vite-plugin-pwa (Service Worker + manifest) |
-| **Voice** | Web Speech API (SpeechRecognition + SpeechSynthesis) |
-| **Maps** | Leaflet (supervisor dashboard) |
-| **PDF** | jsPDF (referral slip generation) |
-| **Testing** | Vitest + Playwright |
-| **Lint** | Biome |
-| **Deploy** | Netlify (frontend) + Supabase (backend) |
+| Layer               | Technology                                           |
+| ------------------- | ---------------------------------------------------- |
+| **Frontend**        | Vite + React 19 + TypeScript                         |
+| **Styling**         | Tailwind CSS v4                                      |
+| **State**           | Zustand                                              |
+| **Offline Storage** | IndexedDB (via Dexie.js)                             |
+| **Backend**         | Supabase (Auth, Postgres, Storage, Edge Functions)   |
+| **AI Runtime**      | WebLLM (runs Gemma 4 E2B/E4B in-browser via WebGPU)  |
+| **PWA**             | vite-plugin-pwa (Service Worker + manifest)          |
+| **Voice**           | Web Speech API (SpeechRecognition + SpeechSynthesis) |
+| **Maps**            | Leaflet (supervisor dashboard)                       |
+| **PDF**             | jsPDF (referral slip generation)                     |
+| **Testing**         | Vitest + Playwright                                  |
+| **Lint**            | Biome                                                |
+| **Deploy**          | Netlify (frontend) + Supabase (backend)              |
 
 **IMPORTANT**: This project targets the **Gemma 4 Good Hackathon**. The model requirement is Gemma 4 — specifically the E2B or E4B edge variants for on-device inference. All AI inference MUST happen on the client device. No patient data should ever be sent to a cloud AI API. This is non-negotiable for the hackathon's privacy requirements.
 
@@ -29,6 +29,7 @@ Build the complete Trij application: an offline-first progressive web app for co
 ## Project Setup
 
 ### Initialize the project
+
 ```bash
 mkdir trij && cd trij
 npm create vite@latest . -- --template react-ts
@@ -36,19 +37,23 @@ npm install
 ```
 
 ### Core dependencies
+
 ```bash
 npm install zustand dexie @supabase/supabase-js @mlc-ai/web-llm
 npm install -D tailwindcss @tailwindcss/vite vite-plugin-pwa
 ```
 
 ### Optional but recommended
+
 ```bash
 npm install leaflet react-leaflet jspdf
 npm install -D @types/leaflet biome vitest @playwright/test
 ```
 
 ### Vite config
+
 Configure the Vite plugin for Tailwind, PWA, and WebLLM compatibility:
+
 - Enable `@tailwindcss/vite` plugin
 - Configure `vite-plugin-pwa` with:
   - `registerType: "autoUpdate"`
@@ -198,9 +203,7 @@ let engine: MLCEntry | null = null;
 
 const MODEL_ID = "gemma-4-E2B-it-q4f16_1-MLC"; // Replace with actual Gemma 4 E2B WebLLM ID
 
-export async function loadModel(
-  onProgress?: (progress: number) => void
-): Promise<MLCEngine> {
+export async function loadModel(onProgress?: (progress: number) => void): Promise<MLCEngine> {
   if (engine) return engine;
   engine = await CreateMLCEngine(MODEL_ID, {
     initProgressCallback: (report) => {
@@ -210,10 +213,7 @@ export async function loadModel(
   return engine;
 }
 
-export async function triageImage(
-  imageBase64: string,
-  language: string
-): Promise<TriageResult> {
+export async function triageImage(imageBase64: string, language: string): Promise<TriageResult> {
   if (!engine) throw new Error("Model not loaded");
 
   const systemPrompt = getTriageSystemPrompt(language);
@@ -240,7 +240,7 @@ export async function triageImage(
 
 export async function analyzeDocument(
   imageBase64: string,
-  language: string
+  language: string,
 ): Promise<DocumentResult> {
   if (!engine) throw new Error("Model not loaded");
   // Similar pattern with document-specific system prompt
@@ -320,8 +320,7 @@ export class VoiceAssistant {
 
   constructor(language: string) {
     if ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
-      const SpeechRecognition =
-        window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       this.recognition = new SpeechRecognition();
       this.recognition.lang = language;
       this.recognition.continuous = false;
@@ -333,8 +332,7 @@ export class VoiceAssistant {
   async listen(): Promise<string> {
     return new Promise((resolve, reject) => {
       if (!this.recognition) return reject("Speech recognition not available");
-      this.recognition.onresult = (e) =>
-        resolve(e.results[0][0].transcript);
+      this.recognition.onresult = (e) => resolve(e.results[0][0].transcript);
       this.recognition.onerror = () => reject("Recognition error");
       this.recognition.start();
     });
@@ -351,12 +349,14 @@ export class VoiceAssistant {
 ### Step 6: Build the Routes
 
 #### Login.tsx
+
 - PIN input (6-digit, stored locally via hash on first login)
 - "First time? Register with supervisor code" flow
 - Falls back to Supabase Auth when online
 - Language picker on login screen
 
 #### Dashboard.tsx
+
 - Date-stamped greeting in user's language
 - Quick action FAB: "New Triage" (camera icon)
 - Recent patients list (last 10 assessments, swipeable)
@@ -365,6 +365,7 @@ export class VoiceAssistant {
 - Bottom nav: Dashboard | Patients | Scan | Profile
 
 #### NewTriage.tsx
+
 - Step 1: Patient lookup (search by ID/name) or quick register
 - Step 2: Capture image (camera with guidelines overlay for wound photo framing)
 - Step 3: AI analyzes (show model loading progress on first use; spinner on subsequent)
@@ -378,6 +379,7 @@ export class VoiceAssistant {
   - "Save & finish"
 
 #### PatientDetail.tsx
+
 - Patient info header (age, sex, location, visit count)
 - Timeline view of all assessments (newest first)
 - Each assessment card: date, condition, urgency dot, confidence
@@ -385,6 +387,7 @@ export class VoiceAssistant {
 - "New assessment for this patient" button
 
 #### DocumentScan.tsx
+
 - Capture photo of document
 - Crop/rotate tools
 - AI extracts: lab values, diagnosis, prescription
@@ -393,12 +396,14 @@ export class VoiceAssistant {
 - Save to patient record
 
 #### ReferralView.tsx
+
 - List of referrals (filterable: pending/active/resolved)
 - Referral slip: patient info + assessment summary + QR code
 - Share via: WhatsApp, SMS, email (when online)
 - Status updates from supervisor (when synced)
 
 #### SupervisorDashboard.tsx
+
 - Leaflet map with CHW pins (green = synced recently, red = overdue)
 - Referral queue table
 - Analytics cards: assessments/week, top conditions, sync compliance
@@ -434,7 +439,7 @@ VitePWA({
       },
     ],
   },
-})
+});
 ```
 
 ### Step 8: System Prompts for Gemma 4
@@ -495,6 +500,7 @@ Gemma 4 E2B may not have a WebLLM package at the time of building. Implement a *
 3. **Fallback B**: If no local model possible at all, use Supabase Edge Function with Gemma 4 via Google AI Studio API — **but only as last resort**, and with explicit user consent about data leaving device
 
 Detection logic in `useGemma.ts`:
+
 ```typescript
 export async function getEngine(): Promise<InferenceEngine> {
   if (await supportsWebGPU()) {
@@ -511,12 +517,14 @@ export async function getEngine(): Promise<InferenceEngine> {
 ### Step 10: Submit to Hackathon
 
 Per hackathon rules, you need:
+
 1. **Working demo** — Deploy frontend to Netlify (`npm run build && npx netlify deploy --prod`)
 2. **Public GitHub repo** — Include this entire project with clear README
 3. **Technical writeup** — In `TECHNICAL_WRITEUP.md` (see template below)
 4. **Video demo** — 2-3 minute YouTube video showing: app install, offline triage flow, voice interaction, sync
 
 Create a `TECHNICAL_WRITEUP.md` with:
+
 - Problem statement (CHWs in remote areas lack triage support)
 - Solution overview (Trij uses Gemma 4 on-device)
 - Architecture diagram
@@ -530,14 +538,14 @@ Create a `TECHNICAL_WRITEUP.md` with:
 
 ## Key Design Decisions
 
-| Decision | Rationale |
-|---|---|
-| PWA over native app | No app store needed; instant updates; works on any smartphone |
-| WebLLM over API | Privacy; offline capability; zero inference cost |
-| Zustand over Redux | Minimal boilerplate; works with async Dexie well |
-| Dexie over raw IndexedDB | Clean API; indexing; versioning |
-| Supabase RLS | Health data HIPAA patterns; per-CHW data isolation |
-| Leaflet over Mapbox | Free tier; offline tile caching possible |
+| Decision                 | Rationale                                                     |
+| ------------------------ | ------------------------------------------------------------- |
+| PWA over native app      | No app store needed; instant updates; works on any smartphone |
+| WebLLM over API          | Privacy; offline capability; zero inference cost              |
+| Zustand over Redux       | Minimal boilerplate; works with async Dexie well              |
+| Dexie over raw IndexedDB | Clean API; indexing; versioning                               |
+| Supabase RLS             | Health data HIPAA patterns; per-CHW data isolation            |
+| Leaflet over Mapbox      | Free tier; offline tile caching possible                      |
 
 ---
 
@@ -590,4 +598,4 @@ npx supabase functions deploy sync-assessments
 
 ---
 
-*This prompt is the complete specification for building Trij. Use it with any AI coding agent or as a manual development guide. Deadline for the Gemma 4 Good Hackathon is May 18, 2026.*
+_This prompt is the complete specification for building Trij. Use it with any AI coding agent or as a manual development guide. Deadline for the Gemma 4 Good Hackathon is May 18, 2026._

@@ -5,7 +5,17 @@ import type { Patient } from "@/types/trij";
 
 const SEARCH_OPTIONS = {
   fields: ["identifier", "notes", "ageYears"],
-  storeFields: ["id", "chwUserId", "identifier", "ageYears", "sex", "notes", "createdAt", "updatedAt", "mergedInto"],
+  storeFields: [
+    "id",
+    "chwUserId",
+    "identifier",
+    "ageYears",
+    "sex",
+    "notes",
+    "createdAt",
+    "updatedAt",
+    "mergedInto",
+  ],
   searchOptions: {
     boost: { identifier: 3, notes: 1, ageYears: 1 },
     prefix: true,
@@ -34,7 +44,9 @@ export function usePatientSearch(query: string) {
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => setDebouncedQuery(query), 300);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [query]);
 
   useEffect(() => {
@@ -43,7 +55,9 @@ export function usePatientSearch(query: string) {
       setPatients(all);
       const idx = getSearchIndex();
       idx.removeAll();
-      idx.addAll(all.map((p) => ({ ...p, ageYears: String(p.ageYears ?? "") })) as unknown as Patient[]);
+      idx.addAll(
+        all.map((p) => ({ ...p, ageYears: String(p.ageYears ?? "") })) as unknown as Patient[],
+      );
       setIndexReady(true);
     };
     load();
@@ -52,10 +66,17 @@ export function usePatientSearch(query: string) {
   const results = useMemo(() => {
     if (!debouncedQuery.trim() || !indexReady) return patients;
     const idx = getSearchIndex();
-    const raw = idx.search(debouncedQuery.trim(), SEARCH_OPTIONS.searchOptions) as Array<{ id: string; score: number }>;
+    const raw = idx.search(debouncedQuery.trim(), SEARCH_OPTIONS.searchOptions) as Array<{
+      id: string;
+      score: number;
+    }>;
     const scored = new Map(raw.map((r) => [r.id, r.score]));
     return patients
-      .filter((p) => !p.mergedInto && (scored.has(p.id) || p.identifier.toLowerCase().includes(debouncedQuery.toLowerCase())))
+      .filter(
+        (p) =>
+          !p.mergedInto &&
+          (scored.has(p.id) || p.identifier.toLowerCase().includes(debouncedQuery.toLowerCase())),
+      )
       .sort((a, b) => {
         const sa = scored.get(a.id) ?? 0;
         const sb = scored.get(b.id) ?? 0;

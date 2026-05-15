@@ -10,9 +10,10 @@ function levenshtein(a: string, b: string): number {
   for (let j = 0; j <= n; j++) dp[0][j] = j;
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      dp[i][j] = a[i - 1] === b[j - 1]
-        ? dp[i - 1][j - 1]
-        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+      dp[i][j] =
+        a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
     }
   }
   return dp[m][n];
@@ -21,9 +22,15 @@ function levenshtein(a: string, b: string): number {
 function soundex(word: string): string {
   const upper = word.toUpperCase();
   const first = upper[0] ?? "";
-  const mapped = upper.slice(1).replace(/[AEIOUYHW]/g, "").replace(/[BFPV]/g, "1")
-    .replace(/[CGJKQSXZ]/g, "2").replace(/[DT]/g, "3").replace(/[L]/g, "4")
-    .replace(/[MN]/g, "5").replace(/[R]/g, "6");
+  const mapped = upper
+    .slice(1)
+    .replace(/[AEIOUYHW]/g, "")
+    .replace(/[BFPV]/g, "1")
+    .replace(/[CGJKQSXZ]/g, "2")
+    .replace(/[DT]/g, "3")
+    .replace(/[L]/g, "4")
+    .replace(/[MN]/g, "5")
+    .replace(/[R]/g, "6");
   return first + mapped.slice(0, 3).padEnd(3, "0");
 }
 
@@ -97,10 +104,7 @@ export function findPotentialDuplicates(patients: Patient[]): MatchScore[] {
   return matches.sort((a, b) => b.score - a.score);
 }
 
-export async function mergePatients(
-  keep: Patient,
-  remove: Patient,
-): Promise<Patient> {
+export async function mergePatients(keep: Patient, remove: Patient): Promise<Patient> {
   const db = getDB();
   const db2 = getDB();
 

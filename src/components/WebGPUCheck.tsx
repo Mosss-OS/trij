@@ -25,8 +25,7 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
 
   if (!compat) return null;
 
-  const showAlternatives =
-    !compat.supported && (engineKind === "auto" || engineKind === "webllm");
+  const showAlternatives = !compat.supported && (engineKind === "auto" || engineKind === "webllm");
 
   if (compact && compat.supported) return null;
 
@@ -35,15 +34,16 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
       <div className="flex items-start gap-2 rounded-2xl border border-urgency-yellow/30 bg-urgency-yellow/5 p-3 text-xs">
         <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-urgency-yellow" />
         <div className="text-muted-foreground">
-          <span className="font-medium text-foreground">WebGPU unavailable</span> on {compat.browser}.{" "}
-          {compat.reason?.split(".")[0]}.{" "}
+          <span className="font-medium text-foreground">WebGPU unavailable</span> on{" "}
+          {compat.browser}. {compat.reason?.split(".")[0]}.{" "}
           <a
             href={compat.upgradeUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-primary hover:underline"
           >
-            Get {compat.browser === "Unknown" ? "Chrome" : compat.browser} <ExternalLink className="h-3 w-3" />
+            Get {compat.browser === "Unknown" ? "Chrome" : compat.browser}{" "}
+            <ExternalLink className="h-3 w-3" />
           </a>
         </div>
       </div>
@@ -86,9 +86,7 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
               className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
             >
               <ExternalLink className="h-3 w-3" />
-              {compat.browser === "Unknown"
-                ? "Download Chrome"
-                : `Update ${compat.browser}`}
+              {compat.browser === "Unknown" ? "Download Chrome" : `Update ${compat.browser}`}
             </a>
           )}
         </div>
@@ -106,7 +104,9 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
                 ollamaOk === true ? "border-emerald-500/30" : ""
               }`}
             >
-              <Rabbit className={`h-4 w-4 ${ollamaOk === true ? "text-emerald-600" : "text-muted-foreground"}`} />
+              <Rabbit
+                className={`h-4 w-4 ${ollamaOk === true ? "text-emerald-600" : "text-muted-foreground"}`}
+              />
               <div className="min-w-0 flex-1">
                 <p className="font-medium">Ollama (local server)</p>
                 <p className="text-xs text-muted-foreground">
