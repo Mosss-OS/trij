@@ -144,7 +144,13 @@ function TriagePage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Age (years)</Label>
-                <Input value={age} onChange={(e) => setAge(e.target.value)} type="number" min={0} max={120} />
+                <Input
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  type="number"
+                  min={0}
+                  max={120}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>Sex</Label>
@@ -162,16 +168,18 @@ function TriagePage() {
               </div>
             </div>
             <label className="flex items-start gap-3 rounded-xl border bg-secondary/20 p-4">
-              <Checkbox
-                checked={consent}
-                onCheckedChange={(v) => setConsent(v === true)}
-              />
+              <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
               <span className="text-xs leading-relaxed text-muted-foreground">
-                The patient has been informed and consents to this AI-assisted
-                preliminary assessment.
+                The patient has been informed and consents to this AI-assisted preliminary
+                assessment.
               </span>
             </label>
-            <Button onClick={startPatient} disabled={!identifier.trim() || !consent} size="lg" className="w-full gap-2">
+            <Button
+              onClick={startPatient}
+              disabled={!identifier.trim() || !consent}
+              size="lg"
+              className="w-full gap-2"
+            >
               Continue <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -196,7 +204,11 @@ function TriagePage() {
         {step === "analyzing" && (
           <div className="mt-10 flex flex-col items-center gap-5 text-center">
             {image && (
-              <img src={image} alt="" className="h-40 w-40 rounded-2xl object-cover ring-4 ring-primary/20" />
+              <img
+                src={image}
+                alt=""
+                className="h-40 w-40 rounded-2xl object-cover ring-4 ring-primary/20"
+              />
             )}
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
             <div className="w-full max-w-sm space-y-2">
@@ -214,9 +226,17 @@ function TriagePage() {
             {image && (
               <img src={image} alt="" className="aspect-video w-full rounded-2xl object-cover" />
             )}
-            <AssessmentResult result={result} onSpeak={speak} minConfidenceForLocalCare={minConfidenceForLocalCare} />
+            <AssessmentResult
+              result={result}
+              onSpeak={speak}
+              minConfidenceForLocalCare={minConfidenceForLocalCare}
+            />
             <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 gap-2" onClick={() => speak(result.recommendation)}>
+              <Button
+                variant="outline"
+                className="flex-1 gap-2"
+                onClick={() => speak(result.recommendation)}
+              >
                 <Volume2 className="h-4 w-4" /> Read
               </Button>
               <Button onClick={save} className="flex-1 gap-2" size="lg">

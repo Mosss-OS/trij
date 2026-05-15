@@ -13,11 +13,15 @@ async function handleError(error: unknown) {
   try {
     const { logError } = await import("./error-logger");
     await logError(error);
-  } catch {}
+  } catch {
+    // error logger must never throw
+  }
 }
 
 if (typeof globalThis.addEventListener === "function") {
-  globalThis.addEventListener("error", (event) => handleError((event as ErrorEvent).error ?? event));
+  globalThis.addEventListener("error", (event) =>
+    handleError((event as ErrorEvent).error ?? event),
+  );
   globalThis.addEventListener("unhandledrejection", (event) =>
     handleError((event as PromiseRejectionEvent).reason),
   );

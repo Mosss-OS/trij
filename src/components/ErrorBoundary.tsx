@@ -3,13 +3,7 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, Download, Home } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
-type FallbackKind =
-  | "default"
-  | "camera"
-  | "engine"
-  | "database"
-  | "triage"
-  | "document";
+type FallbackKind = "default" | "camera" | "engine" | "database" | "triage" | "document";
 
 interface Props {
   children: ReactNode;
@@ -22,12 +16,15 @@ interface State {
   info: ErrorInfo | null;
 }
 
-const FALLBACK_CONTENT: Record<FallbackKind, {
-  title: string;
-  description: string;
-  action: string;
-  secondary?: { label: string; to: string };
-}> = {
+const FALLBACK_CONTENT: Record<
+  FallbackKind,
+  {
+    title: string;
+    description: string;
+    action: string;
+    secondary?: { label: string; to: string };
+  }
+> = {
   default: {
     title: "Something went wrong",
     description: "An unexpected error occurred. Please try again.",
@@ -35,25 +32,29 @@ const FALLBACK_CONTENT: Record<FallbackKind, {
   },
   camera: {
     title: "Camera unavailable",
-    description: "Camera access was denied or is not available on this device. You can upload a photo instead.",
+    description:
+      "Camera access was denied or is not available on this device. You can upload a photo instead.",
     action: "Try again",
     secondary: { label: "Upload photo", to: "/triage" },
   },
   engine: {
     title: "AI engine error",
-    description: "The AI engine failed to initialize. Try switching to Demo mode in Settings, or restart the app.",
+    description:
+      "The AI engine failed to initialize. Try switching to Demo mode in Settings, or restart the app.",
     action: "Retry",
     secondary: { label: "Open settings", to: "/settings" },
   },
   database: {
     title: "Database error",
-    description: "Your local database is not responding. Your data is safe — restart the app. If the issue persists, export your data.",
+    description:
+      "Your local database is not responding. Your data is safe — restart the app. If the issue persists, export your data.",
     action: "Retry",
     secondary: { label: "Go home", to: "/dashboard" },
   },
   triage: {
     title: "Triage interrupted",
-    description: "The assessment could not be completed. Your patient data has been saved. You can try again or use manual mode.",
+    description:
+      "The assessment could not be completed. Your patient data has been saved. You can try again or use manual mode.",
     action: "Try again",
     secondary: { label: "Go to patients", to: "/patients" },
   },
@@ -85,7 +86,13 @@ export class ErrorBoundary extends Component<Props, State> {
   handleDownloadData = () => {
     try {
       const blob = new Blob(
-        [JSON.stringify({ error: this.state.error?.message, stack: this.state.error?.stack }, null, 2)],
+        [
+          JSON.stringify(
+            { error: this.state.error?.message, stack: this.state.error?.stack },
+            null,
+            2,
+          ),
+        ],
         { type: "application/json" },
       );
       const url = URL.createObjectURL(blob);
@@ -94,7 +101,9 @@ export class ErrorBoundary extends Component<Props, State> {
       a.download = `trij-error-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch {}
+    } catch {
+      // download failure is non-critical
+    }
   };
 
   render() {
@@ -119,9 +128,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
           {content.secondary && (
             <Button variant="outline" size="sm" asChild>
-              <Link to={content.secondary.to as never}>
-                {content.secondary.label}
-              </Link>
+              <Link to={content.secondary.to as never}>{content.secondary.label}</Link>
             </Button>
           )}
 

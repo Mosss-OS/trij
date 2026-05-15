@@ -14,7 +14,10 @@ export function BottomNav() {
   const router = useRouter();
   const current = router.state.location.pathname;
   return (
-    <nav aria-label="Main navigation" className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur safe-area-bottom">
+    <nav
+      aria-label="Main navigation"
+      className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur safe-area-bottom"
+    >
       <div className="mx-auto grid max-w-2xl grid-cols-4">
         {items.map(({ to, label, icon: Icon, primary }) => {
           const active = current === to || current.startsWith(to + "/");
@@ -24,7 +27,7 @@ export function BottomNav() {
               to={to as never}
               className={cn(
                 "flex flex-col items-center gap-1 px-3 py-3 text-xs font-medium transition-colors",
-                active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground",
               )}
             >
               <span
@@ -32,7 +35,7 @@ export function BottomNav() {
                   "grid place-items-center rounded-2xl transition-all",
                   primary
                     ? "h-12 w-12 -translate-y-3 bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                    : "h-7 w-7"
+                    : "h-7 w-7",
                 )}
               >
                 <Icon className={primary ? "h-5 w-5" : "h-5 w-5"} />

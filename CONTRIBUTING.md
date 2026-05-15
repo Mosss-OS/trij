@@ -54,13 +54,14 @@ src/
 
 Three engine modes defined in `src/lib/gemma.ts`:
 
-| Mode | File | Use case |
-|---|---|---|
+| Mode       | File                        | Use case                      |
+| ---------- | --------------------------- | ----------------------------- |
 | **WebLLM** | `gemma.ts` → `WebLLMEngine` | Production on-device (WebGPU) |
-| **Ollama** | `gemma.ts` → `OllamaEngine` | Development / laptop demo |
-| **Demo** | `gemma.ts` → `DemoEngine` | Testing UI without a model |
+| **Ollama** | `gemma.ts` → `OllamaEngine` | Development / laptop demo     |
+| **Demo**   | `gemma.ts` → `DemoEngine`   | Testing UI without a model    |
 
 When adding a new engine feature:
+
 1. Add to the interface in `src/types/trij.ts`
 2. Implement in each engine class
 3. Add tests in the corresponding test file
@@ -126,12 +127,12 @@ docs: update SRS with sync protocol
 
 Copy `.env.example` to `.env` and configure:
 
-| Variable | Required | Description |
-|---|---|---|
-| `VITE_SUPABASE_URL` | Yes | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anon/public key |
-| `VITE_OLLAMA_URL` | No | Default Ollama URL (`http://localhost:11434`) |
-| `VITE_OLLAMA_MODEL` | No | Default Ollama model (`gemma4`) |
+| Variable                 | Required | Description                                   |
+| ------------------------ | -------- | --------------------------------------------- |
+| `VITE_SUPABASE_URL`      | Yes      | Supabase project URL                          |
+| `VITE_SUPABASE_ANON_KEY` | Yes      | Supabase anon/public key                      |
+| `VITE_OLLAMA_URL`        | No       | Default Ollama URL (`http://localhost:11434`) |
+| `VITE_OLLAMA_MODEL`      | No       | Default Ollama model (`gemma4`)               |
 
 ## Security notes
 

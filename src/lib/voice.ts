@@ -29,8 +29,7 @@ export class VoiceAssistant {
   listen(): Promise<string> {
     return new Promise((resolve, reject) => {
       if (!this.recognition) return reject(new Error("Speech recognition unavailable"));
-      this.recognition.onresult = (e: any) =>
-        resolve(e.results[0][0].transcript as string);
+      this.recognition.onresult = (e: any) => resolve(e.results[0][0].transcript as string);
       this.recognition.onerror = (e: any) => reject(new Error(e.error || "Recognition error"));
       try {
         this.recognition.start();

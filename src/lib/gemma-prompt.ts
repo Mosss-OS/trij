@@ -19,7 +19,12 @@ Use the document_analysis function to return your findings.
 Respond in ${language}.`;
 }
 
-export function getFollowUpPrompt(language: string, condition: string, history: string[], thinkingMode: boolean = false): string {
+export function getFollowUpPrompt(
+  language: string,
+  condition: string,
+  history: string[],
+  thinkingMode: boolean = false,
+): string {
   const thinkingPrefix = thinkingMode ? "<|think|>" : "";
   return `${thinkingPrefix}You are Trij, helping a CHW gather more clinical detail about a suspected "${condition}".
 Already asked: ${history.join(" | ") || "(none)"}.

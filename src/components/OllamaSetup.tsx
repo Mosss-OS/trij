@@ -1,10 +1,24 @@
 import { useEffect, useState, useCallback } from "react";
-import { detectOllama, detectOllamaModel, listOllamaModels, clearOllamaCache, type OllamaModelInfo } from "@/lib/gemma";
+import {
+  detectOllama,
+  detectOllamaModel,
+  listOllamaModels,
+  clearOllamaCache,
+  type OllamaModelInfo,
+} from "@/lib/gemma";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Rabbit, ExternalLink, CheckCircle2, AlertTriangle, Loader2, RefreshCw, Terminal } from "lucide-react";
+import {
+  Rabbit,
+  ExternalLink,
+  CheckCircle2,
+  AlertTriangle,
+  Loader2,
+  RefreshCw,
+  Terminal,
+} from "lucide-react";
 
 export function OllamaSetup() {
   const s = useSettingsStore();
@@ -86,9 +100,7 @@ export function OllamaSetup() {
         </Button>
       </div>
 
-      {error && (
-        <p className="text-xs text-destructive">{error}</p>
-      )}
+      {error && <p className="text-xs text-destructive">{error}</p>}
 
       {ollamaOk === false && !testing && (
         <div className="rounded-2xl border border-urgency-yellow/30 bg-urgency-yellow/5 p-4">
@@ -169,12 +181,12 @@ export function OllamaSetup() {
                   {showPullGuide && (
                     <div className="mt-3 rounded-xl bg-muted p-3 font-mono text-xs">
                       <p className="text-muted-foreground"># In your terminal:</p>
-                      <p className="mt-1">
-                        ollama pull {s.ollamaModel || "gemma4"}
-                      </p>
+                      <p className="mt-1">ollama pull {s.ollamaModel || "gemma4"}</p>
                       <p className="mt-2 text-muted-foreground"># Verify it is downloaded:</p>
                       <p className="mt-1">ollama list</p>
-                      <p className="mt-2 text-muted-foreground"># Then restart this app or test the connection above.</p>
+                      <p className="mt-2 text-muted-foreground">
+                        # Then restart this app or test the connection above.
+                      </p>
                     </div>
                   )}
                 </div>

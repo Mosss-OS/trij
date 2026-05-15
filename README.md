@@ -40,15 +40,15 @@ No internet needed. No patient data leaves the device.
 
 ## Tech stack
 
-| Layer | Technology |
-|---|---|
+| Layer        | Technology                                    |
+| ------------ | --------------------------------------------- |
 | **Frontend** | Vite + TanStack Start + React 19 + TypeScript |
-| **AI** | WebLLM (WebGPU) + Ollama bridge + Demo mode |
-| **Styling** | Tailwind CSS v4 + shadcn/ui |
-| **Offline** | Dexie.js (IndexedDB) + background sync |
-| **Backend** | Supabase (Auth, Postgres, Storage, RLS) |
-| **Voice** | Web Speech API (7 languages) |
-| **PWA** | vite-plugin-pwa (installable on Android/iOS) |
+| **AI**       | WebLLM (WebGPU) + Ollama bridge + Demo mode   |
+| **Styling**  | Tailwind CSS v4 + shadcn/ui                   |
+| **Offline**  | Dexie.js (IndexedDB) + background sync        |
+| **Backend**  | Supabase (Auth, Postgres, Storage, RLS)       |
+| **Voice**    | Web Speech API (7 languages)                  |
+| **PWA**      | vite-plugin-pwa (installable on Android/iOS)  |
 
 ---
 
@@ -81,13 +81,14 @@ npx supabase db push
 
 ### 3. Set up Gemma 4 (choose one)
 
-| Option | Setup | Notes |
-|---|---|---|
-| **Demo mode** | Nothing to do | App works immediately with mock data |
-| **Ollama** | `ollama pull gemma4` | Best real-model experience on laptop |
-| **WebLLM** | Requires Chrome + WebGPU | Loads ~1.5GB model on first triage |
+| Option        | Setup                    | Notes                                |
+| ------------- | ------------------------ | ------------------------------------ |
+| **Demo mode** | Nothing to do            | App works immediately with mock data |
+| **Ollama**    | `ollama pull gemma4`     | Best real-model experience on laptop |
+| **WebLLM**    | Requires Chrome + WebGPU | Loads ~1.5GB model on first triage   |
 
 For Ollama:
+
 ```bash
 ollama pull gemma4
 # Or download from Kaggle: scripts/download-gemma4.sh
@@ -165,4 +166,4 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 ---
 
-*Built with ❤️ for the Gemma 4 Good Hackathon.*
+_Built with ❤️ for the Gemma 4 Good Hackathon._

@@ -133,8 +133,8 @@ function PatientsList() {
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {p.ageYears ? `${p.ageYears}y` : "\u2014"} · {p.sex ?? "\u2014"} ·
-                        added {formatDistanceToNow(new Date(p.createdAt), { addSuffix: true })}
+                        {p.ageYears ? `${p.ageYears}y` : "\u2014"} · {p.sex ?? "\u2014"} · added{" "}
+                        {formatDistanceToNow(new Date(p.createdAt), { addSuffix: true })}
                       </p>
                     </div>
                     {match && (

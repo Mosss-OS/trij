@@ -30,7 +30,7 @@ async function pbkdf2Hash(pin: string, salt: Uint8Array): Promise<string> {
   const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(pin), "PBKDF2", false, [
     "deriveBits",
   ]);
-    const bits = await crypto.subtle.deriveBits(
+  const bits = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
       salt: salt as BufferSource,

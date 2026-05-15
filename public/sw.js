@@ -15,9 +15,9 @@ self.addEventListener("activate", function (event) {
           })
           .map(function (k) {
             return caches.delete(k);
-          })
+          }),
       );
-    })
+    }),
   );
   self.clients.claim();
 });

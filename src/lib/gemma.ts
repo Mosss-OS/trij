@@ -182,7 +182,9 @@ export async function listOllamaModels(url = "http://localhost:11434"): Promise<
   try {
     const res = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return [];
-    const data = await res.json() as { models?: Array<{ name: string; size?: number; digest: string }> };
+    const data = (await res.json()) as {
+      models?: Array<{ name: string; size?: number; digest: string }>;
+    };
     return (data.models ?? []).map((m) => ({
       name: m.name,
       size: m.size ? formatBytes(m.size) : "unknown",
@@ -193,7 +195,10 @@ export async function listOllamaModels(url = "http://localhost:11434"): Promise<
   }
 }
 
-export async function detectOllamaModel(model: string, url = "http://localhost:11434"): Promise<boolean> {
+export async function detectOllamaModel(
+  model: string,
+  url = "http://localhost:11434",
+): Promise<boolean> {
   const models = await listOllamaModels(url);
   return models.some((m) => m.name === model || m.name.startsWith(model + ":"));
 }
@@ -452,7 +457,7 @@ export async function triageImage(
   const e = await loadWebLLM();
   const settings = useSettingsStore.getState();
   const temperature = settings.thinkingMode ? 0.7 : 0.1;
-  
+
   const reply = await e.chat.completions.create({
     messages: [
       { role: "system", content: getTriageSystemPrompt(language, settings.thinkingMode) },
@@ -522,7 +527,7 @@ export async function analyzeDocument(
   const e = await loadWebLLM();
   const settings = useSettingsStore.getState();
   const temperature = settings.thinkingMode ? 0.7 : 0.1;
-  
+
   const reply = await e.chat.completions.create({
     messages: [
       { role: "system", content: getDocumentSystemPrompt(language, settings.thinkingMode) },
@@ -590,7 +595,7 @@ export async function nextFollowUp(
   const e = await loadWebLLM();
   const settings = useSettingsStore.getState();
   const temperature = settings.thinkingMode ? 0.7 : 0.4;
-  
+
   const reply = await e.chat.completions.create({
     messages: [
       { role: "system", content: prompt },

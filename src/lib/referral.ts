@@ -68,12 +68,9 @@ export function generateReferralPdf(patient: Patient, a: Assessment) {
   y += 14;
   doc.setFontSize(8);
   doc.setTextColor(120);
-  doc.text(
-    "Generated on-device by Trij. AI-assisted; not a clinical diagnosis.",
-    W / 2,
-    y,
-    { align: "center" }
-  );
+  doc.text("Generated on-device by Trij. AI-assisted; not a clinical diagnosis.", W / 2, y, {
+    align: "center",
+  });
 
   doc.save(`referral-${patient.identifier}-${Date.now()}.pdf`);
 }
