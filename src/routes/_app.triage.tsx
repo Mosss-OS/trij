@@ -111,7 +111,7 @@ function TriagePage() {
     };
     await queueAssessment(a);
     toast.success("Saved offline. Will sync when online.");
-    navigate({ to: "/_app/patients/$patientId", params: { patientId: patient.id } });
+    navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
   };
 
   const speak = (text: string) => {

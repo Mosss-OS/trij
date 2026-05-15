@@ -110,7 +110,7 @@ function PatientsList() {
               return (
                 <li key={p.id}>
                   <Link
-                    to="/_app/patients/$patientId"
+                    to="/patients/$patientId"
                     params={{ patientId: p.id }}
                     className="flex items-center gap-3 rounded-2xl border bg-card p-4 transition-colors hover:bg-accent/30"
                   >
