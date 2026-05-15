@@ -14,6 +14,7 @@ interface SettingsState {
   disclaimerAcceptedAt: string | null;
   chwName: string;
   minConfidenceForLocalCare: number;
+  thinkingMode: boolean;
   setLanguage: (l: string) => void;
   setModelId: (id: string) => void;
   setVoiceEnabled: (b: boolean) => void;
@@ -24,13 +25,14 @@ interface SettingsState {
   acceptDisclaimer: (chwName: string) => void;
   setChwName: (name: string) => void;
   setMinConfidenceForLocalCare: (v: number) => void;
+  setThinkingMode: (enabled: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       language: "en-US",
-      modelId: "gemma-2-2b-it-q4f16_1-MLC",
+      modelId: "gemma-4-E2B-it-q4f16_1-MLC",
       voiceEnabled: true,
       cloudFallbackConsent: false,
       engineKind: "auto",
@@ -40,6 +42,7 @@ export const useSettingsStore = create<SettingsState>()(
       disclaimerAcceptedAt: null,
       chwName: "",
       minConfidenceForLocalCare: 70,
+      thinkingMode: false,
       setLanguage: (language) => set({ language }),
       setModelId: (modelId) => set({ modelId }),
       setVoiceEnabled: (voiceEnabled) => set({ voiceEnabled }),
@@ -55,6 +58,7 @@ export const useSettingsStore = create<SettingsState>()(
         }),
       setChwName: (chwName) => set({ chwName }),
       setMinConfidenceForLocalCare: (minConfidenceForLocalCare) => set({ minConfidenceForLocalCare }),
+      setThinkingMode: (enabled: boolean) => set({ thinkingMode: enabled }),
     }),
     {
       name: "trij-settings",
