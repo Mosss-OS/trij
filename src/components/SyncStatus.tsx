@@ -17,7 +17,7 @@ export function SyncStatus({ className }: { className?: string }) {
   const [syncing, setSyncing] = useState(false);
   const [summary, setSummary] = useState<SyncSummary | null>(null);
   const [expanded, setExpanded] = useState(false);
-  const summaryTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const summaryTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let alive = true;
