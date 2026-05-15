@@ -28,7 +28,7 @@ function getSearchIndex(): MiniSearch<Patient> {
 export function usePatientSearch(query: string) {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [indexReady, setIndexReady] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [debouncedQuery, setDebouncedQuery] = useState(query);
 
   useEffect(() => {
