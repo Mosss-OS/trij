@@ -11,6 +11,7 @@ interface RemoteAssessment {
   id: string;
   condition: string | null;
   urgency: "green" | "yellow" | "red" | null;
+  referral_status: string | null;
   created_at: string;
   patients: { identifier: string } | null;
 }
@@ -34,7 +35,7 @@ function Supervisor() {
     (async () => {
       const { data } = await supabase
         .from("assessments")
-        .select("id, condition, urgency, created_at, patients(identifier)")
+        .select("id, condition, urgency, referral_status, created_at, patients(identifier)")
         .order("created_at", { ascending: false })
         .limit(50);
       if (!alive) return;
@@ -82,7 +83,7 @@ function Supervisor() {
             <ul className="mt-3 divide-y">
               {items.slice(0, 20).map((a) => (
                 <li key={a.id} className="flex items-center justify-between gap-3 py-3">
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">
                       {a.patients?.identifier ?? "—"} · {a.condition ?? "Pending"}
                     </p>
@@ -90,7 +91,14 @@ function Supervisor() {
                       {format(new Date(a.created_at), "MMM d, p")}
                     </p>
                   </div>
-                  {a.urgency && <UrgencyPill urgency={a.urgency} />}
+                  <div className="flex items-center gap-2">
+                    {a.referral_status && a.referral_status !== "none" && (
+                      <span className="inline-flex items-center rounded-full border bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                        {a.referral_status}
+                      </span>
+                    )}
+                    {a.urgency && <UrgencyPill urgency={a.urgency} />}
+                  </div>
                 </li>
               ))}
             </ul>

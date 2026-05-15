@@ -5,14 +5,46 @@ import { getDB } from "@/lib/db";
 import type { Patient, Assessment } from "@/types/trij";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
-import { Camera, FileDown, UserRound } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Camera, FileDown, UserRound, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { generateReferralPdf } from "@/lib/referral";
+import { updateReferralStatus } from "@/lib/sync";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/patients/$patientId")({
   head: () => ({ meta: [{ title: "Patient — Trij" }] }),
   component: PatientDetail,
 });
+
+const REFERRAL_STATUS_LABELS: Record<string, string> = {
+  pending: "Pending",
+  active: "In transit",
+  resolved: "Resolved",
+};
+
+const REFERRAL_STATUS_COLORS: Record<string, string> = {
+  pending: "bg-urgency-yellow-bg text-urgency-yellow border-urgency-yellow/30",
+  active: "bg-blue-50 text-blue-700 border-blue-200",
+  resolved: "bg-green-50 text-green-700 border-green-200",
+};
+
+function ReferralStatusBadge({ status }: { status: string }) {
+  if (status === "none") return null;
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${REFERRAL_STATUS_COLORS[status] || ""}`}
+    >
+      {REFERRAL_STATUS_LABELS[status] || status}
+    </span>
+  );
+}
 
 function PatientDetail() {
   const { patientId } = Route.useParams();
@@ -108,14 +140,34 @@ function PatientDetail() {
                   />
                 )}
                 {a.referralAdvised && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-3 gap-2"
-                    onClick={() => generateReferralPdf(patient, a)}
-                  >
-                    <FileDown className="h-4 w-4" /> Referral slip
-                  </Button>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <ReferralStatusBadge status={a.referralStatus} />
+                    <Select
+                      value={a.referralStatus}
+                      onValueChange={(v) => {
+                        const s = v as "none" | "pending" | "active" | "resolved";
+                        updateReferralStatus(a.id, s);
+                        toast.success(`Referral marked as ${s}`);
+                      }}
+                    >
+                      <SelectTrigger className="h-7 w-28 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="active">In transit</SelectItem>
+                        <SelectItem value="resolved">Resolved</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1 text-xs"
+                      onClick={() => generateReferralPdf(patient, a)}
+                    >
+                      <FileDown className="h-3.5 w-3.5" /> PDF
+                    </Button>
+                  </div>
                 )}
               </li>
             ))}
