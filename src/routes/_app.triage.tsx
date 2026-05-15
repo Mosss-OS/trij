@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CameraCapture } from "@/components/CameraCapture";
@@ -9,8 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, ScanLine, ChevronRight, Save, Volume2 } from "lucide-react";
-import { triageImage, detectEngine, isLoaded, loadEngine } from "@/lib/gemma";
+import {
+  Loader2,
+  ScanLine,
+  ChevronRight,
+  Save,
+  Volume2,
+  Mic,
+  MicOff,
+  MessageSquare,
+} from "lucide-react";
+import { triageImage, detectEngine, isLoaded, loadEngine, nextFollowUp } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { TriageResult, Patient, Assessment } from "@/types/trij";
 import { getDB } from "@/lib/db";
@@ -19,6 +28,11 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { VoiceAssistant } from "@/lib/voice";
 import { toast } from "sonner";
+
+interface QAPair {
+  question: string;
+  answer: string;
+}
 
 export const Route = createFileRoute("/_app/triage")({
   head: () => ({ meta: [{ title: "New triage — Trij" }] }),
@@ -29,7 +43,7 @@ export const Route = createFileRoute("/_app/triage")({
   ),
 });
 
-type Step = "patient" | "capture" | "analyzing" | "result";
+type Step = "patient" | "capture" | "analyzing" | "result" | "voice";
 
 function TriagePage() {
   const user = useSessionStore((s) => s.user);
@@ -37,6 +51,7 @@ function TriagePage() {
   const engineKind = useSettingsStore((s) => s.engineKind);
   const ollamaUrl = useSettingsStore((s) => s.ollamaUrl);
   const minConfidenceForLocalCare = useSettingsStore((s) => s.minConfidenceForLocalCare);
+  const voiceEnabled = useSettingsStore((s) => s.voiceEnabled);
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("patient");
   const [patient, setPatient] = useState<Patient | null>(null);
@@ -48,6 +63,19 @@ function TriagePage() {
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
   const [result, setResult] = useState<TriageResult | null>(null);
+  const [voiceHistory, setVoiceHistory] = useState<QAPair[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const [typedAnswer, setTypedAnswer] = useState("");
+  const voiceRef = useRef<VoiceAssistant | null>(null);
+  const kindRef = useRef<string>("demo");
+
+  useEffect(() => {
+    if (!voiceRef.current) {
+      voiceRef.current = new VoiceAssistant(language);
+    }
+    voiceRef.current.setLanguage(language);
+  }, [language]);
 
   const startPatient = async () => {
     if (!user || !identifier.trim()) return;
@@ -70,6 +98,7 @@ function TriagePage() {
     setStep("analyzing");
     try {
       const kind = engineKind === "auto" ? await detectEngine() : engineKind;
+      kindRef.current = kind;
 
       if (kind === "webllm" && !isLoaded(kind)) {
         await loadEngine(kind, (r) => {
@@ -106,12 +135,84 @@ function TriagePage() {
       referralStatus: result.referral_advised ? "pending" : "none",
       patientConsent: consent,
       consentTimestamp: new Date().toISOString(),
+      voiceLog:
+        voiceHistory.length > 0
+          ? voiceHistory.map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`).join("\n")
+          : undefined,
       language,
       createdAt: new Date().toISOString(),
     };
     await queueAssessment(a);
     toast.success("Saved offline. Will sync when online.");
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
+  };
+
+  const startVoiceAssessment = async () => {
+    if (!result?.follow_up_questions?.length) {
+      toast.info("No follow-up questions available.");
+      return;
+    }
+    setVoiceHistory([]);
+    setStep("voice");
+    setTimeout(() => askNextQuestion(0, []), 300);
+  };
+
+  const askNextQuestion = async (index: number, history: QAPair[]) => {
+    if (!result) return;
+    const q =
+      index < result.follow_up_questions.length
+        ? result.follow_up_questions[index]
+        : await nextFollowUp(
+            language,
+            result.condition,
+            history.map((h) => `${h.question} ${h.answer}`),
+            kindRef.current as "webllm" | "ollama" | "demo",
+            ollamaUrl,
+          );
+    if (!q) {
+      toast.success("Voice assessment complete.");
+      setStep("result");
+      return;
+    }
+    setCurrentQuestion(q);
+    const v = voiceRef.current;
+    if (v && voiceEnabled) {
+      v.speak(q);
+    }
+  };
+
+  const handleVoiceAnswer = async (answer: string) => {
+    if (!answer.trim()) return;
+    const updated = [...voiceHistory, { question: currentQuestion, answer: answer.trim() }];
+    setVoiceHistory(updated);
+    setTypedAnswer("");
+    if (updated.length >= 5) {
+      toast.success("Voice assessment complete.");
+      setStep("result");
+      return;
+    }
+    setVoiceBusy(true);
+    await askNextQuestion(updated.length, updated);
+    setVoiceBusy(false);
+  };
+
+  const recordVoiceAnswer = async () => {
+    const v = voiceRef.current;
+    if (!v) {
+      toast.error("Voice recognition not available. Type your answer instead.");
+      return;
+    }
+    setVoiceBusy(true);
+    try {
+      const transcript = await v.listen();
+      setVoiceBusy(false);
+      if (transcript) {
+        await handleVoiceAnswer(transcript);
+      }
+    } catch {
+      setVoiceBusy(false);
+      toast.error("Could not recognize speech. Type your answer instead.");
+    }
   };
 
   const speak = (text: string) => {
@@ -231,7 +332,7 @@ function TriagePage() {
               onSpeak={speak}
               minConfidenceForLocalCare={minConfidenceForLocalCare}
             />
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Button
                 variant="outline"
                 className="flex-1 gap-2"
@@ -239,9 +340,87 @@ function TriagePage() {
               >
                 <Volume2 className="h-4 w-4" /> Read
               </Button>
+              <Button variant="outline" className="flex-1 gap-2" onClick={startVoiceAssessment}>
+                <MessageSquare className="h-4 w-4" /> Voice follow-up
+              </Button>
               <Button onClick={save} className="flex-1 gap-2" size="lg">
                 <Save className="h-4 w-4" /> Save
               </Button>
+            </div>
+          </div>
+        )}
+
+        {step === "voice" && (
+          <div className="mt-6 space-y-5">
+            <div className="rounded-3xl border bg-card p-6">
+              <h3 className="font-display text-base font-semibold">Voice follow-up</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Answer the questions to provide more detail for the assessment.
+              </p>
+
+              {voiceHistory.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {voiceHistory.map((qa, i) => (
+                    <div key={i} className="rounded-xl bg-secondary/30 p-3 text-sm">
+                      <p className="font-medium">
+                        <Volume2 className="mr-1 inline h-3 w-3 text-primary" />
+                        {qa.question}
+                      </p>
+                      <p className="mt-1 text-muted-foreground">→ {qa.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-4 rounded-xl border bg-secondary/20 p-4">
+                <p className="text-sm font-medium">
+                  <Volume2 className="mr-1 inline h-4 w-4 text-primary" />
+                  {currentQuestion || "Preparing..."}
+                </p>
+              </div>
+
+              <div className="mt-4 flex gap-2">
+                <Input
+                  value={typedAnswer}
+                  onChange={(e) => setTypedAnswer(e.target.value)}
+                  placeholder="Type your answer..."
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && typedAnswer.trim()) {
+                      handleVoiceAnswer(typedAnswer);
+                    }
+                  }}
+                  disabled={voiceBusy}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={recordVoiceAnswer}
+                  disabled={voiceBusy}
+                  title="Speak your answer"
+                >
+                  {voiceBusy ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
+                <Button
+                  onClick={() => handleVoiceAnswer(typedAnswer)}
+                  disabled={!typedAnswer.trim() || voiceBusy}
+                >
+                  Send
+                </Button>
+              </div>
+
+              <div className="mt-4 flex justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {voiceHistory.length} of 5 questions answered
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => setStep("result")}
+                >
+                  Skip & save
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -251,7 +430,7 @@ function TriagePage() {
 }
 
 function Stepper({ step }: { step: Step }) {
-  const stages: Step[] = ["patient", "capture", "analyzing", "result"];
+  const stages: Step[] = ["patient", "capture", "analyzing", "result", "voice"];
   const idx = stages.indexOf(step);
   return (
     <div className="flex items-center gap-1.5">
