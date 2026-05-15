@@ -65,7 +65,7 @@ function PatientDetail() {
               </p>
             </div>
           </div>
-          <Link to="/_app/triage" className="mt-4 block">
+          <Link to="/triage" className="mt-4 block">
             <Button className="w-full gap-2">
               <Camera className="h-4 w-4" /> New assessment
             </Button>

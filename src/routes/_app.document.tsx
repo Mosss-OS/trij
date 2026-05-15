@@ -55,7 +55,7 @@ function DocumentScan() {
         {step === "capture" && (
           <div className="space-y-4">
             <WebGPUCheck engineKind={engineKind} ollamaUrl={ollamaUrl} compact />
-            <CameraCapture onCapture={onCapture} onCancel={() => navigate({ to: "/_app/dashboard" })} />
+            <CameraCapture onCapture={onCapture} onCancel={() => navigate({ to: "/dashboard" })} />
           </div>
         )}
         {step === "analyzing" && (

@@ -62,7 +62,7 @@ function DashboardPage() {
         </section>
 
         <section className="mt-7">
-          <Link to="/_app/triage" className="group block">
+          <Link to="/triage" className="group block">
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary-glow p-6 text-primary-foreground shadow-lg shadow-primary/20">
               <div className="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
               <div className="relative flex items-start justify-between">
@@ -87,9 +87,9 @@ function DashboardPage() {
         </section>
 
         <section className="mt-5 grid grid-cols-3 gap-3">
-          <QuickTile to="/_app/document" icon={FileText} label="Scan doc" />
-          <QuickTile to="/_app/patients" icon={Stethoscope} label="Patients" />
-          <QuickTile to="/_app/supervisor" icon={MapIcon} label="Map" />
+          <QuickTile to="/document" icon={FileText} label="Scan doc" />
+          <QuickTile to="/patients" icon={Stethoscope} label="Patients" />
+          <QuickTile to="/supervisor" icon={MapIcon} label="Map" />
         </section>
 
         <section className="mt-8">
@@ -104,7 +104,7 @@ function DashboardPage() {
         <section className="mt-8">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-lg font-semibold">Recent triage</h2>
-            <Link to="/_app/patients" className="text-xs font-medium text-primary">
+            <Link to="/patients" className="text-xs font-medium text-primary">
               View all
             </Link>
           </div>
@@ -119,7 +119,7 @@ function DashboardPage() {
               {recent.map((a) => (
                 <li key={a.id}>
                   <Link
-                    to="/_app/patients/$patientId"
+                    to="/patients/$patientId"
                     params={{ patientId: a.patientId }}
                     className="block rounded-2xl border bg-card p-4 transition-colors hover:bg-accent/30"
                   >
