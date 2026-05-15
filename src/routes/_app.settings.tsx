@@ -88,28 +88,38 @@ function SettingsPage() {
           </div>
         </Section>
 
-        <Section title="AI engine">
-          <div className="space-y-1.5">
-            <Label>Inference engine</Label>
-            <Select
-              value={s.engineKind}
-              onValueChange={(v) => s.setEngineKind(v as EngineKind | "auto")}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {engineOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              {engineOptions.find((o) => o.value === s.engineKind)?.desc}
-            </p>
-          </div>
+         <Section title="AI engine">
+           <div className="space-y-1.5">
+             <Label>Inference engine</Label>
+             <Select
+               value={s.engineKind}
+               onValueChange={(v) => s.setEngineKind(v as EngineKind | "auto")}
+             >
+               <SelectTrigger>
+                 <SelectValue />
+               </SelectTrigger>
+               <SelectContent>
+                 {engineOptions.map((opt) => (
+                   <SelectItem key={opt.value} value={opt.value}>
+                     {opt.label}
+                   </SelectItem>
+                 ))}
+               </SelectContent>
+             </Select>
+             <p className="text-xs text-muted-foreground">
+               {engineOptions.find((o) => o.value === s.engineKind)?.desc}
+             </p>
+           </div>
+           
+           <div className="flex items-center justify-between">
+             <div>
+               <Label>Enable extended reasoning</Label>
+               <p className="text-xs text-muted-foreground">
+                 Slower but more accurate step-by-step thinking (Gemma 4 only)
+               </p>
+             </div>
+             <Switch checked={s.thinkingMode} onCheckedChange={s.setThinkingMode} />
+           </div>
 
           <WebGPUCheck engineKind={s.engineKind} ollamaUrl={s.ollamaUrl} />
 

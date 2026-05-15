@@ -196,7 +196,7 @@ import { CreateMLCEngine, MLCEngine } from "@mlc-ai/web-llm";
 
 let engine: MLCEntry | null = null;
 
-const MODEL_ID = "gemma-2-2b-it-q4f16_1-MLC"; // Replace with actual Gemma 4 E2B WebLLM ID
+const MODEL_ID = "gemma-4-E2B-it-q4f16_1-MLC"; // Replace with actual Gemma 4 E2B WebLLM ID
 
 export async function loadModel(
   onProgress?: (progress: number) => void
