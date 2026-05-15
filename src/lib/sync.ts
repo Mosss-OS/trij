@@ -41,6 +41,25 @@ export async function queueAssessment(a: Assessment) {
   registerBackgroundSync().catch(() => {});
 }
 
+export async function updateReferralStatus(
+  assessmentId: string,
+  status: "none" | "pending" | "active" | "resolved",
+): Promise<void> {
+  const db = getDB();
+  await db.assessments.update(assessmentId, { referralStatus: status });
+  const a = await db.assessments.get(assessmentId);
+  if (!a) return;
+  await db.syncQueue.add({
+    table: "assessments",
+    action: "update",
+    recordId: assessmentId,
+    payload: { ...a, referralStatus: status },
+    createdAt: new Date().toISOString(),
+    attempts: 0,
+  });
+  registerBackgroundSync().catch(() => {});
+}
+
 export async function pendingCount(): Promise<number> {
   return getDB().syncQueue.count();
 }
