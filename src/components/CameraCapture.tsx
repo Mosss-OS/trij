@@ -16,7 +16,7 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
   const [compressing, setCompressing] = useState(false);
   const [analysis, setAnalysis] = useState<FrameAnalysis | null>(null);
   const [forceCapture, setForceCapture] = useState(false);
-  const analysisRef = useRef<ReturnType<typeof setInterval>>();
+  const analysisRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     let active = true;
