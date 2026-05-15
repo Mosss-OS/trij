@@ -3,6 +3,7 @@ export type { InitProgressReport };
 import { getTriageSystemPrompt, getDocumentSystemPrompt, getFollowUpPrompt } from "./gemma-prompt";
 import type { TriageResult, DocumentResult, Urgency } from "@/types/trij";
 import { TRIAGE_TOOL, DOCUMENT_TOOL, FOLLOW_UP_TOOL, parseToolCall, triesJson } from "./tools";
+import { useSettingsStore } from "@/stores/settingsStore";
 
 /* ─── Engine type ─────────────────────────────────────────── */
 
@@ -449,9 +450,12 @@ export async function triageImage(
   }
 
   const e = await loadWebLLM();
+  const settings = useSettingsStore.getState();
+  const temperature = settings.thinkingMode ? 0.7 : 0.1;
+  
   const reply = await e.chat.completions.create({
     messages: [
-      { role: "system", content: getTriageSystemPrompt(language) },
+      { role: "system", content: getTriageSystemPrompt(language, settings.thinkingMode) },
       {
         role: "user",
         content: [
@@ -465,8 +469,8 @@ export async function triageImage(
       type: "function",
       function: { name: "triage_assessment" },
     } as never,
-    temperature: 0.1,
     max_tokens: 800,
+    temperature,
   });
   const message = reply.choices[0]?.message;
   if (!message) return FALLBACK_TRIAGE;
@@ -516,9 +520,12 @@ export async function analyzeDocument(
   }
 
   const e = await loadWebLLM();
+  const settings = useSettingsStore.getState();
+  const temperature = settings.thinkingMode ? 0.7 : 0.1;
+  
   const reply = await e.chat.completions.create({
     messages: [
-      { role: "system", content: getDocumentSystemPrompt(language) },
+      { role: "system", content: getDocumentSystemPrompt(language, settings.thinkingMode) },
       {
         role: "user",
         content: [
@@ -532,7 +539,7 @@ export async function analyzeDocument(
       type: "function",
       function: { name: "document_analysis" },
     } as never,
-    temperature: 0.1,
+    temperature,
     max_tokens: 800,
   });
   const message = reply.choices[0]?.message;
@@ -581,6 +588,9 @@ export async function nextFollowUp(
   }
 
   const e = await loadWebLLM();
+  const settings = useSettingsStore.getState();
+  const temperature = settings.thinkingMode ? 0.7 : 0.4;
+  
   const reply = await e.chat.completions.create({
     messages: [
       { role: "system", content: prompt },
@@ -591,7 +601,7 @@ export async function nextFollowUp(
       type: "function",
       function: { name: "generate_follow_up" },
     } as never,
-    temperature: 0.4,
+    temperature,
     max_tokens: 120,
   });
   const message = reply.choices[0]?.message;
