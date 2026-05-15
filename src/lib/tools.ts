@@ -153,7 +153,7 @@ export function parseToolCall<T>(
     }>;
     content?: string | null;
   },
-  fallback: T,
+  fallback: T | null = null,
 ): T | null {
   if (message.tool_calls && message.tool_calls.length > 0) {
     try {
