@@ -43,7 +43,7 @@ export function usePatientSearch(query: string) {
       setPatients(all);
       const idx = getSearchIndex();
       idx.removeAll();
-      idx.addAll(all.map((p) => ({ ...p, ageYears: String(p.ageYears ?? "") })));
+      idx.addAll(all.map((p) => ({ ...p, ageYears: String(p.ageYears ?? "") })) as unknown as Patient[]);
       setIndexReady(true);
     };
     load();
