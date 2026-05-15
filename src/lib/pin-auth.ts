@@ -30,10 +30,10 @@ async function pbkdf2Hash(pin: string, salt: Uint8Array): Promise<string> {
   const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(pin), "PBKDF2", false, [
     "deriveBits",
   ]);
-  const bits = await crypto.subtle.deriveBits(
+    const bits = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
-      salt,
+      salt: salt as BufferSource,
       iterations: PBKDF2_ITERATIONS,
       hash: "SHA-256",
     },
@@ -61,7 +61,7 @@ export async function setupPin(userId: string, email: string, pin: string): Prom
     userId,
     email,
     pinHash,
-    salt: base64(salt),
+    salt: base64(salt.buffer as ArrayBuffer),
     failedAttempts: 0,
     lastFailedAttempt: null,
     locked: false,
