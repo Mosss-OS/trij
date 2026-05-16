@@ -78,6 +78,7 @@ function TriagePage() {
   const [typedAnswer, setTypedAnswer] = useState("");
   const voiceRef = useRef<VoiceAssistant | null>(null);
   const kindRef = useRef<string>("demo");
+  const convoRef = useRef<ConvMessage[]>([]);
 
   useEffect(() => {
     if (!voiceRef.current) {
