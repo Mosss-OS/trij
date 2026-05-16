@@ -6,7 +6,16 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi", "supabase/functions"] },
+  {
+    ignores: [
+      "dist",
+      ".output",
+      ".vinxi",
+      "supabase/functions",
+      "src/integrations/supabase/types.ts",
+      "src/integrations/supabase/auth-attacher.ts",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
