@@ -98,19 +98,23 @@ export async function getPinInfo(
   };
 }
 
-export async function recordFailedAttempt(userId: string): Promise<boolean> {
+export async function recordFailedAttempt(
+  userId: string,
+): Promise<{ locked: boolean; attempts: number }> {
   const db = getDB();
-  const record = await db.pinAuth.get(userId);
-  if (!record) return false;
-  const attempts = record.failedAttempts + 1;
-  const locked = attempts >= MAX_FAILED_ATTEMPTS;
-  await db.pinAuth.update(userId, {
-    failedAttempts: attempts,
-    lastFailedAttempt: new Date().toISOString(),
-    locked,
-    updatedAt: new Date().toISOString(),
+  return db.transaction("rw", db.pinAuth, async () => {
+    const record = await db.pinAuth.get(userId);
+    if (!record) return { locked: false, attempts: 0 };
+    const attempts = record.failedAttempts + 1;
+    const locked = attempts >= MAX_FAILED_ATTEMPTS;
+    await db.pinAuth.update(userId, {
+      failedAttempts: attempts,
+      lastFailedAttempt: new Date().toISOString(),
+      locked,
+      updatedAt: new Date().toISOString(),
+    });
+    return { locked, attempts };
   });
-  return locked;
 }
 
 export async function resetLockout(userId: string): Promise<void> {
