@@ -27,7 +27,7 @@ function securityHeaders(): Record<string, string> {
     "permissions-policy": "camera=(self), microphone=(self), gyroscope=()",
     "content-security-policy": [
       "default-src 'self'",
-      "script-src 'self' 'wasm-unsafe-eval'",
+      "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'",
       "worker-src 'self' blob:",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
       "img-src 'self' data: blob:",
