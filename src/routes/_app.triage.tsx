@@ -78,14 +78,26 @@ function TriagePage() {
     voiceRef.current.setLanguage(language);
   }, [language]);
 
+  const [capturingLocation, setCapturingLocation] = useState(false);
+
   const startPatient = async () => {
     if (!user || !identifier.trim()) return;
+    setCapturingLocation(true);
+    const coords = await getCurrentPosition();
+    setCapturingLocation(false);
+    if (coords) {
+      toast.success(`Location captured (±${Math.round(coords.accuracy ?? 0)}m)`);
+    } else {
+      toast.info("Location unavailable — patient saved without coordinates.");
+    }
     const p: Patient = {
       id: crypto.randomUUID(),
       chwUserId: user.id,
       identifier: identifier.trim(),
       ageYears: age ? Number(age) : undefined,
       sex,
+      locationLat: coords?.lat,
+      locationLng: coords?.lng,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
