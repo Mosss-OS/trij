@@ -420,6 +420,23 @@ function LoginPage() {
           >
             {mode === "signin" ? "First time? Register a CHW account" : "Have an account? Sign in"}
           </button>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setOfflineSession({ id: crypto.randomUUID(), email: "demo@trij.app" })}
+            className="w-full"
+            size="lg"
+          >
+            Continue without account
+          </Button>
         </form>
 
         <p className="mt-auto pt-10 text-center text-xs text-muted-foreground">
