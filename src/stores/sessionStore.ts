@@ -28,7 +28,13 @@ export const useSessionStore = create<SessionState>((set) => ({
     set({ session, user: session?.user ?? null, offlineUser: null, isOfflineAuth: false }),
   setLoading: (loading) => set({ loading }),
   setOfflineSession: (offlineUser) =>
-    set({ offlineUser, isOfflineAuth: true, session: null, user: null, loading: false }),
+    set({
+      offlineUser,
+      isOfflineAuth: true,
+      session: null,
+      user: { id: offlineUser.id, email: offlineUser.email } as User,
+      loading: false,
+    }),
   clearAuth: () =>
     set({
       session: null,

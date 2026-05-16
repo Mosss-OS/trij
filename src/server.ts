@@ -29,7 +29,7 @@ function securityHeaders(): Record<string, string> {
       "default-src 'self'",
       "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'",
       "worker-src 'self' blob:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co http://localhost:11434 ws://localhost:11434",
       "img-src 'self' data: blob:",
       "media-src 'self' blob:",
       "style-src 'self' 'unsafe-inline'",
