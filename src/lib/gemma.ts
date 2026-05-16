@@ -1,6 +1,11 @@
 import { CreateMLCEngine, type MLCEngine, type InitProgressReport } from "@mlc-ai/web-llm";
 export type { InitProgressReport };
-import { getTriageSystemPrompt, getDocumentSystemPrompt, getFollowUpPrompt } from "./gemma-prompt";
+import {
+  getTriageSystemPrompt,
+  getDocumentSystemPrompt,
+  getFollowUpPrompt,
+  getConversationSystemPrompt,
+} from "./gemma-prompt";
 import type { TriageResult, DocumentResult, Urgency } from "@/types/trij";
 import { TRIAGE_TOOL, DOCUMENT_TOOL, FOLLOW_UP_TOOL, parseToolCall, triesJson } from "./tools";
 import { useSettingsStore } from "@/stores/settingsStore";
