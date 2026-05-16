@@ -12,7 +12,6 @@
  * Typography: Plus Jakarta Sans (display) + Inter (body), via Google Fonts.
  */
 
-
 @theme inline {
   --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
