@@ -3,6 +3,7 @@ import { checkWebGPUCompatibility, type WebGPUCompatibility } from "@/lib/gemma"
 import { detectOllama, type EngineKind } from "@/lib/gemma";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Cpu, ExternalLink, AlertTriangle, CheckCircle2, Rabbit, FlaskConical } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   engineKind: EngineKind | "auto";
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
+  const { t } = useI18n();
   const [compat, setCompat] = useState<WebGPUCompatibility | null>(null);
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
   const setEngineKind = useSettingsStore((s) => s.setEngineKind);
@@ -34,7 +36,7 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
       <div className="flex items-start gap-2 rounded-2xl border border-urgency-yellow/30 bg-urgency-yellow/5 p-3 text-xs">
         <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-urgency-yellow" />
         <div className="text-muted-foreground">
-          <span className="font-medium text-foreground">WebGPU unavailable</span> on{" "}
+          <span className="font-medium text-foreground">{t("webgpuNotAvailable")}</span> on{" "}
           {compat.browser}. {compat.reason?.split(".")[0]}.{" "}
           <a
             href={compat.upgradeUrl}
@@ -42,7 +44,9 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-primary hover:underline"
           >
-            Get {compat.browser === "Unknown" ? "Chrome" : compat.browser}{" "}
+            {compat.browser === "Unknown"
+              ? t("downloadChrome")
+              : t("updateBrowser").replace("{browser}", compat.browser)}{" "}
             <ExternalLink className="h-3 w-3" />
           </a>
         </div>
@@ -66,7 +70,7 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
         )}
         <div className="min-w-0 text-sm">
           <p className="font-medium">
-            {compat.supported ? "WebGPU available" : "WebGPU not available"}
+            {compat.supported ? t("webgpuAvailable") : t("webgpuNotAvailable")}
           </p>
           <p className="mt-1 text-muted-foreground">
             {compat.supported
@@ -86,7 +90,9 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
               className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
             >
               <ExternalLink className="h-3 w-3" />
-              {compat.browser === "Unknown" ? "Download Chrome" : `Update ${compat.browser}`}
+              {compat.browser === "Unknown"
+                ? t("downloadChrome")
+                : t("updateBrowser").replace("{browser}", compat.browser)}
             </a>
           )}
         </div>
@@ -95,7 +101,7 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
       {showAlternatives && (
         <div className="rounded-2xl border bg-card p-4">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Alternative engines
+            {t("alternativeEngines")}
           </p>
           <div className="mt-3 space-y-2">
             <button
@@ -108,13 +114,13 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
                 className={`h-4 w-4 ${ollamaOk === true ? "text-emerald-600" : "text-muted-foreground"}`}
               />
               <div className="min-w-0 flex-1">
-                <p className="font-medium">Ollama (local server)</p>
+                <p className="font-medium">{t("ollamaLocalServer")}</p>
                 <p className="text-xs text-muted-foreground">
                   {ollamaOk === null
-                    ? "Checking..."
+                    ? t("checking")
                     : ollamaOk
-                      ? "Ollama detected on this device"
-                      : "Not detected — install Ollama or check the URL"}
+                      ? t("ollamaDetected")
+                      : t("ollamaNotDetected")}
                 </p>
               </div>
             </button>
@@ -124,8 +130,8 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
             >
               <FlaskConical className="h-4 w-4 text-muted-foreground" />
               <div className="min-w-0 flex-1">
-                <p className="font-medium">Demo mode</p>
-                <p className="text-xs text-muted-foreground">Mock data, no real model needed</p>
+                <p className="font-medium">{t("demoMode")}</p>
+                <p className="text-xs text-muted-foreground">{t("mockDataNoModel")}</p>
               </div>
             </button>
           </div>

@@ -11,6 +11,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 
 interface SyncSummary {
   total: number;
@@ -20,6 +21,7 @@ interface SyncSummary {
 }
 
 export function SyncStatus({ className }: { className?: string }) {
+  const { t } = useI18n();
   const online = useOnlineStatus();
   const [pending, setPending] = useState(0);
   const [syncing, setSyncing] = useState(false);
@@ -89,11 +91,12 @@ export function SyncStatus({ className }: { className?: string }) {
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
         )}
 
-        {syncing && `Syncing ${pending} item(s)...`}
+        {syncing && `${t("syncing")} ${pending} ${t("items")}...`}
         {!syncing &&
           showSummary &&
-          `${summary.ok} synced` + (summary.failed > 0 ? `, ${summary.failed} failed` : "")}
-        {!syncing && !showSummary && (pending > 0 ? `${pending} pending` : "Synced")}
+          `${summary.ok} ${t("synced")}` +
+            (summary.failed > 0 ? `, ${summary.failed} ${t("failed")}` : "")}
+        {!syncing && !showSummary && (pending > 0 ? `${pending} ${t("pending")}` : t("synced"))}
 
         {(showSummary || (!syncing && pending > 0)) && (
           <span className="ml-0.5">
@@ -105,7 +108,7 @@ export function SyncStatus({ className }: { className?: string }) {
       {expanded && showSummary && summary.items.length > 0 && (
         <div className="absolute right-0 top-full z-50 mt-1 w-72 rounded-xl border bg-card p-3 shadow-lg">
           <p className="mb-2 text-xs font-medium text-muted-foreground">
-            Sync results ({summary.ok} ok, {summary.failed} failed)
+            {t("syncResults")} ({summary.ok} ok, {summary.failed} {t("failed")})
           </p>
           <ul className="max-h-48 space-y-1 overflow-y-auto">
             {summary.items.map((item) => (
@@ -141,7 +144,7 @@ export function SyncStatus({ className }: { className?: string }) {
       {expanded && !syncing && !showSummary && pending > 0 && (
         <div className="absolute right-0 top-full z-50 mt-1 w-56 rounded-xl border bg-card p-3 shadow-lg">
           <p className="text-xs text-muted-foreground">
-            {pending} item(s) waiting for sync. They will sync automatically when online.
+            {pending} {t("items")} {t("waitingForSync")}
           </p>
         </div>
       )}

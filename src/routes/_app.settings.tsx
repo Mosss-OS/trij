@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppHeader } from "@/components/AppHeader";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { I18nErrorBoundary } from "@/components/ErrorBoundary";
 import { ModelDownloadManager } from "@/components/ModelDownloadManager";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { LANGUAGES } from "@/lib/voice";
@@ -28,6 +28,7 @@ import { useGemma } from "@/hooks/useGemma";
 import { useSessionStore } from "@/stores/sessionStore";
 import { hasPinForUser, setupPin } from "@/lib/pin-auth";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 import {
   Dialog,
   DialogContent,
@@ -39,13 +40,14 @@ import {
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({ meta: [{ title: "Settings — Trij" }] }),
   component: () => (
-    <ErrorBoundary kind="engine">
+    <I18nErrorBoundary kind="engine">
       <SettingsPage />
-    </ErrorBoundary>
+    </I18nErrorBoundary>
   ),
 });
 
 function SettingsPage() {
+  const { t } = useI18n();
   const s = useSettingsStore();
   const navigate = useNavigate();
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
@@ -83,11 +85,11 @@ function SettingsPage() {
 
   return (
     <>
-      <AppHeader title="Settings" />
+      <AppHeader title={t("settings")} />
       <div className="mx-auto max-w-2xl space-y-6 px-5 py-6">
-        <Section title="Language & voice">
+        <Section title={t("languageAndVoice")}>
           <div className="space-y-1.5">
-            <Label>Interface & speech language</Label>
+            <Label>{t("interfaceAndSpeech")}</Label>
             <Select value={s.language} onValueChange={s.setLanguage}>
               <SelectTrigger>
                 <SelectValue />
@@ -103,18 +105,16 @@ function SettingsPage() {
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <Label>Voice assistant</Label>
-              <p className="text-xs text-muted-foreground">
-                Read assessments aloud, listen for follow-ups.
-              </p>
+              <Label>{t("voiceAssistant")}</Label>
+              <p className="text-xs text-muted-foreground">{t("readAssessments")}</p>
             </div>
             <Switch checked={s.voiceEnabled} onCheckedChange={s.setVoiceEnabled} />
           </div>
         </Section>
 
-        <Section title="AI engine">
+        <Section title={t("aiEngine")}>
           <div className="space-y-1.5">
-            <Label>Inference engine</Label>
+            <Label>{t("inferenceEngine")}</Label>
             <Select
               value={s.engineKind}
               onValueChange={(v) => s.setEngineKind(v as EngineKind | "auto")}
@@ -137,10 +137,8 @@ function SettingsPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <Label>Enable extended reasoning</Label>
-              <p className="text-xs text-muted-foreground">
-                Slower but more accurate step-by-step thinking (Gemma 4 only)
-              </p>
+              <Label>{t("extendedReasoning")}</Label>
+              <p className="text-xs text-muted-foreground">{t("extendedReasoningDesc")}</p>
             </div>
             <Switch checked={s.thinkingMode} onCheckedChange={s.setThinkingMode} />
           </div>
@@ -163,24 +161,19 @@ function SettingsPage() {
           <OllamaSetup />
         </Section>
 
-        <Section title="Privacy">
+        <Section title={t("privacy")}>
           <div className="flex items-start gap-3 rounded-2xl border bg-secondary/30 p-4">
             <ShieldCheck className="mt-0.5 h-5 w-5 text-primary" />
             <div>
-              <p className="text-sm font-medium">All AI inference runs on this device.</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Patient images are never sent to a cloud AI service. Records sync to your encrypted
-                backend only when you have connectivity.
-              </p>
+              <p className="text-sm font-medium">{t("localInference")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("privacyDesc")}</p>
             </div>
           </div>
           {gemma.kind === "webllm" && (
             <div className="flex items-center justify-between">
               <div>
-                <Label>Allow cloud fallback</Label>
-                <p className="text-xs text-muted-foreground">
-                  Send images to a hosted Gemma if on-device fails. Off by default.
-                </p>
+                <Label>{t("allowCloudFallback")}</Label>
+                <p className="text-xs text-muted-foreground">{t("cloudFallbackDesc")}</p>
               </div>
               <Switch
                 checked={s.cloudFallbackConsent}
@@ -191,18 +184,14 @@ function SettingsPage() {
         </Section>
 
         {offlineUser && (
-          <Section title="Offline PIN">
+          <Section title={t("offlinePin")}>
             <div className="rounded-2xl border bg-secondary/30 p-4">
               <div className="flex items-center gap-3">
                 <KeyRound className="h-5 w-5 text-primary" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium">
-                    {hasPin ? "Offline PIN is set" : "No offline PIN configured"}
-                  </p>
+                  <p className="text-sm font-medium">{hasPin ? t("pinIsSet") : t("noPin")}</p>
                   <p className="text-xs text-muted-foreground">
-                    {hasPin
-                      ? "You can sign in without internet using your PIN."
-                      : "Set a 4-6 digit PIN to access Trij when offline."}
+                    {hasPin ? t("pinDescSet") : t("pinDescNotSet")}
                   </p>
                 </div>
                 <Button
@@ -210,22 +199,22 @@ function SettingsPage() {
                   size="sm"
                   onClick={() => setShowPinSetup(true)}
                 >
-                  {hasPin ? "Change" : "Set up"}
+                  {hasPin ? t("change") : t("setup")}
                 </Button>
               </div>
             </div>
           </Section>
         )}
 
-        <Section title="Storage">
+        <Section title={t("storage")}>
           <StorageMonitor />
         </Section>
 
-        <Section title="Medical">
+        <Section title={t("medical")}>
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Minimum confidence for local care</Label>
+                <Label>{t("minConfidence")}</Label>
                 <span className="font-mono text-sm font-semibold">
                   {s.minConfidenceForLocalCare}%
                 </span>
@@ -238,19 +227,16 @@ function SettingsPage() {
                 onValueChange={([v]) => s.setMinConfidenceForLocalCare(v)}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>0% — always refer</span>
-                <span>100% — never refer</span>
+                <span>0% — {t("alwaysRefer")}</span>
+                <span>100% — {t("neverRefer")}</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                When AI confidence is below this threshold, the app will recommend referral
-                regardless of the model&apos;s assessment. Default: 70%.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("confidenceDesc")}</p>
             </div>
           </div>
         </Section>
 
         <div className="rounded-3xl border bg-card p-6">
-          <h2 className="font-display text-base font-semibold">Engine status</h2>
+          <h2 className="font-display text-base font-semibold">{t("engineStatus")}</h2>
           <pre className="mt-3 overflow-x-auto rounded-xl bg-muted p-4 text-xs leading-relaxed">
             {JSON.stringify(
               {
@@ -265,27 +251,26 @@ function SettingsPage() {
           </pre>
         </div>
 
-        <Section title="About Trij">
+        <Section title={t("aboutTrij")}>
           <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
             <p>
-              <strong>Trij</strong> is an AI-assisted preliminary triage tool for community health
-              workers. It is <strong>not</strong> a clinical diagnostic device.
+              <strong>{t("trij")}</strong> {t("disclaimerTitle")}
             </p>
             <ul className="list-disc space-y-1 pl-5">
-              <li>All assessments are preliminary and must be verified with clinical judgment.</li>
-              <li>Trij does not replace professional medical evaluation.</li>
-              <li>Always refer patients when in doubt or when urgency is indicated.</li>
-              <li>Patient data is stored on-device and synced to your encrypted backend.</li>
-              <li>You are responsible for complying with local health data privacy regulations.</li>
+              <li>{t("disclaimerItem1")}</li>
+              <li>{t("disclaimerItem2")}</li>
+              <li>{t("disclaimerItem3")}</li>
+              <li>{t("disclaimerItem4")}</li>
+              <li>{t("disclaimerItem5")}</li>
             </ul>
-            <p className="text-xs">Trij &mdash; Gemma 4 Good Hackathon 2026</p>
+            <p className="text-xs">{t("trij")} &mdash; Gemma 4 Good Hackathon 2026</p>
           </div>
         </Section>
 
         <ModelDownloadManager />
 
         <Button variant="outline" className="w-full gap-2" onClick={signOut}>
-          <LogOut className="h-4 w-4" /> Sign out
+          <LogOut className="h-4 w-4" /> {t("signOut")}
         </Button>
       </div>
 

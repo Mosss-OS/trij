@@ -143,8 +143,7 @@ export const FOLLOW_UP_TOOL: ToolDefinition = {
         },
         rationale: {
           type: "string",
-          description:
-            "Short clinical reason this question is being asked (1 sentence). Optional.",
+          description: "Short clinical reason this question is being asked (1 sentence). Optional.",
         },
         done: {
           type: "boolean",

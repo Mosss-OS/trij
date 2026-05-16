@@ -1,25 +1,29 @@
 import { Link, useRouter } from "@tanstack/react-router";
 import { LayoutGrid, Camera, Users, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 
-type NavItem = { to: string; label: string; icon: typeof LayoutGrid; primary?: boolean };
-const items: NavItem[] = [
-  { to: "/dashboard", label: "Home", icon: LayoutGrid },
-  { to: "/triage", label: "Triage", icon: Camera, primary: true },
-  { to: "/patients", label: "Patients", icon: Users },
-  { to: "/settings", label: "Settings", icon: SettingsIcon },
-];
+type NavItem = { to: string; labelKey: string; icon: typeof LayoutGrid; primary?: boolean };
 
 export function BottomNav() {
+  const { t } = useI18n();
   const router = useRouter();
   const current = router.state.location.pathname;
+
+  const items: NavItem[] = [
+    { to: "/dashboard", labelKey: "home", icon: LayoutGrid },
+    { to: "/triage", labelKey: "newTriage", icon: Camera, primary: true },
+    { to: "/patients", labelKey: "patients", icon: Users },
+    { to: "/settings", labelKey: "settings", icon: SettingsIcon },
+  ];
+
   return (
     <nav
       aria-label="Main navigation"
       className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur safe-area-bottom"
     >
       <div className="mx-auto grid max-w-2xl grid-cols-4">
-        {items.map(({ to, label, icon: Icon, primary }) => {
+        {items.map(({ to, labelKey, icon: Icon, primary }) => {
           const active = current === to || current.startsWith(to + "/");
           return (
             <Link
@@ -40,7 +44,7 @@ export function BottomNav() {
               >
                 <Icon className={primary ? "h-5 w-5" : "h-5 w-5"} />
               </span>
-              <span className={primary ? "-mt-2" : ""}>{label}</span>
+              <span className={primary ? "-mt-2" : ""}>{t(labelKey as any)}</span>
             </Link>
           );
         })}

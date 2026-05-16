@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { I18nErrorBoundary } from "@/components/ErrorBoundary";
 import { CameraCapture } from "@/components/CameraCapture";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -11,17 +11,19 @@ import type { DocumentResult } from "@/types/trij";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_app/document")({
   head: () => ({ meta: [{ title: "Document scan — Trij" }] }),
   component: () => (
-    <ErrorBoundary kind="document">
+    <I18nErrorBoundary kind="document">
       <DocumentScan />
-    </ErrorBoundary>
+    </I18nErrorBoundary>
   ),
 });
 
 function DocumentScan() {
+  const { t } = useI18n();
   const language = useSettingsStore((s) => s.language);
   const engineKind = useSettingsStore((s) => s.engineKind);
   const ollamaUrl = useSettingsStore((s) => s.ollamaUrl);
@@ -36,21 +38,21 @@ function DocumentScan() {
     setImage(dataUrl);
     setStep("analyzing");
     try {
-      setProgressText("Reading document...");
+      setProgressText(t("readingDocument"));
       setProgress(100);
       const kind = engineKind === "auto" ? await detectEngine() : engineKind;
       const r = await analyzeDocument(dataUrl, language, kind, ollamaUrl);
       setResult(r);
       setStep("result");
     } catch (err) {
-      toast.error("Failed: " + (err as Error).message);
+      toast.error(t("failedPrefix") + (err as Error).message);
       setStep("capture");
     }
   };
 
   return (
     <>
-      <AppHeader title="Scan document" subtitle="Lab, prescription, referral" />
+      <AppHeader title={t("scanningDoc")} subtitle={t("labPrescriptionReferral")} />
       <div className="mx-auto max-w-2xl px-5 py-6">
         {step === "capture" && (
           <div className="space-y-4">
@@ -86,7 +88,7 @@ function DocumentScan() {
             {result.key_findings.length > 0 && (
               <div className="rounded-3xl border bg-card p-6">
                 <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Key findings
+                  {t("keyFindings")}
                 </h3>
                 <ul className="mt-3 divide-y">
                   {result.key_findings.map((f, i) => (
@@ -106,7 +108,7 @@ function DocumentScan() {
               </div>
             )}
             <Button className="w-full" onClick={() => setStep("capture")}>
-              Scan another
+              {t("scanAnother")}
             </Button>
           </div>
         )}

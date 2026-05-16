@@ -14,8 +14,10 @@ import { supportsWebGPU, loadEngine, isLoaded, type EngineKind } from "@/lib/gem
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Download, Trash2, HardDrive, AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 export function ModelDownloadManager() {
+  const { t } = useI18n();
   const engineKind = useSettingsStore((s) => s.engineKind);
   const [storage, setStorage] = useState<StorageInfo | null>(null);
   const [model, setModel] = useState<ModelStatus>(getModelStatus());
@@ -46,21 +48,21 @@ export function ModelDownloadManager() {
       });
       setEngineLoaded(true);
       setModel({ ...model, downloaded: true, downloadDate: new Date().toISOString() });
-      toast.success("Model loaded successfully");
+      toast.success(t("loaded"));
     } catch (err) {
-      toast.error("Download failed: " + (err as Error).message);
+      toast.error(t("failedPrefix") + (err as Error).message);
     } finally {
       setDownloading(false);
     }
-  }, [model]);
+  }, [model, t]);
 
   const handleClearCache = useCallback(async () => {
     await clearModelCache();
     setModel(getModelStatus());
     setEngineLoaded(false);
     setDownloadProgress(0);
-    toast.success("Model cache cleared");
-  }, []);
+    toast.success(t("clearCache"));
+  }, [t]);
 
   const refreshing = async () => {
     setStorage(await getStorageInfo());
@@ -78,43 +80,43 @@ export function ModelDownloadManager() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <HardDrive className="h-5 w-5 text-primary" />
-          <h3 className="font-display font-semibold">On-device model</h3>
+          <h3 className="font-display font-semibold">{t("onDeviceModel")}</h3>
         </div>
-        <Button variant="ghost" size="icon" onClick={refreshing} title="Refresh">
+        <Button variant="ghost" size="icon" onClick={refreshing} title={t("refresh")}>
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
 
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Model</span>
+          <span className="text-muted-foreground">{t("modelLabel")}</span>
           <span className="font-medium">{model.modelId}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Size</span>
+          <span className="text-muted-foreground">{t("sizeLabel")}</span>
           <span className="font-medium">{formatBytes(model.sizeBytes)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Status</span>
+          <span className="text-muted-foreground">{t("statusLabel")}</span>
           <span className="flex items-center gap-1.5 font-medium">
             {engineLoaded || isLoaded("webllm" as EngineKind) ? (
               <>
-                <CheckCircle2 className="h-4 w-4 text-urgency-green" /> Loaded
+                <CheckCircle2 className="h-4 w-4 text-urgency-green" /> {t("loaded")}
               </>
             ) : model.downloaded ? (
               <>
-                <CheckCircle2 className="h-4 w-4 text-urgency-green" /> Downloaded
+                <CheckCircle2 className="h-4 w-4 text-urgency-green" /> {t("downloaded")}
               </>
             ) : (
               <>
-                <AlertTriangle className="h-4 w-4 text-urgency-yellow" /> Not downloaded
+                <AlertTriangle className="h-4 w-4 text-urgency-yellow" /> {t("notDownloaded")}
               </>
             )}
           </span>
         </div>
         {model.downloadDate && (
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Downloaded</span>
+            <span className="text-muted-foreground">{t("downloaded")}</span>
             <span className="font-medium">{new Date(model.downloadDate).toLocaleDateString()}</span>
           </div>
         )}
@@ -123,13 +125,15 @@ export function ModelDownloadManager() {
       {storage && (
         <div className="space-y-1.5 rounded-xl bg-muted/50 p-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Storage</span>
-            <span className="font-medium">{storage.percentUsed}% used</span>
+            <span className="text-muted-foreground">{t("storageLabel")}</span>
+            <span className="font-medium">
+              {t("pctUsed").replace("{pct}", String(storage.percentUsed))}
+            </span>
           </div>
           <Progress value={storage.percentUsed} className="h-1.5" />
           <p className="text-xs text-muted-foreground">
-            {formatBytes(storage.usage)} of {formatBytes(storage.quota)} used &middot;{" "}
-            {storage.available} available
+            {formatBytes(storage.usage)} {t("of")} {formatBytes(storage.quota)} {t("used")} &middot;{" "}
+            {storage.available} {t("available")}
           </p>
         </div>
       )}
@@ -137,28 +141,24 @@ export function ModelDownloadManager() {
       {insufficient && (
         <div className="flex items-start gap-2 rounded-xl border border-urgency-yellow/30 bg-urgency-yellow-bg/40 p-3 text-xs">
           <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-yellow" />
-          <p className="text-muted-foreground">
-            Not enough free space. Free up storage or use Ollama / Demo mode.
-          </p>
+          <p className="text-muted-foreground">{t("notEnoughSpace")}</p>
         </div>
       )}
 
       {!hasWebGPU && (
         <div className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">
-          WebGPU not available on this browser. Use Ollama or Demo mode instead.
+          {t("webgpuNotAvailableBrowser")}
         </div>
       )}
 
       {downloading && (
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Downloading...</span>
+            <span className="text-muted-foreground">{t("downloadingModel")}</span>
             <span className="font-medium">{downloadProgress}%</span>
           </div>
           <Progress value={downloadProgress} className="h-2" />
-          <p className="text-xs text-muted-foreground">
-            Loading model weights. This may take a few minutes on first run.
-          </p>
+          <p className="text-xs text-muted-foreground">{t("loadingWeights")}</p>
         </div>
       )}
 
@@ -174,7 +174,11 @@ export function ModelDownloadManager() {
           ) : (
             <Download className="h-4 w-4" />
           )}
-          {downloading ? "Downloading..." : model.downloaded ? "Reload model" : "Download model"}
+          {downloading
+            ? t("downloadingModel")
+            : model.downloaded
+              ? t("reloadModel")
+              : t("downloadModel")}
         </Button>
         <Button
           onClick={handleClearCache}
@@ -184,7 +188,7 @@ export function ModelDownloadManager() {
           disabled={!model.downloaded && !engineLoaded}
         >
           <Trash2 className="h-4 w-4" />
-          Clear cache
+          {t("clearCache")}
         </Button>
       </div>
     </div>

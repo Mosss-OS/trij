@@ -10,13 +10,7 @@ import { Label } from "@/components/ui/label";
 import { ShieldCheck, Loader2, WifiOff, KeyRound } from "lucide-react";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { toast } from "sonner";
-import {
-  hasPinForUser,
-  verifyPin,
-  recordFailedAttempt,
-  getPinInfo,
-  setupPin,
-} from "@/lib/pin-auth";
+import { hasPinForUser, verifyPin, recordFailedAttempt, setupPin } from "@/lib/pin-auth";
 import { getDB } from "@/lib/db";
 import {
   Dialog,
@@ -25,6 +19,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,13 +36,12 @@ export const Route = createFileRoute("/")({
 });
 
 function LoginPage() {
+  const { t } = useI18n();
   useAuthSession();
   const session = useSessionStore((s) => s.session);
   const offlineUser = useSessionStore((s) => s.offlineUser);
   const loading = useSessionStore((s) => s.loading);
   const setOfflineSession = useSessionStore((s) => s.setOfflineSession);
-  const clearAuth = useSessionStore((s) => s.clearAuth);
-  const setSession = useSessionStore((s) => s.setSession);
   const online = useOnlineStatus();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -119,19 +113,18 @@ function LoginPage() {
         });
         if (error) throw error;
         if (data.session?.user) {
-          toast.success("Account created.");
+          toast.success(t("accountCreated"));
           const hasPin = await hasPinForUser(data.session.user.id);
           if (!hasPin) setShowPinSetup(true);
         } else {
-          // Fallback: try immediate sign-in (if confirmation isn't required)
           const { data: signIn, error: signInErr } = await supabase.auth.signInWithPassword({
             email,
             password,
           });
           if (signInErr) {
-            toast.success("Check your email to confirm your account.");
+            toast.success(t("checkEmailConfirm"));
           } else if (signIn.session?.user) {
-            toast.success("Account created.");
+            toast.success(t("accountCreated"));
             const hasPin = await hasPinForUser(signIn.session.user.id);
             if (!hasPin) setShowPinSetup(true);
           }
@@ -164,15 +157,13 @@ function LoginPage() {
     try {
       const records = await getDB().pinAuth.toArray();
       if (records.length === 0) {
-        setPinError("No offline PIN configured. Connect to the internet to sign in.");
+        setPinError(t("noPinConfigured"));
         return;
       }
       const record = records[records.length - 1];
       if (record.locked) {
         setLocked(true);
-        setPinError(
-          "Account locked due to too many failed attempts. Connect to the internet to reset.",
-        );
+        setPinError(t("accountLocked"));
         return;
       }
       const ok = await verifyPin(record.userId, pin);
@@ -182,11 +173,9 @@ function LoginPage() {
         setRemainingAttempts(nowLocked ? 0 : remaining);
         if (nowLocked) {
           setLocked(true);
-          setPinError(
-            "Account locked due to too many failed attempts. Connect to the internet to reset.",
-          );
+          setPinError(t("accountLocked"));
         } else {
-          setPinError(`Incorrect PIN. ${remaining} attempt(s) remaining.`);
+          setPinError(t("incorrectPinAttempts").replace("{remaining}", String(remaining)));
         }
         return;
       }
@@ -201,23 +190,23 @@ function LoginPage() {
   const handleSetupPin = async () => {
     setSetupPinError("");
     if (setupPinValue.length < 4 || setupPinValue.length > 6) {
-      setSetupPinError("PIN must be 4-6 digits");
+      setSetupPinError(t("pinDigits"));
       return;
     }
     if (!/^\d+$/.test(setupPinValue)) {
-      setSetupPinError("PIN must contain only digits");
+      setSetupPinError(t("pinDigitsOnly"));
       return;
     }
     if (setupPinValue !== setupPinConfirm) {
-      setSetupPinError("PINs do not match");
+      setSetupPinError(t("pinMismatch"));
       return;
     }
     setBusy(true);
     try {
       const s = useSessionStore.getState().session;
-      if (!s?.user) throw new Error("No active session");
+      if (!s?.user) throw new Error(t("noActiveSession"));
       await setupPin(s.user.id, s.user.email ?? email, setupPinValue);
-      toast.success("Offline PIN configured successfully");
+      toast.success(t("pinConfiguredSuccessfully"));
       setShowPinSetup(false);
       setSetupPinValue("");
       setSetupPinConfirm("");
@@ -249,11 +238,11 @@ function LoginPage() {
             <div className="flex items-center gap-3">
               <KeyRound className="h-8 w-8 text-primary" />
               <h1 className="font-display text-2xl font-bold leading-tight tracking-tight">
-                Offline sign in
+                {t("offlineSignIn")}
               </h1>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              No internet connection. Enter your offline PIN to continue using Trij.
+              {t("noInternetPin")}
             </p>
           </div>
 
@@ -262,7 +251,7 @@ function LoginPage() {
             className="mt-10 space-y-4 rounded-3xl border bg-card p-6 shadow-sm"
           >
             <div className="space-y-1.5">
-              <Label htmlFor="pin">Offline PIN</Label>
+              <Label htmlFor="pin">{t("offlinePin")}</Label>
               <Input
                 id="pin"
                 type="password"
@@ -274,7 +263,7 @@ function LoginPage() {
                   setPin(v);
                   setPinError("");
                 }}
-                placeholder="Enter your 4-6 digit PIN"
+                placeholder={t("enterPin")}
                 disabled={locked}
                 required
                 autoFocus
@@ -284,37 +273,35 @@ function LoginPage() {
               {pinError && <p className="text-xs text-destructive">{pinError}</p>}
               {!locked && (
                 <p className="text-xs text-muted-foreground">
-                  {remainingAttempts} attempt(s) remaining
+                  {t("incorrectPinAttempts").replace("{remaining}", String(remainingAttempts))}
                 </p>
               )}
             </div>
             <Button type="submit" disabled={busy || locked} className="w-full" size="lg">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Unlock
+              {t("unlock")}
             </Button>
             <p className="text-center text-xs text-muted-foreground">
               <WifiOff className="mr-1 inline h-3.5 w-3.5" />
-              Offline mode — data will sync when connected
+              {t("offlineModeDataSync")}
             </p>
           </form>
 
           <p className="mt-auto pt-10 text-center text-xs text-muted-foreground">
             <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
-            Inference runs on-device via WebGPU. Records sync only when online.
+            {t("patientDataNeverLeaves")}
           </p>
         </div>
 
         <Dialog open={showPinSetup} onOpenChange={setShowPinSetup}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Set up offline PIN</DialogTitle>
-              <DialogDescription>
-                Choose a 4-6 digit PIN to sign in when you don't have internet access.
-              </DialogDescription>
+              <DialogTitle>{t("setUpOfflinePinTitle")}</DialogTitle>
+              <DialogDescription>{t("pinDescription")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="setup-pin">New PIN</Label>
+                <Label htmlFor="setup-pin">{t("newPin")}</Label>
                 <Input
                   id="setup-pin"
                   type="password"
@@ -325,13 +312,13 @@ function LoginPage() {
                     setSetupPinValue(v);
                     setSetupPinError("");
                   }}
-                  placeholder="4-6 digits"
+                  placeholder={t("pinDigits")}
                   className="text-center text-2xl tracking-[0.5em]"
                   maxLength={6}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="setup-pin-confirm">Confirm PIN</Label>
+                <Label htmlFor="setup-pin-confirm">{t("confirmPin")}</Label>
                 <Input
                   id="setup-pin-confirm"
                   type="password"
@@ -342,7 +329,7 @@ function LoginPage() {
                     setSetupPinConfirm(v);
                     setSetupPinError("");
                   }}
-                  placeholder="Re-enter PIN"
+                  placeholder={t("reEnterPin")}
                   className="text-center text-2xl tracking-[0.5em]"
                   maxLength={6}
                 />
@@ -350,7 +337,7 @@ function LoginPage() {
               {setupPinError && <p className="text-xs text-destructive">{setupPinError}</p>}
               <Button onClick={handleSetupPin} disabled={busy} className="w-full" size="lg">
                 {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save PIN
+                {t("savePin")}
               </Button>
             </div>
           </DialogContent>
@@ -377,14 +364,11 @@ function LoginPage() {
 
         <div className="mt-12">
           <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">
-            Field-ready triage,
+            {t("fieldReadyTriage")}
             <br />
-            <span className="text-primary">on every device.</span>
+            <span className="text-primary">{t("onEveryDevice")}</span>
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Gemma runs entirely on your device. Patient data never leaves the phone for AI
-            inference.
-          </p>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t("gemmaOnDevice")}</p>
         </div>
 
         <form
@@ -393,7 +377,7 @@ function LoginPage() {
         >
           {mode === "signup" && (
             <div className="space-y-1.5">
-              <Label htmlFor="name">Your name</Label>
+              <Label htmlFor="name">{t("yourName")}</Label>
               <Input
                 id="name"
                 value={name}
@@ -404,7 +388,7 @@ function LoginPage() {
             </div>
           )}
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("email")}</Label>
             <Input
               id="email"
               type="email"
@@ -415,7 +399,7 @@ function LoginPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("password")}</Label>
             <Input
               id="password"
               type="password"
@@ -428,21 +412,21 @@ function LoginPage() {
           </div>
           <Button type="submit" disabled={busy} className="w-full" size="lg">
             {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === "signup" ? "Create account" : "Sign in"}
+            {mode === "signup" ? t("createAccount") : t("signIn")}
           </Button>
           <button
             type="button"
             onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
             className="block w-full text-center text-xs text-muted-foreground hover:text-foreground"
           >
-            {mode === "signin" ? "First time? Register a CHW account" : "Have an account? Sign in"}
+            {mode === "signin" ? t("firstTimeRegister") : t("haveAccountSignIn")}
           </button>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">or</span>
+              <span className="bg-card px-2 text-muted-foreground">{t("or")}</span>
             </div>
           </div>
           <Button
@@ -452,27 +436,25 @@ function LoginPage() {
             className="w-full"
             size="lg"
           >
-            Continue without account
+            {t("continueWithoutAccount")}
           </Button>
         </form>
 
         <p className="mt-auto pt-10 text-center text-xs text-muted-foreground">
           <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
-          Inference runs on-device via WebGPU. Records sync only when online.
+          {t("patientDataNeverLeaves")}
         </p>
       </div>
 
       <Dialog open={showPinSetup} onOpenChange={setShowPinSetup}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Set up offline PIN</DialogTitle>
-            <DialogDescription>
-              Choose a 4-6 digit PIN to sign in when you don't have internet access.
-            </DialogDescription>
+            <DialogTitle>{t("setUpOfflinePinTitle")}</DialogTitle>
+            <DialogDescription>{t("pinDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="setup-pin-online">New PIN</Label>
+              <Label htmlFor="setup-pin-online">{t("newPin")}</Label>
               <Input
                 id="setup-pin-online"
                 type="password"
@@ -483,13 +465,13 @@ function LoginPage() {
                   setSetupPinValue(v);
                   setSetupPinError("");
                 }}
-                placeholder="4-6 digits"
+                placeholder={t("pinDigits")}
                 className="text-center text-2xl tracking-[0.5em]"
                 maxLength={6}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="setup-pin-confirm-online">Confirm PIN</Label>
+              <Label htmlFor="setup-pin-confirm-online">{t("confirmPin")}</Label>
               <Input
                 id="setup-pin-confirm-online"
                 type="password"
@@ -500,7 +482,7 @@ function LoginPage() {
                   setSetupPinConfirm(v);
                   setSetupPinError("");
                 }}
-                placeholder="Re-enter PIN"
+                placeholder={t("reEnterPin")}
                 className="text-center text-2xl tracking-[0.5em]"
                 maxLength={6}
               />
@@ -508,7 +490,7 @@ function LoginPage() {
             {setupPinError && <p className="text-xs text-destructive">{setupPinError}</p>}
             <Button onClick={handleSetupPin} disabled={busy} className="w-full" size="lg">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save PIN
+              {t("savePin")}
             </Button>
           </div>
         </DialogContent>
