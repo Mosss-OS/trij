@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { AppHeader } from "@/components/AppHeader";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { I18nErrorBoundary } from "@/components/ErrorBoundary";
 import { CameraCapture } from "@/components/CameraCapture";
 import { AssessmentResult } from "@/components/AssessmentResult";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { VoiceAssistant } from "@/lib/voice";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 interface QAPair {
   question: string;
@@ -46,15 +47,16 @@ interface QAPair {
 export const Route = createFileRoute("/_app/triage")({
   head: () => ({ meta: [{ title: "New triage — Trij" }] }),
   component: () => (
-    <ErrorBoundary kind="triage">
+    <I18nErrorBoundary kind="triage">
       <TriagePage />
-    </ErrorBoundary>
+    </I18nErrorBoundary>
   ),
 });
 
 type Step = "patient" | "capture" | "analyzing" | "result" | "voice";
 
 function TriagePage() {
+  const { t } = useI18n();
   const user = useSessionStore((s) => s.user);
   const language = useSettingsStore((s) => s.language);
   const engineKind = useSettingsStore((s) => s.engineKind);
@@ -95,9 +97,9 @@ function TriagePage() {
     const coords = await getCurrentPosition();
     setCapturingLocation(false);
     if (coords) {
-      toast.success(`Location captured (±${Math.round(coords.accuracy ?? 0)}m)`);
+      toast.success(`${t("locationCaptured")} (±${Math.round(coords.accuracy ?? 0)}m)`);
     } else {
-      toast.info("Location unavailable — patient saved without coordinates.");
+      toast.info(t("locationUnavailable"));
     }
     const p: Patient = {
       id: crypto.randomUUID(),
@@ -119,22 +121,30 @@ function TriagePage() {
     setImage(dataUrl);
     setStep("analyzing");
     try {
-      const kind = engineKind === "auto" ? await detectEngine() : engineKind;
+      let kind = engineKind === "auto" ? await detectEngine() : engineKind;
       kindRef.current = kind;
 
       if (kind === "webllm" && !isLoaded(kind)) {
-        await loadEngine(kind, (r) => {
-          setProgress(Math.round((r.progress || 0) * 100));
-          setProgressText(r.text || "Loading model...");
-        });
+        try {
+          await loadEngine(kind, (r) => {
+            setProgress(Math.round((r.progress || 0) * 100));
+            setProgressText(r.text || t("preparing") + "...");
+          });
+        } catch (err) {
+          console.error("WebLLM load failed, falling back to demo", err);
+          toast.error(t("inferenceFailed") + ": WebGPU issues. Using demo mode.");
+          kind = "demo";
+          kindRef.current = "demo";
+        }
       }
-      setProgressText("Analyzing image...");
+
+      setProgressText(t("analyzing") + "...");
       setProgress(100);
       const r = await triageImage(dataUrl, language, kind, ollamaUrl);
       setResult(r);
       setStep("result");
     } catch (err) {
-      toast.error("Inference failed: " + (err as Error).message);
+      toast.error(t("inferenceFailed") + ": " + (err as Error).message);
       setStep("capture");
     }
   };
@@ -165,7 +175,7 @@ function TriagePage() {
       createdAt: new Date().toISOString(),
     };
     await queueAssessment(a);
-    toast.success("Saved offline. Will sync when online.");
+    toast.success(t("savedOffline"));
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
   };
 
@@ -184,14 +194,14 @@ function TriagePage() {
       );
       convoRef.current = messages;
       if (decision.done || !decision.question) {
-        toast.info("No follow-up needed.");
+        toast.info(t("noFollowUp"));
         setStep("result");
         return;
       }
       setCurrentQuestion(decision.question);
       if (voiceEnabled) voiceRef.current?.speak(decision.question);
     } catch (err) {
-      toast.error("Voice follow-up failed: " + (err as Error).message);
+      toast.error(t("voiceFailed") + ": " + (err as Error).message);
       setStep("result");
     } finally {
       setVoiceBusy(false);
@@ -204,7 +214,7 @@ function TriagePage() {
     setVoiceHistory(updated);
     setTypedAnswer("");
     if (updated.length >= 5) {
-      toast.success("Voice assessment complete.");
+      toast.success(t("voiceComplete"));
       setStep("result");
       return;
     }
@@ -218,14 +228,14 @@ function TriagePage() {
       );
       convoRef.current = messages;
       if (decision.done || !decision.question) {
-        toast.success("Voice assessment complete.");
+        toast.success(t("voiceComplete"));
         setStep("result");
         return;
       }
       setCurrentQuestion(decision.question);
       if (voiceEnabled) voiceRef.current?.speak(decision.question);
     } catch (err) {
-      toast.error("Voice follow-up failed: " + (err as Error).message);
+      toast.error(t("voiceFailed") + ": " + (err as Error).message);
     } finally {
       setVoiceBusy(false);
     }
@@ -257,20 +267,18 @@ function TriagePage() {
 
   return (
     <>
-      <AppHeader title="New triage" subtitle="Step by step" />
+      <AppHeader title={t("newTriage")} subtitle={t("stepByStep")} />
       <div className="mx-auto max-w-2xl px-5 py-6">
         <Stepper step={step} />
 
         {step === "patient" && (
           <div className="mt-7 space-y-5">
             <div>
-              <h2 className="font-display text-xl font-semibold">Who is the patient?</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Use a non-identifying code (e.g. initials + clinic ID).
-              </p>
+              <h2 className="font-display text-xl font-semibold">{t("whoIsPatient")}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{t("patientCodeDesc")}</p>
             </div>
             <div className="space-y-1.5">
-              <Label>Patient identifier</Label>
+              <Label>{t("patientIdentifier")}</Label>
               <Input
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
@@ -279,7 +287,7 @@ function TriagePage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Age (years)</Label>
+                <Label>{t("ageYears")}</Label>
                 <Input
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
@@ -289,7 +297,7 @@ function TriagePage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Sex</Label>
+                <Label>{t("sex")}</Label>
                 <div className="flex rounded-lg border p-1">
                   {(["F", "M", "other"] as const).map((s) => (
                     <button
@@ -306,8 +314,7 @@ function TriagePage() {
             <label className="flex items-start gap-3 rounded-xl border bg-secondary/20 p-4">
               <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
               <span className="text-xs leading-relaxed text-muted-foreground">
-                The patient has been informed and consents to this AI-assisted preliminary
-                assessment.
+                {t("consentDesc")}
               </span>
             </label>
             <Button
@@ -318,11 +325,11 @@ function TriagePage() {
             >
               {capturingLocation ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Capturing location…
+                  <Loader2 className="h-4 w-4 animate-spin" /> {t("capturingLocation")}...
                 </>
               ) : (
                 <>
-                  Continue <ChevronRight className="h-4 w-4" />
+                  {t("continue")} <ChevronRight className="h-4 w-4" />
                 </>
               )}
             </Button>
@@ -334,10 +341,8 @@ function TriagePage() {
             <div className="flex items-start gap-3 rounded-2xl border bg-card p-4">
               <ScanLine className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
               <div className="text-sm">
-                <p className="font-medium">Frame the affected area inside the guides.</p>
-                <p className="mt-1 text-muted-foreground">
-                  Good lighting, steady hand, fill the frame.
-                </p>
+                <p className="font-medium">{t("frameArea")}</p>
+                <p className="mt-1 text-muted-foreground">{t("lightingDesc")}</p>
               </div>
             </div>
             <WebGPUCheck engineKind={engineKind} ollamaUrl={ollamaUrl} compact />
@@ -356,11 +361,9 @@ function TriagePage() {
             )}
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
             <div className="w-full max-w-sm space-y-2">
-              <p className="text-sm font-medium">{progressText || "Preparing..."}</p>
+              <p className="text-sm font-medium">{progressText || t("preparing") + "..."}</p>
               <Progress value={progress} />
-              <p className="text-xs text-muted-foreground">
-                Running locally on this device. No data is sent.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("runningLocally")}</p>
             </div>
           </div>
         )}
@@ -381,13 +384,13 @@ function TriagePage() {
                 className="flex-1 gap-2"
                 onClick={() => speak(result.recommendation)}
               >
-                <Volume2 className="h-4 w-4" /> Read
+                <Volume2 className="h-4 w-4" /> {t("read")}
               </Button>
               <Button variant="outline" className="flex-1 gap-2" onClick={startVoiceAssessment}>
-                <MessageSquare className="h-4 w-4" /> Voice follow-up
+                <MessageSquare className="h-4 w-4" /> {t("voiceFollowUp")}
               </Button>
               <Button onClick={save} className="flex-1 gap-2" size="lg">
-                <Save className="h-4 w-4" /> Save
+                <Save className="h-4 w-4" /> {t("save")}
               </Button>
             </div>
           </div>
@@ -396,10 +399,8 @@ function TriagePage() {
         {step === "voice" && (
           <div className="mt-6 space-y-5">
             <div className="rounded-3xl border bg-card p-6">
-              <h3 className="font-display text-base font-semibold">Voice follow-up</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Answer the questions to provide more detail for the assessment.
-              </p>
+              <h3 className="font-display text-base font-semibold">{t("voiceFollowUp")}</h3>
+              <p className="mt-1 text-xs text-muted-foreground">{t("voiceFollowUpDesc")}</p>
 
               {voiceHistory.length > 0 && (
                 <div className="mt-4 space-y-2">
@@ -418,7 +419,7 @@ function TriagePage() {
               <div className="mt-4 rounded-xl border bg-secondary/20 p-4">
                 <p className="text-sm font-medium">
                   <Volume2 className="mr-1 inline h-4 w-4 text-primary" />
-                  {currentQuestion || "Preparing..."}
+                  {currentQuestion || t("preparing") + "..."}
                 </p>
               </div>
 
@@ -447,13 +448,13 @@ function TriagePage() {
                   onClick={() => handleVoiceAnswer(typedAnswer)}
                   disabled={!typedAnswer.trim() || voiceBusy}
                 >
-                  Send
+                  {t("send")}
                 </Button>
               </div>
 
               <div className="mt-4 flex justify-between">
                 <p className="text-xs text-muted-foreground">
-                  {voiceHistory.length} of 5 questions answered
+                  {voiceHistory.length} {t("of")} 5 {t("questionsAnswered")}
                 </p>
                 <Button
                   variant="ghost"
@@ -461,7 +462,7 @@ function TriagePage() {
                   className="text-xs"
                   onClick={() => setStep("result")}
                 >
-                  Skip & save
+                  {t("skipAndSave")}
                 </Button>
               </div>
             </div>

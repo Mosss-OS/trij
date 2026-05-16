@@ -9,6 +9,7 @@ import { UrgencyPill } from "@/components/UrgencyPill";
 import { Camera, FileText, Stethoscope, Map as MapIcon, ArrowRight, HardDrive } from "lucide-react";
 import { StorageMonitor } from "@/components/StorageMonitor";
 import { formatDistanceToNow } from "date-fns";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Trij" }] }),
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/_app/dashboard")({
 });
 
 function DashboardPage() {
+  const { t, language } = useI18n();
   const user = useSessionStore((s) => s.user);
   const name = (user?.user_metadata?.name as string) || user?.email?.split("@")[0] || "CHW";
   const [recent, setRecent] = useState<(Assessment & { patient?: Patient })[]>([]);
@@ -40,20 +42,20 @@ function DashboardPage() {
 
   const greeting = (() => {
     const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 18) return "Good afternoon";
-    return "Good evening";
+    if (h < 12) return t("goodMorning");
+    if (h < 18) return t("goodAfternoon");
+    return t("goodEvening");
   })();
 
   return (
     <>
-      <AppHeader title="Trij" subtitle="On-device triage" />
+      <AppHeader title={t("trij")} subtitle={t("onDeviceTriage")} />
       <div className="mx-auto max-w-2xl px-5 pb-10">
         <section className="pt-6">
           <p className="text-sm text-muted-foreground">{greeting},</p>
           <h1 className="mt-1 font-display text-3xl font-bold leading-tight">{name}.</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {new Date().toLocaleDateString(undefined, {
+            {new Date().toLocaleDateString(language, {
               weekday: "long",
               month: "long",
               day: "numeric",
@@ -68,9 +70,9 @@ function DashboardPage() {
               <div className="relative flex items-start justify-between">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wider opacity-80">
-                    Quick action
+                    {t("quickAction")}
                   </p>
-                  <h2 className="mt-1 font-display text-2xl font-bold">New triage</h2>
+                  <h2 className="mt-1 font-display text-2xl font-bold">{t("newTriage")}</h2>
                   <p className="mt-2 text-sm opacity-85">
                     Capture a wound or skin condition photo for instant assessment.
                   </p>
@@ -80,7 +82,7 @@ function DashboardPage() {
                 </div>
               </div>
               <div className="relative mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
-                Start{" "}
+                {t("start")}{" "}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </div>
             </div>
@@ -88,9 +90,9 @@ function DashboardPage() {
         </section>
 
         <section className="mt-5 grid grid-cols-3 gap-3">
-          <QuickTile to="/document" icon={FileText} label="Scan doc" />
-          <QuickTile to="/patients" icon={Stethoscope} label="Patients" />
-          <QuickTile to="/supervisor" icon={MapIcon} label="Map" />
+          <QuickTile to="/document" icon={FileText} label={t("scanDoc")} />
+          <QuickTile to="/patients" icon={Stethoscope} label={t("patients")} />
+          <QuickTile to="/supervisor" icon={MapIcon} label={t("map")} />
         </section>
 
         <section className="mt-8">
@@ -104,16 +106,14 @@ function DashboardPage() {
 
         <section className="mt-8">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Recent triage</h2>
+            <h2 className="font-display text-lg font-semibold">{t("recentTriage")}</h2>
             <Link to="/patients" className="text-xs font-medium text-primary">
-              View all
+              {t("viewAll")}
             </Link>
           </div>
           {recent.length === 0 ? (
             <div className="rounded-2xl border border-dashed bg-card/50 p-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                No assessments yet. Tap "New triage" to start.
-              </p>
+              <p className="text-sm text-muted-foreground">{t("noAssessments")}</p>
             </div>
           ) : (
             <ul className="space-y-2">

@@ -68,6 +68,12 @@ export async function processSyncQueue(
   onProgress?: SyncProgressCallback,
 ): Promise<{ ok: number; failed: number }> {
   if (typeof navigator !== "undefined" && !navigator.onLine) return { ok: 0, failed: 0 };
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return { ok: 0, failed: 0 };
+
   const db = getDB();
   const items = await db.syncQueue.toArray();
   let ok = 0,

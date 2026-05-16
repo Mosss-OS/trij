@@ -7,6 +7,7 @@ import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
 import { Loader2, MapPin, BarChart3, Download, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
+import { useI18n } from "@/lib/i18n";
 import {
   BarChart,
   Bar,
@@ -45,6 +46,7 @@ export const Route = createFileRoute("/_app/supervisor")({
 });
 
 function Supervisor() {
+  const { t } = useI18n();
   const online = useOnlineStatus();
   const [items, setItems] = useState<RemoteAssessment[]>([]);
   const [chwLocations, setChwLocations] = useState<ChwLocation[]>([]);
@@ -155,20 +157,22 @@ function Supervisor() {
 
   return (
     <>
-      <AppHeader title="Supervisor" subtitle="Region overview" />
+      <AppHeader title={t("supervisor")} subtitle={t("regionOverview")} />
       <div className="mx-auto max-w-4xl space-y-6 px-5 py-6">
         {!online && (
           <div className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
-            Supervisor view requires connectivity.
+            {t("connectivityRequired")}
           </div>
         )}
 
         <div className="grid grid-cols-4 gap-3">
-          <Stat label="Routine" value={counts.green} tone="green" />
-          <Stat label="Soon" value={counts.yellow} tone="yellow" />
-          <Stat label="Urgent" value={counts.red} tone="red" />
+          <Stat label={t("routine")} value={counts.green} tone="green" />
+          <Stat label={t("soon")} value={counts.yellow} tone="yellow" />
+          <Stat label={t("urgent")} value={counts.red} tone="red" />
           <div className="rounded-2xl bg-blue-50 p-4 text-blue-700">
-            <p className="text-xs font-semibold uppercase tracking-wider opacity-90">Referrals</p>
+            <p className="text-xs font-semibold uppercase tracking-wider opacity-90">
+              {t("referrals")}
+            </p>
             <p className="mt-1 font-display text-2xl font-bold">{referralCounts}</p>
           </div>
         </div>
@@ -184,9 +188,9 @@ function Supervisor() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {tab === "queue" && "Queue"}
-              {tab === "analytics" && "Analytics"}
-              {tab === "map" && "Map"}
+              {tab === "queue" && t("queue")}
+              {tab === "analytics" && t("analytics")}
+              {tab === "map" && t("map")}
             </button>
           ))}
           <div className="ml-auto flex items-center">
@@ -197,7 +201,7 @@ function Supervisor() {
               onClick={exportCsv}
               disabled={items.length === 0}
             >
-              <Download className="h-3.5 w-3.5" /> CSV
+              <Download className="h-3.5 w-3.5" /> {t("csvExport")}
             </Button>
           </div>
         </div>
@@ -205,16 +209,16 @@ function Supervisor() {
         {activeTab === "queue" && (
           <div className="rounded-3xl border bg-card p-6">
             <div className="mb-4 flex items-center gap-2">
-              <h2 className="font-display text-base font-semibold">Recent triage queue</h2>
+              <h2 className="font-display text-base font-semibold">{t("recentTriageQueue")}</h2>
               <select
                 value={referralFilter}
                 onChange={(e) => setReferralFilter(e.target.value)}
                 className="ml-auto rounded-lg border bg-background px-2 py-1 text-xs"
               >
-                <option value="all">All</option>
-                <option value="pending">Pending</option>
-                <option value="active">In transit</option>
-                <option value="resolved">Resolved</option>
+                <option value="all">{t("all")}</option>
+                <option value="pending">{t("pending_status")}</option>
+                <option value="active">{t("inTransit")}</option>
+                <option value="resolved">{t("resolved")}</option>
               </select>
             </div>
             {loading ? (
@@ -222,14 +226,14 @@ function Supervisor() {
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
               </div>
             ) : filteredItems.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No data yet.</p>
+              <p className="text-sm text-muted-foreground">{t("noDataYet")}</p>
             ) : (
               <ul className="divide-y">
                 {filteredItems.slice(0, 30).map((a) => (
                   <li key={a.id} className="flex items-center justify-between gap-3 py-3">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
-                        {a.patients?.identifier ?? "—"} · {a.condition ?? "Pending"}
+                        {a.patients?.identifier ?? "—"} · {a.condition ?? t("pending_status")}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(a.created_at), "MMM d, p")}
@@ -238,7 +242,7 @@ function Supervisor() {
                     <div className="flex items-center gap-2">
                       {a.referral_status && a.referral_status !== "none" && (
                         <span className="inline-flex items-center rounded-full border bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
-                          {a.referral_status}
+                          {a.referral_status === "active" ? t("inTransit") : a.referral_status}
                         </span>
                       )}
                       {a.urgency && <UrgencyPill urgency={a.urgency} />}
@@ -255,10 +259,10 @@ function Supervisor() {
             <div className="rounded-3xl border bg-card p-6">
               <div className="mb-4 flex items-center gap-2">
                 <BarChart3 className="h-4 w-4 text-primary" />
-                <h3 className="font-display text-sm font-semibold">Top conditions</h3>
+                <h3 className="font-display text-sm font-semibold">{t("topConditions")}</h3>
               </div>
               {conditionData.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No condition data yet.</p>
+                <p className="text-sm text-muted-foreground">{t("noDataYet")}</p>
               ) : (
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={conditionData} layout="vertical" margin={{ left: 0, right: 20 }}>
@@ -274,12 +278,10 @@ function Supervisor() {
             <div className="rounded-3xl border bg-card p-6">
               <div className="mb-4 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                <h3 className="font-display text-sm font-semibold">
-                  Daily assessment volume (14 days)
-                </h3>
+                <h3 className="font-display text-sm font-semibold">{t("dailyAssessmentVolume")}</h3>
               </div>
               {dailyTrend.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No trend data yet.</p>
+                <p className="text-sm text-muted-foreground">{t("noDataYet")}</p>
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={dailyTrend}>
@@ -305,14 +307,14 @@ function Supervisor() {
           <div className="rounded-3xl border bg-card p-6">
             <div className="mb-4 flex items-center gap-2">
               <MapPin className="h-4 w-4 text-primary" />
-              <h2 className="font-display text-base font-semibold">CHW locations</h2>
+              <h2 className="font-display text-base font-semibold">{t("chwLocations")}</h2>
               <span className="text-xs text-muted-foreground">
-                {chwLocations.length} CHW(s) with GPS data
+                {chwLocations.length} {t("gpsDataDesc")}
               </span>
             </div>
             {chwLocations.length === 0 ? (
               <div className="grid h-48 place-items-center rounded-2xl border border-dashed bg-muted/30 text-xs text-muted-foreground">
-                No CHW location data yet. Configure GPS in your profile to appear on the map.
+                {t("noGpsData")}
               </div>
             ) : (
               <Suspense

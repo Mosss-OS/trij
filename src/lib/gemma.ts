@@ -639,10 +639,7 @@ export interface VoiceTurnResult {
   messages: ConvMessage[];
 }
 
-export function initVoiceConversation(
-  language: string,
-  triage: TriageResult,
-): ConvMessage[] {
+export function initVoiceConversation(language: string, triage: TriageResult): ConvMessage[] {
   const system = getConversationSystemPrompt(
     language,
     triage.condition,

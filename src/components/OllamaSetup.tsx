@@ -19,8 +19,10 @@ import {
   RefreshCw,
   Terminal,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export function OllamaSetup() {
+  const { t } = useI18n();
   const s = useSettingsStore();
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
   const [models, setModels] = useState<OllamaModelInfo[]>([]);
@@ -51,7 +53,7 @@ export function OllamaSetup() {
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
-        <Label>Ollama URL</Label>
+        <Label>{t("ollamaUrl")}</Label>
         <Input
           value={s.ollamaUrl}
           onChange={(e) => {
@@ -66,21 +68,21 @@ export function OllamaSetup() {
         {ollamaOk === null && testing && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Checking connection...
+            {t("checkingConnection")}
           </div>
         )}
 
         {ollamaOk === true && (
           <div className="flex items-center gap-2 text-sm text-emerald-600">
             <CheckCircle2 className="h-4 w-4" />
-            Connected
+            {t("connected")}
           </div>
         )}
 
         {ollamaOk === false && !testing && (
           <div className="flex items-center gap-2 text-sm text-urgency-yellow">
             <AlertTriangle className="h-4 w-4" />
-            Not reachable
+            {t("notReachable")}
           </div>
         )}
 
@@ -96,7 +98,7 @@ export function OllamaSetup() {
           ) : (
             <RefreshCw className="h-3.5 w-3.5" />
           )}
-          Test connection
+          {t("testConnection")}
         </Button>
       </div>
 
@@ -107,10 +109,10 @@ export function OllamaSetup() {
           <div className="flex items-start gap-3">
             <Rabbit className="mt-0.5 h-5 w-5 flex-shrink-0 text-urgency-yellow" />
             <div className="text-sm">
-              <p className="font-medium">Install Ollama to run models locally</p>
+              <p className="font-medium">{t("installOllama")}</p>
               <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-xs text-muted-foreground">
                 <li>
-                  Download from{" "}
+                  {t("downloadFrom")}{" "}
                   <a
                     href="https://ollama.com"
                     target="_blank"
@@ -121,16 +123,20 @@ export function OllamaSetup() {
                   </a>
                 </li>
                 <li>
-                  Run in terminal:{" "}
+                  {t("runInTerminal")}{" "}
                   <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
                     ollama pull {s.ollamaModel || "gemma4"}
                   </code>
                 </li>
                 <li>
-                  Restart this app or click{" "}
-                  <button onClick={checkConnection} className="text-primary hover:underline">
-                    Test connection
-                  </button>
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: t("restartApp").replace(
+                        "Test connection",
+                        `<button onClick=${'"'}${checkConnection}${'"'} class="text-primary hover:underline">${t("testConnection")}</button>`,
+                      ),
+                    }}
+                  />
                 </li>
               </ol>
               <a
@@ -138,7 +144,7 @@ export function OllamaSetup() {
                 className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:underline"
               >
                 <Terminal className="h-3 w-3" />
-                View setup script
+                {t("viewSetupScript")}
               </a>
             </div>
           </div>
@@ -148,7 +154,7 @@ export function OllamaSetup() {
       {ollamaOk === true && (
         <>
           <div className="space-y-1.5">
-            <Label>Ollama model</Label>
+            <Label>{t("ollamaModel")}</Label>
             <Input
               value={s.ollamaModel}
               onChange={(e) => s.setOllamaModel(e.target.value)}
@@ -162,11 +168,9 @@ export function OllamaSetup() {
                 <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-urgency-yellow" />
                 <div className="text-sm">
                   <p className="font-medium">
-                    Model &quot;{s.ollamaModel || "gemma4"}&quot; not found
+                    {t("modelNotFound").replace("{model}", s.ollamaModel || "gemma4")}
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Pull it from the terminal or use the button below.
-                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("pullFromTerminal")}</p>
                   <div className="mt-3 flex items-center gap-2">
                     <Button
                       variant="outline"
@@ -175,7 +179,7 @@ export function OllamaSetup() {
                       className="gap-1.5"
                     >
                       <Terminal className="h-3.5 w-3.5" />
-                      Pull instructions
+                      {t("pullInstructions")}
                     </Button>
                   </div>
                   {showPullGuide && (
@@ -197,14 +201,14 @@ export function OllamaSetup() {
           {hasModel === true && (
             <p className="flex items-center gap-2 text-xs text-emerald-600">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Model &quot;{s.ollamaModel || "gemma4"}&quot; is available
+              {t("modelAvailable").replace("{model}", s.ollamaModel || "gemma4")}
             </p>
           )}
 
           {models.length > 0 && (
             <div className="rounded-xl border bg-secondary/30 p-3">
               <p className="text-xs font-medium text-muted-foreground">
-                Available models ({models.length})
+                {t("availableModels").replace("{count}", String(models.length))}
               </p>
               <ul className="mt-2 space-y-1">
                 {models.map((m) => (

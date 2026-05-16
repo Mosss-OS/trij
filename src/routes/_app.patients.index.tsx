@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { AppHeader } from "@/components/AppHeader";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { I18nErrorBoundary } from "@/components/ErrorBoundary";
 import { MergeDialog } from "@/components/MergeDialog";
 import { findPotentialDuplicates, runDedup, type MatchScore } from "@/lib/dedup";
 import { usePatientSearch } from "@/hooks/usePatientSearch";
@@ -10,17 +10,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_app/patients/")({
   head: () => ({ meta: [{ title: "Patients — Trij" }] }),
   component: () => (
-    <ErrorBoundary kind="database">
+    <I18nErrorBoundary kind="database">
       <PatientsList />
-    </ErrorBoundary>
+    </I18nErrorBoundary>
   ),
 });
 
 function PatientsList() {
+  const { t } = useI18n();
   const [q, setQ] = useState("");
   const { patients, results, indexReady, reload } = usePatientSearch(q);
   const [matches, setMatches] = useState<MatchScore[]>([]);
@@ -40,11 +42,11 @@ function PatientsList() {
       const autoMerged = await runDedup();
       const mergedCount = autoMerged.filter((m) => m.score >= 0.9).length;
       if (mergedCount > 0) {
-        toast.success(`Auto-merged ${mergedCount} duplicate pair(s)`);
+        toast.success(`${t("autoMerged")} ${mergedCount} duplicate pair(s)`);
       }
       reload();
     } catch {
-      toast.error("Dedup failed");
+      toast.error(t("dedupFailed"));
     } finally {
       setDedupBusy(false);
     }
@@ -58,14 +60,14 @@ function PatientsList() {
 
   return (
     <>
-      <AppHeader title="Patients" />
+      <AppHeader title={t("patients")} />
       <div className="mx-auto max-w-2xl px-5 py-6">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search name, notes, age\u2026"
+            placeholder={t("searchPlaceholder")}
             className="pl-9"
           />
         </div>
@@ -75,7 +77,7 @@ function PatientsList() {
             <div className="flex items-center gap-2 text-xs">
               <BadgeInfo className="h-4 w-4 text-urgency-yellow" />
               <span className="text-muted-foreground">
-                {matches.length} potential duplicate pair(s) detected
+                {matches.length} {t("potentialDuplicates")}
               </span>
             </div>
             <Button
@@ -86,7 +88,7 @@ function PatientsList() {
               disabled={dedupBusy}
             >
               <GitMerge className="h-3.5 w-3.5" />
-              {dedupBusy ? "Merging..." : "Auto-merge"}
+              {dedupBusy ? t("merging") : t("autoMerge")}
             </Button>
           </div>
         )}
@@ -94,13 +96,13 @@ function PatientsList() {
         {!indexReady ? (
           <div className="mt-10 flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Building search index...
+            {t("buildingIndex")}
           </div>
         ) : results.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-dashed p-8 text-center">
             <UserRound className="mx-auto h-8 w-8 text-muted-foreground" />
             <p className="mt-3 text-sm text-muted-foreground">
-              {q ? "No patients match your search." : "No patients yet."}
+              {q ? t("noPatientsMatch") : t("noPatientsYet")}
             </p>
           </div>
         ) : (
@@ -128,12 +130,13 @@ function PatientsList() {
                         {match && (
                           <span className="flex items-center gap-1 rounded-full border border-urgency-yellow/30 px-2 py-0.5 text-[10px] font-medium text-urgency-yellow">
                             <GitMerge className="h-3 w-3" />
-                            Duplicate
+                            {t("duplicate")}
                           </span>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {p.ageYears ? `${p.ageYears}y` : "\u2014"} · {p.sex ?? "\u2014"} · added{" "}
+                        {p.ageYears ? `${p.ageYears}y` : "\u2014"} · {p.sex ?? "\u2014"} ·{" "}
+                        {t("added")}{" "}
                         {formatDistanceToNow(new Date(p.createdAt), { addSuffix: true })}
                       </p>
                     </div>
@@ -148,7 +151,7 @@ function PatientsList() {
                         }}
                       >
                         <GitMerge className="h-3.5 w-3.5" />
-                        Review
+                        {t("review")}
                       </Button>
                     )}
                   </Link>

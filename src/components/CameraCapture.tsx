@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Camera, RotateCw, X, Loader2, Sun, Moon, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { compressImage, analyzeVideoFrame, type FrameAnalysis } from "@/lib/camera";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   onCapture: (dataUrl: string) => void;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function CameraCapture({ onCapture, onCancel }: Props) {
+  const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facing, setFacing] = useState<"environment" | "user">("environment");
@@ -80,10 +82,10 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
   if (error) {
     return (
       <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-center">
-        <p className="text-sm text-destructive">Camera unavailable: {error}</p>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Check permissions or use the file upload below.
+        <p className="text-sm text-destructive">
+          {t("cameraUnavailable")}: {error}
         </p>
+        <p className="mt-2 text-xs text-muted-foreground">{t("uploadPhoto")}</p>
       </div>
     );
   }
@@ -98,34 +100,32 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
         className="aspect-[3/4] w-full object-cover"
       />
 
-      {/* Quality indicators */}
       {analysis && (
         <div className="pointer-events-none absolute left-3 right-3 top-3 z-10 flex items-center justify-between gap-2">
           {analysis.isTooDark ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-urgency-yellow/90 px-3 py-1 text-xs font-medium text-black backdrop-blur">
               <Moon className="h-3.5 w-3.5" />
-              Low light
+              {t("lowLight")}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600/90 px-3 py-1 text-xs font-medium text-white backdrop-blur">
               <Sun className="h-3.5 w-3.5" />
-              Good lighting
+              {t("goodLighting")}
             </span>
           )}
           {analysis.isBlurry ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-urgency-red/90 px-3 py-1 text-xs font-medium text-white backdrop-blur">
               <AlertTriangle className="h-3.5 w-3.5" />
-              Blurry
+              {t("blurry")}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600/90 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-              Sharp
+              {t("sharp")}
             </span>
           )}
         </div>
       )}
 
-      {/* framing guides */}
       <div className="pointer-events-none absolute inset-6 rounded-2xl border-2 border-white/40" />
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-1 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/60" />
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-8 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/60" />
@@ -133,7 +133,7 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
       {compressing && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/70 text-white">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <p className="text-sm font-medium">Compressing image...</p>
+          <p className="text-sm font-medium">{t("compressingImage")}</p>
         </div>
       )}
 
@@ -142,13 +142,13 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
           className="pointer-events-none absolute left-3 right-3 z-10 rounded-xl bg-black/70 p-3 text-center text-xs text-white/90 backdrop-blur-sm"
           style={{ bottom: "6rem" }}
         >
-          {analysis.isTooDark && <p>Scene too dark. Move to a brighter area.</p>}
-          {analysis.isBlurry && <p>Hold the camera steady.</p>}
+          {analysis.isTooDark && <p>{t("sceneTooDark")}</p>}
+          {analysis.isBlurry && <p>{t("holdSteady")}</p>}
           <button
             className="pointer-events-auto mt-1 text-primary underline"
             onClick={() => setForceCapture(true)}
           >
-            Capture anyway
+            {t("captureAnyway")}
           </button>
         </div>
       )}
@@ -171,7 +171,7 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
           className={`grid h-16 w-16 place-items-center rounded-full shadow-xl ring-4 transition active:scale-95 ${
             canAutoCapture || forceCapture ? "bg-white ring-white/40" : "bg-white/60 ring-white/20"
           }`}
-          aria-label="Capture photo"
+          aria-label={t("capturePhoto")}
         >
           <Camera
             className={`h-7 w-7 ${canAutoCapture || forceCapture ? "text-primary" : "text-muted-foreground"}`}
