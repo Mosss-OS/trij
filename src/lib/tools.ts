@@ -132,16 +132,27 @@ export const FOLLOW_UP_TOOL: ToolDefinition = {
   function: {
     name: "generate_follow_up",
     description:
-      "Generate a single follow-up question for the patient based on the suspected condition and already-asked questions.",
+      "Decide the next step of the patient interview. Either ask ONE more short follow-up question, or mark the interview complete when you have enough information to refine the assessment.",
     parameters: {
       type: "object",
       properties: {
         question: {
           type: "string",
-          description: "The follow-up question in plain language",
+          description:
+            "The next follow-up question in plain language. Required when done=false. Leave empty when done=true.",
+        },
+        rationale: {
+          type: "string",
+          description:
+            "Short clinical reason this question is being asked (1 sentence). Optional.",
+        },
+        done: {
+          type: "boolean",
+          description:
+            "Set true when enough information has been gathered and no more questions are needed.",
         },
       },
-      required: ["question"],
+      required: ["done"],
     },
   },
 };
