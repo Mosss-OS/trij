@@ -75,12 +75,16 @@ function TriagePage() {
   const [progressText, setProgressText] = useState("");
   const [result, setResult] = useState<TriageResult | null>(null);
   const [voiceHistory, setVoiceHistory] = useState<QAPair[]>([]);
-  const [currentQuestion, setCurrentQuestion] = useState("");
   const [voiceBusy, setVoiceBusy] = useState(false);
-  const [typedAnswer, setTypedAnswer] = useState("");
+  const [voiceProcessing, setVoiceProcessing] = useState(false);
   const voiceRef = useRef<VoiceAssistant | null>(null);
-  const kindRef = useRef<string>("demo");
   const convoRef = useRef<ConvMessage[]>([]);
+  const kindRef = useRef<"webllm" | "ollama" | "demo">("webllm");
+  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [typedAnswer, setTypedAnswer] = useState("");
+  const [assessment, setAssessment] = useState<Assessment | null>(null);
+  const [patientId, setPatientId] = useState<string | null>(null);
+
 
   useEffect(() => {
     if (!voiceRef.current) {

@@ -6,6 +6,7 @@ interface SettingsState {
   language: string;
   modelId: string;
   voiceEnabled: boolean;
+  voiceTestMode: boolean;
   cloudFallbackConsent: boolean;
   engineKind: EngineKind | "auto";
   ollamaUrl: string;
@@ -18,6 +19,7 @@ interface SettingsState {
   setLanguage: (l: string) => void;
   setModelId: (id: string) => void;
   setVoiceEnabled: (b: boolean) => void;
+  setVoiceTestMode: (b: boolean) => void;
   setCloudFallbackConsent: (b: boolean) => void;
   setEngineKind: (k: EngineKind | "auto") => void;
   setOllamaUrl: (u: string) => void;
@@ -34,6 +36,7 @@ export const useSettingsStore = create<SettingsState>()(
       language: "en-US",
       modelId: "gemma-4-E2B-it-q4f16_1-MLC",
       voiceEnabled: true,
+      voiceTestMode: false,
       cloudFallbackConsent: false,
       engineKind: "auto",
       ollamaUrl: "http://localhost:11434",
@@ -46,6 +49,7 @@ export const useSettingsStore = create<SettingsState>()(
       setLanguage: (language) => set({ language }),
       setModelId: (modelId) => set({ modelId }),
       setVoiceEnabled: (voiceEnabled) => set({ voiceEnabled }),
+      setVoiceTestMode: (voiceTestMode) => set({ voiceTestMode }),
       setCloudFallbackConsent: (cloudFallbackConsent) => set({ cloudFallbackConsent }),
       setEngineKind: (engineKind) => set({ engineKind }),
       setOllamaUrl: (ollamaUrl) => set({ ollamaUrl }),
@@ -57,8 +61,7 @@ export const useSettingsStore = create<SettingsState>()(
           chwName,
         }),
       setChwName: (chwName) => set({ chwName }),
-      setMinConfidenceForLocalCare: (minConfidenceForLocalCare) =>
-        set({ minConfidenceForLocalCare }),
+      setMinConfidenceForLocalCare: (minConfidenceForLocalCare) => set({ minConfidenceForLocalCare }),
       setThinkingMode: (enabled: boolean) => set({ thinkingMode: enabled }),
     }),
     {
