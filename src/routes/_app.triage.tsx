@@ -24,6 +24,7 @@ import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { TriageResult, Patient, Assessment } from "@/types/trij";
 import { getDB } from "@/lib/db";
 import { queuePatient, queueAssessment } from "@/lib/sync";
+import { getCurrentPosition } from "@/lib/geolocation";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { VoiceAssistant } from "@/lib/voice";
@@ -77,14 +78,26 @@ function TriagePage() {
     voiceRef.current.setLanguage(language);
   }, [language]);
 
+  const [capturingLocation, setCapturingLocation] = useState(false);
+
   const startPatient = async () => {
     if (!user || !identifier.trim()) return;
+    setCapturingLocation(true);
+    const coords = await getCurrentPosition();
+    setCapturingLocation(false);
+    if (coords) {
+      toast.success(`Location captured (±${Math.round(coords.accuracy ?? 0)}m)`);
+    } else {
+      toast.info("Location unavailable — patient saved without coordinates.");
+    }
     const p: Patient = {
       id: crypto.randomUUID(),
       chwUserId: user.id,
       identifier: identifier.trim(),
       ageYears: age ? Number(age) : undefined,
       sex,
+      locationLat: coords?.lat,
+      locationLng: coords?.lng,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -277,11 +290,19 @@ function TriagePage() {
             </label>
             <Button
               onClick={startPatient}
-              disabled={!identifier.trim() || !consent}
+              disabled={!identifier.trim() || !consent || capturingLocation}
               size="lg"
               className="w-full gap-2"
             >
-              Continue <ChevronRight className="h-4 w-4" />
+              {capturingLocation ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Capturing location…
+                </>
+              ) : (
+                <>
+                  Continue <ChevronRight className="h-4 w-4" />
+                </>
+              )}
             </Button>
           </div>
         )}
