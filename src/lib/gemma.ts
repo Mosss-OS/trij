@@ -621,6 +621,116 @@ export async function nextFollowUp(
   return triesJson<{ question: string }>(message.content ?? "", { question: "" }).question;
 }
 
+/* ─── Iterative voice conversation ───────────────────────── */
+
+export interface ConvMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+export interface FollowUpDecision {
+  question: string;
+  rationale?: string;
+  done: boolean;
+}
+
+export interface VoiceTurnResult {
+  decision: FollowUpDecision;
+  messages: ConvMessage[];
+}
+
+export function initVoiceConversation(
+  language: string,
+  triage: TriageResult,
+): ConvMessage[] {
+  const system = getConversationSystemPrompt(
+    language,
+    triage.condition,
+    triage.confidence,
+    triage.urgency,
+    triage.key_visual_features ?? [],
+    useSettingsStore.getState().thinkingMode,
+  );
+  return [{ role: "system", content: system }];
+}
+
+/**
+ * Continues the voice interview. Pass the existing message history plus an
+ * optional latest patient answer. Returns the model's next question (or done)
+ * and the updated history (including the assistant tool turn so the next call
+ * preserves context).
+ */
+export async function nextVoiceTurn(
+  messages: ConvMessage[],
+  patientAnswer: string | null,
+  kind: EngineKind,
+  ollamaUrl?: string,
+): Promise<VoiceTurnResult> {
+  const updated: ConvMessage[] = [...messages];
+  if (patientAnswer && patientAnswer.trim()) {
+    updated.push({ role: "user", content: `Patient answered: "${patientAnswer.trim()}"` });
+  } else if (messages.length === 1) {
+    updated.push({
+      role: "user",
+      content: "Start the interview. Ask the first follow-up question.",
+    });
+  }
+
+  if (kind === "demo") {
+    await sleep(400 + Math.random() * 400);
+    const askedCount = updated.filter((m) => m.role === "assistant").length;
+    const pool = [
+      "How long has the condition been present?",
+      "Is there any pain, itching or burning?",
+      "Any fever, chills or feeling unwell?",
+      "Have you tried any treatment so far?",
+      "Any allergies or other medical conditions?",
+    ];
+    if (askedCount >= pool.length) {
+      const decision: FollowUpDecision = { question: "", done: true };
+      updated.push({ role: "assistant", content: JSON.stringify(decision) });
+      return { decision, messages: updated };
+    }
+    const decision: FollowUpDecision = { question: pool[askedCount], done: false };
+    updated.push({ role: "assistant", content: JSON.stringify(decision) });
+    return { decision, messages: updated };
+  }
+
+  if (kind === "ollama") {
+    const response = await ollamaChat(
+      updated as OllamaMessage[],
+      ollamaUrl ?? "http://localhost:11434",
+      [FOLLOW_UP_TOOL],
+    );
+    const parsed = parseToolCall<FollowUpDecision>(response.message, null);
+    const decision: FollowUpDecision = parsed ?? { question: "", done: true };
+    updated.push({
+      role: "assistant",
+      content: JSON.stringify(decision),
+    });
+    return { decision, messages: updated };
+  }
+
+  const e = await loadWebLLM();
+  const settings = useSettingsStore.getState();
+  const temperature = settings.thinkingMode ? 0.7 : 0.4;
+  const reply = await e.chat.completions.create({
+    messages: updated as never,
+    tools: [FOLLOW_UP_TOOL as never],
+    tool_choice: {
+      type: "function",
+      function: { name: "generate_follow_up" },
+    } as never,
+    temperature,
+    max_tokens: 200,
+  });
+  const message = reply.choices[0]?.message;
+  const parsed = message ? parseToolCall<FollowUpDecision>(message, null) : null;
+  const decision: FollowUpDecision = parsed ?? { question: "", done: true };
+  updated.push({ role: "assistant", content: JSON.stringify(decision) });
+  return { decision, messages: updated };
+}
+
 /* ─── Helpers ─────────────────────────────────────────────── */
 
 function sleep(ms: number) {
