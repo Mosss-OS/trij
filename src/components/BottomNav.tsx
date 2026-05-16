@@ -1,9 +1,15 @@
 import { Link, useRouter } from "@tanstack/react-router";
 import { LayoutGrid, Camera, Users, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { translations } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n";
 
-type NavItem = { to: string; labelKey: string; icon: typeof LayoutGrid; primary?: boolean };
+type NavItem = {
+  to: string;
+  labelKey: keyof (typeof translations)["en-US"];
+  icon: typeof LayoutGrid;
+  primary?: boolean;
+};
 
 export function BottomNav() {
   const { t } = useI18n();
@@ -44,7 +50,7 @@ export function BottomNav() {
               >
                 <Icon className={primary ? "h-5 w-5" : "h-5 w-5"} />
               </span>
-              <span className={primary ? "-mt-2" : ""}>{t(labelKey as any)}</span>
+              <span className={primary ? "-mt-2" : ""}>{t(labelKey)}</span>
             </Link>
           );
         })}
