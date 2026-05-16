@@ -19,7 +19,15 @@ import {
   MicOff,
   MessageSquare,
 } from "lucide-react";
-import { triageImage, detectEngine, isLoaded, loadEngine, nextFollowUp } from "@/lib/gemma";
+import {
+  triageImage,
+  detectEngine,
+  isLoaded,
+  loadEngine,
+  initVoiceConversation,
+  nextVoiceTurn,
+  type ConvMessage,
+} from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { TriageResult, Patient, Assessment } from "@/types/trij";
 import { getDB } from "@/lib/db";
