@@ -99,6 +99,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { isInitialized } = useSessionStore();
 
   useEffect(() => {
     registerSW();
@@ -110,6 +111,11 @@ function RootComponent() {
     });
     return unsub;
   }, []);
+
+  // Wait for auth initialization before rendering app content
+  if (!isInitialized) {
+    return null;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

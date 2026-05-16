@@ -12,10 +12,12 @@ interface SessionState {
   loading: boolean;
   offlineUser: OfflineUser | null;
   isOfflineAuth: boolean;
+  isInitialized: boolean;
   setSession: (s: Session | null) => void;
   setLoading: (b: boolean) => void;
   setOfflineSession: (user: OfflineUser) => void;
   clearAuth: () => void;
+  setInitialized: (b: boolean) => void;
 }
 
 export const useSessionStore = create<SessionState>((set) => ({
@@ -24,8 +26,9 @@ export const useSessionStore = create<SessionState>((set) => ({
   loading: true,
   offlineUser: null,
   isOfflineAuth: false,
+  isInitialized: false,
   setSession: (session) =>
-    set({ session, user: session?.user ?? null, offlineUser: null, isOfflineAuth: false }),
+    set({ session, user: session?.user ?? null, offlineUser: null, isOfflineAuth: false, isInitialized: true }),
   setLoading: (loading) => set({ loading }),
   setOfflineSession: (offlineUser) =>
     set({
@@ -34,6 +37,7 @@ export const useSessionStore = create<SessionState>((set) => ({
       session: null,
       user: { id: offlineUser.id, email: offlineUser.email } as User,
       loading: false,
+      isInitialized: true,
     }),
   clearAuth: () =>
     set({
@@ -42,5 +46,7 @@ export const useSessionStore = create<SessionState>((set) => ({
       offlineUser: null,
       isOfflineAuth: false,
       loading: false,
+      isInitialized: true,
     }),
+  setInitialized: (b: boolean) => set({ isInitialized: b }),
 }));

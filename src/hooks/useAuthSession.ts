@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSessionStore } from "@/stores/sessionStore";
 
 export function useAuthSession() {
-  const { setSession, setLoading } = useSessionStore();
+  const { setSession, setLoading, setInitialized } = useSessionStore();
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | null = null;
     let cancelled = false;
@@ -26,14 +26,18 @@ export function useAuthSession() {
         if (cancelled) return;
         setLoading(false);
         if (session) setSession(session);
+        setInitialized(true);
       })
       .catch(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setInitialized(true);
+        }
       });
 
     return () => {
       cancelled = true;
       subscription?.unsubscribe();
     };
-  }, [setSession, setLoading]);
+  }, [setSession, setLoading, setInitialized]);
 }

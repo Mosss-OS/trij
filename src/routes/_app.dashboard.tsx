@@ -74,7 +74,7 @@ function DashboardPage() {
                   </p>
                   <h2 className="mt-1 font-display text-2xl font-bold">{t("newTriage")}</h2>
                   <p className="mt-2 text-sm opacity-85">
-                    Capture a wound or skin condition photo for instant assessment.
+                    {t("triageDesc")}
                   </p>
                 </div>
                 <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/15 backdrop-blur">
@@ -127,10 +127,10 @@ function DashboardPage() {
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <p className="truncate font-medium">
-                          {a.patient?.identifier ?? "Unknown patient"}
+                          {a.patient?.identifier ?? t("unknownPatient")}
                         </p>
                         <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                          {a.condition ?? "Pending"} ·{" "}
+                          {a.condition ?? t("pending_status")} ·{" "}
                           {formatDistanceToNow(new Date(a.createdAt), { addSuffix: true })}
                         </p>
                       </div>
