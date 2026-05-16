@@ -264,6 +264,7 @@ export const translations = {
     noActiveSession: "No active session",
     testConnection: "Test connection",
     csvExport: "Export CSV",
+    skip: "Skip",
   },
   "fr-FR": {
     dashboard: "Tableau de bord",
@@ -494,6 +495,7 @@ export const translations = {
     noActiveSession: "Aucune session active",
     testConnection: "Tester la connexion",
     csvExport: "Exporter CSV",
+    skip: "Passer",
   },
   "sw-KE": {
     dashboard: "Dashibodi",
@@ -716,6 +718,7 @@ export const translations = {
     noActiveSession: "Hakuna kipindi cha kazi",
     testConnection: "Jaribu muunganisho",
     csvExport: "Hamisha CSV",
+    skip: "Ruka",
   },
   "hi-IN": {
     dashboard: "डैशबोर्ड",
