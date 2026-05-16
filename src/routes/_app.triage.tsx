@@ -290,11 +290,19 @@ function TriagePage() {
             </label>
             <Button
               onClick={startPatient}
-              disabled={!identifier.trim() || !consent}
+              disabled={!identifier.trim() || !consent || capturingLocation}
               size="lg"
               className="w-full gap-2"
             >
-              Continue <ChevronRight className="h-4 w-4" />
+              {capturingLocation ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Capturing location…
+                </>
+              ) : (
+                <>
+                  Continue <ChevronRight className="h-4 w-4" />
+                </>
+              )}
             </Button>
           </div>
         )}
