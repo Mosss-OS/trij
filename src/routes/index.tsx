@@ -21,6 +21,20 @@ import {
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 
+const LS_LAST_USER = "trij_last_user_id";
+
+function getLastUserId(): string | null {
+  return localStorage.getItem(LS_LAST_USER);
+}
+
+function setLastUserId(id: string) {
+  localStorage.setItem(LS_LAST_USER, id);
+}
+
+function clearLastUserId() {
+  localStorage.removeItem(LS_LAST_USER);
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -57,6 +71,7 @@ function LoginPage() {
   const [checkingPin, setCheckingPin] = useState(true);
 
   const [showPinSetup, setShowPinSetup] = useState(false);
+  const [pendingPinUser, setPendingPinUser] = useState<string | null>(null);
   const [setupPinValue, setSetupPinValue] = useState("");
   const [setupPinConfirm, setSetupPinConfirm] = useState("");
   const [setupPinError, setSetupPinError] = useState("");
@@ -70,23 +85,31 @@ function LoginPage() {
       return;
     }
     setCheckingPin(true);
-    getDB()
-      .pinAuth.toArray()
-      .then((records) => {
+    (async () => {
+      try {
+        const lastId = getLastUserId();
+        let records: import("@/lib/pin-auth").PinRecord[];
+        if (lastId) {
+          const r = await getDB().pinAuth.get(lastId);
+          records = r ? [r] : [];
+        } else {
+          records = await getDB().pinAuth.toArray();
+        }
         if (records.length > 0) {
-          const latest = records[records.length - 1];
-          setEmail(latest.email);
+          const rec = records[0];
+          setEmail(rec.email);
           setPinMode(true);
-          setLocked(latest.locked);
-          setRemainingAttempts(Math.max(0, 5 - latest.failedAttempts));
+          setLocked(rec.locked);
+          setRemainingAttempts(Math.max(0, 5 - rec.failedAttempts));
         } else {
           setPinMode(false);
         }
-      })
-      .catch(() => {
+      } catch {
         setPinMode(false);
-      })
-      .finally(() => setCheckingPin(false));
+      } finally {
+        setCheckingPin(false);
+      }
+    })();
   }, [loading, online, session, offlineUser]);
 
   if (loading || checkingPin) {
@@ -114,20 +137,14 @@ function LoginPage() {
         if (error) throw error;
         if (data.session?.user) {
           toast.success(t("accountCreated"));
+          setLastUserId(data.session.user.id);
           const hasPin = await hasPinForUser(data.session.user.id);
-          if (!hasPin) setShowPinSetup(true);
-        } else {
-          const { data: signIn, error: signInErr } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          if (signInErr) {
-            toast.success(t("checkEmailConfirm"));
-          } else if (signIn.session?.user) {
-            toast.success(t("accountCreated"));
-            const hasPin = await hasPinForUser(signIn.session.user.id);
-            if (!hasPin) setShowPinSetup(true);
+          if (!hasPin) {
+            setPendingPinUser(data.session.user.id);
+            setShowPinSetup(true);
           }
+        } else {
+          toast.info(t("checkEmailConfirm"));
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -137,8 +154,10 @@ function LoginPage() {
         if (error) throw error;
         if (data.session?.user) {
           const { user } = data.session;
+          setLastUserId(user.id);
           const hasPin = await hasPinForUser(user.id);
           if (!hasPin) {
+            setPendingPinUser(user.id);
             setShowPinSetup(true);
           }
         }
@@ -155,12 +174,19 @@ function LoginPage() {
     setBusy(true);
     setPinError("");
     try {
-      const records = await getDB().pinAuth.toArray();
-      if (records.length === 0) {
+      const lastId = getLastUserId();
+      let resolved: import("@/lib/pin-auth").PinRecord[];
+      if (lastId) {
+        const r = await getDB().pinAuth.get(lastId);
+        resolved = r ? [r] : [];
+      } else {
+        resolved = await getDB().pinAuth.toArray();
+      }
+      if (resolved.length === 0) {
         setPinError(t("noPinConfigured"));
         return;
       }
-      const record = records[records.length - 1];
+      const record = resolved[0];
       if (record.locked) {
         setLocked(true);
         setPinError(t("accountLocked"));
@@ -168,10 +194,10 @@ function LoginPage() {
       }
       const ok = await verifyPin(record.userId, pin);
       if (!ok) {
-        const nowLocked = await recordFailedAttempt(record.userId);
-        const remaining = Math.max(0, 4 - record.failedAttempts);
-        setRemainingAttempts(nowLocked ? 0 : remaining);
-        if (nowLocked) {
+        const result = await recordFailedAttempt(record.userId);
+        const remaining = Math.max(0, 5 - result.attempts);
+        setRemainingAttempts(result.locked ? 0 : remaining);
+        if (result.locked) {
           setLocked(true);
           setPinError(t("accountLocked"));
         } else {
@@ -204,10 +230,15 @@ function LoginPage() {
     setBusy(true);
     try {
       const s = useSessionStore.getState().session;
-      if (!s?.user) throw new Error(t("noActiveSession"));
-      await setupPin(s.user.id, s.user.email ?? email, setupPinValue);
+      const uid = pendingPinUser || s?.user?.id;
+      if (!uid) throw new Error(t("noActiveSession"));
+      const userEmail = s?.user?.email ?? email;
+      await setupPin(uid, userEmail, setupPinValue);
+      const newRec = await getDB().pinAuth.get(uid);
+      if (!newRec) throw new Error("Failed to save PIN");
       toast.success(t("pinConfiguredSuccessfully"));
       setShowPinSetup(false);
+      setPendingPinUser(null);
       setSetupPinValue("");
       setSetupPinConfirm("");
     } catch (err) {
@@ -335,10 +366,27 @@ function LoginPage() {
                 />
               </div>
               {setupPinError && <p className="text-xs text-destructive">{setupPinError}</p>}
-              <Button onClick={handleSetupPin} disabled={busy} className="w-full" size="lg">
-                {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t("savePin")}
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={handleSetupPin} disabled={busy} className="flex-1" size="lg">
+                  {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {t("savePin")}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowPinSetup(false);
+                    setPendingPinUser(null);
+                    setSetupPinValue("");
+                    setSetupPinConfirm("");
+                    setSetupPinError("");
+                  }}
+                  disabled={busy}
+                  className="flex-1"
+                  size="lg"
+                >
+                  {t("skip")}
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
@@ -488,10 +536,27 @@ function LoginPage() {
               />
             </div>
             {setupPinError && <p className="text-xs text-destructive">{setupPinError}</p>}
-            <Button onClick={handleSetupPin} disabled={busy} className="w-full" size="lg">
-              {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t("savePin")}
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleSetupPin} disabled={busy} className="flex-1" size="lg">
+                {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {t("savePin")}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowPinSetup(false);
+                  setPendingPinUser(null);
+                  setSetupPinValue("");
+                  setSetupPinConfirm("");
+                  setSetupPinError("");
+                }}
+                disabled={busy}
+                className="flex-1"
+                size="lg"
+              >
+                {t("skip")}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
