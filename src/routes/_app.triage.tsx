@@ -170,36 +170,31 @@ function TriagePage() {
   };
 
   const startVoiceAssessment = async () => {
-    if (!result?.follow_up_questions?.length) {
-      toast.info("No follow-up questions available.");
-      return;
-    }
-    setVoiceHistory([]);
-    setStep("voice");
-    setTimeout(() => askNextQuestion(0, []), 300);
-  };
-
-  const askNextQuestion = async (index: number, history: QAPair[]) => {
     if (!result) return;
-    const q =
-      index < result.follow_up_questions.length
-        ? result.follow_up_questions[index]
-        : await nextFollowUp(
-            language,
-            result.condition,
-            history.map((h) => `${h.question} ${h.answer}`),
-            kindRef.current as "webllm" | "ollama" | "demo",
-            ollamaUrl,
-          );
-    if (!q) {
-      toast.success("Voice assessment complete.");
+    setVoiceHistory([]);
+    convoRef.current = initVoiceConversation(language, result);
+    setStep("voice");
+    setVoiceBusy(true);
+    try {
+      const { decision, messages } = await nextVoiceTurn(
+        convoRef.current,
+        null,
+        kindRef.current as "webllm" | "ollama" | "demo",
+        ollamaUrl,
+      );
+      convoRef.current = messages;
+      if (decision.done || !decision.question) {
+        toast.info("No follow-up needed.");
+        setStep("result");
+        return;
+      }
+      setCurrentQuestion(decision.question);
+      if (voiceEnabled) voiceRef.current?.speak(decision.question);
+    } catch (err) {
+      toast.error("Voice follow-up failed: " + (err as Error).message);
       setStep("result");
-      return;
-    }
-    setCurrentQuestion(q);
-    const v = voiceRef.current;
-    if (v && voiceEnabled) {
-      v.speak(q);
+    } finally {
+      setVoiceBusy(false);
     }
   };
 
@@ -214,8 +209,26 @@ function TriagePage() {
       return;
     }
     setVoiceBusy(true);
-    await askNextQuestion(updated.length, updated);
-    setVoiceBusy(false);
+    try {
+      const { decision, messages } = await nextVoiceTurn(
+        convoRef.current,
+        answer.trim(),
+        kindRef.current as "webllm" | "ollama" | "demo",
+        ollamaUrl,
+      );
+      convoRef.current = messages;
+      if (decision.done || !decision.question) {
+        toast.success("Voice assessment complete.");
+        setStep("result");
+        return;
+      }
+      setCurrentQuestion(decision.question);
+      if (voiceEnabled) voiceRef.current?.speak(decision.question);
+    } catch (err) {
+      toast.error("Voice follow-up failed: " + (err as Error).message);
+    } finally {
+      setVoiceBusy(false);
+    }
   };
 
   const recordVoiceAnswer = async () => {
