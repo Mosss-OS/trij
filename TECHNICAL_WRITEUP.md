@@ -176,10 +176,10 @@ We target **Gemma 4 E2B (2B parameters)** for on-device use — enough capabilit
 
 ## 8. Submission Requirements
 
-- ✅ **Working demo**: Deployed PWA (link below)
+- ✅ **Working demo**: Run locally via `npm run dev` — pending deployment
 - ✅ **Public code repository**: [GitHub — Mosss-OS/trij](https://github.com/Mosss-OS/trij)
 - ✅ **Technical writeup**: This document
-- ✅ **Video demo**: [YouTube — Trij Demo](https://youtube.com) _(link to be added)_
+- ✅ **Video demo**: Pending recording
 - ✅ **Gemma 4 integration**: WebLLM + Ollama bridge + Demo mode
 - ✅ **Privacy**: All inference on-device; no cloud AI API used
 
@@ -189,9 +189,9 @@ We target **Gemma 4 E2B (2B parameters)** for on-device use — enough capabilit
 
 | Resource           | URL                                                        |
 | ------------------ | ---------------------------------------------------------- |
-| Live demo          | *https://trij.app* (add when deployed)                     |
+| Live demo          | Pending deployment — run `npm run dev` locally             |
 | GitHub repo        | https://github.com/Mosss-OS/trij                           |
-| Video demo         | _Add YouTube link_                                         |
+| Video demo         | Pending recording                                          |
 | Kaggle competition | https://www.kaggle.com/competitions/gemma-4-good-hackathon |
 | Gemma 4 models     | https://www.kaggle.com/models/google/gemma-4               |
 
