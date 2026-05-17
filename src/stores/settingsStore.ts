@@ -16,6 +16,7 @@ interface SettingsState {
   chwName: string;
   minConfidenceForLocalCare: number;
   thinkingMode: boolean;
+  kioskMode: boolean;
   setLanguage: (l: string) => void;
   setModelId: (id: string) => void;
   setVoiceEnabled: (b: boolean) => void;
@@ -28,6 +29,7 @@ interface SettingsState {
   setChwName: (name: string) => void;
   setMinConfidenceForLocalCare: (v: number) => void;
   setThinkingMode: (enabled: boolean) => void;
+  setKioskMode: (enabled: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -46,6 +48,7 @@ export const useSettingsStore = create<SettingsState>()(
       chwName: "",
       minConfidenceForLocalCare: 70,
       thinkingMode: false,
+      kioskMode: false,
       setLanguage: (language) => set({ language }),
       setModelId: (modelId) => set({ modelId }),
       setVoiceEnabled: (voiceEnabled) => set({ voiceEnabled }),
@@ -64,6 +67,7 @@ export const useSettingsStore = create<SettingsState>()(
       setMinConfidenceForLocalCare: (minConfidenceForLocalCare) =>
         set({ minConfidenceForLocalCare }),
       setThinkingMode: (enabled: boolean) => set({ thinkingMode: enabled }),
+      setKioskMode: (enabled: boolean) => set({ kioskMode: enabled }),
     }),
     {
       name: "trij-settings",
