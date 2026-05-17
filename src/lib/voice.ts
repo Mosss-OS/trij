@@ -47,6 +47,33 @@ export class VoiceAssistant {
     this.synthesis.speak(u);
   }
 
+  speakAndWait(text: string, lang?: string): Promise<void> {
+    return new Promise((resolve) => {
+      if (!this.synthesis) return resolve();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang ?? this.language;
+      u.onend = () => resolve();
+      u.onerror = () => resolve();
+      this.synthesis.cancel();
+      this.synthesis.speak(u);
+    });
+  }
+
+  async confirm(prompt: string, lang?: string): Promise<boolean> {
+    await this.speakAndWait(prompt, lang);
+    try {
+      const answer = await this.listen();
+      const trimmed = answer.toLowerCase().trim();
+      const yesWords = ["yes", "yeah", "yep", "sure", "okay", "ok", "correct", "right", "confirm", "y"];
+      const noWords = ["no", "nope", "nah", "not", "negative", "n"];
+      if (yesWords.some((w) => trimmed.startsWith(w) || trimmed.includes(w))) return true;
+      if (noWords.some((w) => trimmed.startsWith(w) || trimmed.includes(w))) return false;
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
   stop() {
     this.synthesis?.cancel();
   }
