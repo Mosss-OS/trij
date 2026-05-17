@@ -87,6 +87,16 @@ function SettingsPage() {
     <>
       <AppHeader title={t("settings")} />
       <div className="mx-auto max-w-2xl space-y-6 px-5 py-6">
+        <Section title="Accessibility">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>{t("kioskMode")}</Label>
+              <p className="text-xs text-muted-foreground">{t("kioskModeDesc")}</p>
+            </div>
+            <Switch checked={s.kioskMode} onCheckedChange={s.setKioskMode} />
+          </div>
+        </Section>
+
         <Section title={t("languageAndVoice")}>
           <div className="space-y-1.5">
             <Label>{t("interfaceAndSpeech")}</Label>
