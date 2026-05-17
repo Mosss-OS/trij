@@ -1,5 +1,5 @@
-import { CreateMLCEngine, type MLCEngine, type InitProgressReport } from "@mlc-ai/web-llm";
-export type { InitProgressReport };
+import type { MLCEngine } from "@mlc-ai/web-llm";
+export type { InitProgressReport } from "@mlc-ai/web-llm";
 import {
   getTriageSystemPrompt,
   getDocumentSystemPrompt,
@@ -220,6 +220,7 @@ function formatBytes(bytes: number): string {
 async function loadWebLLM(onProgress?: (p: InitProgressReport) => void): Promise<MLCEngine> {
   if (webllmEngine) return webllmEngine;
   if (webllmLoading) return webllmLoading;
+  const { CreateMLCEngine } = await import("@mlc-ai/web-llm");
   webllmLoading = CreateMLCEngine(WEBLLM_MODEL_ID, {
     initProgressCallback: (report) => onProgress?.(report),
   })
