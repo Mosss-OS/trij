@@ -43,7 +43,7 @@ function LandingPage() {
   const authed = !!(session || offlineUser);
 
   return (
-    <div className="font-serif min-h-screen overflow-x-hidden bg-[oklch(0.98_0.008_85)] text-[oklch(0.18_0.02_240)] antialiased">
+    <div className="min-h-screen overflow-x-hidden bg-[oklch(0.98_0.008_85)] text-[oklch(0.18_0.02_240)] antialiased">
       <BackgroundOrbs />
       <Nav authed={authed} />
       <Hero authed={authed} />
