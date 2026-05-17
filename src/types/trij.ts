@@ -26,6 +26,7 @@ export interface Assessment {
   patientId: string;
   chwUserId: string;
   images: string[]; // data URLs (offline-first)
+  imageSource?: "camera" | "gallery";
   condition?: string;
   confidence?: number;
   urgency?: Urgency;
