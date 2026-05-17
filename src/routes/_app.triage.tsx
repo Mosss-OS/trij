@@ -164,6 +164,7 @@ function TriagePage() {
       sex,
       locationLat: coords?.lat,
       locationLng: coords?.lng,
+      version: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -228,6 +229,7 @@ function TriagePage() {
           : undefined,
       language,
       imageSource,
+      version: 0,
       createdAt: new Date().toISOString(),
     };
     await queueAssessment(a);
