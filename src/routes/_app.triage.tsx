@@ -40,6 +40,7 @@ import { VoiceAssistant } from "@/lib/voice";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { useVoiceGuidance } from "@/hooks/useVoiceGuidance";
+import { CloudInferenceIndicator } from "@/components/CloudInferenceIndicator";
 
 interface QAPair {
   question: string;
@@ -581,7 +582,11 @@ function TriagePage() {
             <div className="w-full max-w-sm space-y-2">
               <p className="text-sm font-medium">{progressText || t("preparing") + "..."}</p>
               <Progress value={progress} />
-              <p className="text-xs text-muted-foreground">{t("runningLocally")}</p>
+              {engineKind === "cloud" ? (
+                <CloudInferenceIndicator active />
+              ) : (
+                <p className="text-xs text-muted-foreground">{t("runningLocally")}</p>
+              )}
             </div>
           </div>
         )}
