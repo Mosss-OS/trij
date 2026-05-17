@@ -22,7 +22,7 @@ function AppLayout() {
     );
   }
   const authed = !!(session || offlineUser);
-  if (!authed) return <Navigate to="/" />;
+  if (!authed) return <Navigate to="/login" />;
   if (!disclaimerAccepted) return <DisclaimerDialog />;
   return (
     <div className="min-h-screen pb-24">
