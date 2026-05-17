@@ -2,6 +2,7 @@
 
 [![Gemma 4 Good Hackathon](https://img.shields.io/badge/Kaggle-Gemma_4_Good_Hackathon-20BEFF?logo=kaggle)](https://www.kaggle.com/competitions/gemma-4-good-hackathon)
 [![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![CI](https://github.com/Mosss-OS/trij/actions/workflows/ci.yml/badge.svg)](https://github.com/Mosss-OS/trij/actions/workflows/ci.yml)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E)
