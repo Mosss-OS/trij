@@ -1,0 +1,13 @@
+{
+  "buildCommand": "vite build",
+  "installCommand": "bun install",
+  "functions": {
+    "api/index.mjs": {
+      "includeFiles": "dist/**",
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ]
+}
