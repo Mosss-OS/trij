@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronUp,
   Info,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -289,6 +290,30 @@ export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 
 
       {result.key_visual_features.length > 0 && (
         <WhyThisDiagnosis features={result.key_visual_features} />
+      )}
+
+      {result.rag_sources && result.rag_sources.length > 0 && (
+        <div className="rounded-3xl border bg-card p-6">
+          <div className="mb-3 flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-primary" />
+            <h3 className="font-display text-sm font-semibold">{t("sources")}</h3>
+          </div>
+          <ul className="space-y-3">
+            {result.rag_sources.slice(0, 4).map((s, i) => (
+              <li key={i} className="rounded-xl bg-secondary/20 p-3">
+                <p className="text-sm font-medium">{s.condition}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  {s.treatment}
+                </p>
+                {s.who_guideline && (
+                  <p className="mt-1 text-[11px] italic text-muted-foreground/70">
+                    {s.who_guideline}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <div className="flex items-start gap-3 rounded-2xl border border-urgency-yellow/20 bg-urgency-yellow/5 p-4 text-xs text-muted-foreground">

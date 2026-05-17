@@ -1,5 +1,12 @@
-export function getTriageSystemPrompt(language: string, thinkingMode: boolean = false): string {
+export function getTriageSystemPrompt(
+  language: string,
+  thinkingMode: boolean = false,
+  ragContext?: string,
+): string {
   const thinkingPrefix = thinkingMode ? "<|think|>" : "";
+  const ragSection = ragContext
+    ? `\n\nReference medical knowledge (use these for grounded recommendations):\n${ragContext}`
+    : "";
   return `${thinkingPrefix}You are Trij, an AI medical triage assistant for community health workers.
 You analyze images of wounds, rashes, and skin conditions.
 Use the triage_assessment function to return your assessment.
@@ -9,7 +16,7 @@ Urgency rules:
 - YELLOW: needs medical attention within 24-48 hours, consider referral
 - RED: emergency, immediate referral required
 
-Respond in ${language}.`;
+Respond in ${language}.${ragSection}`;
 }
 
 export function getDocumentSystemPrompt(language: string, thinkingMode: boolean = false): string {
