@@ -72,6 +72,7 @@ function TriagePage() {
   const [age, setAge] = useState("");
   const [sex, setSex] = useState<"M" | "F" | "other">("F");
   const [image, setImage] = useState<string | null>(null);
+  const [imageSource, setImageSource] = useState<"camera" | "gallery">("camera");
   const [consent, setConsent] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
@@ -226,6 +227,7 @@ function TriagePage() {
           ? voiceHistory.map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`).join("\n")
           : undefined,
       language,
+      imageSource,
       createdAt: new Date().toISOString(),
     };
     await queueAssessment(a);
@@ -449,7 +451,7 @@ function TriagePage() {
               </div>
             </div>
             <WebGPUCheck engineKind={engineKind} ollamaUrl={ollamaUrl} compact />
-            <CameraCapture onCapture={onCapture} onCancel={() => setStep("patient")} />
+            <CameraCapture onCapture={onCapture} onSource={(s) => setImageSource(s)} onCancel={() => setStep("patient")} />
           </div>
         )}
 
