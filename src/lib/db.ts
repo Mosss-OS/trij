@@ -1,5 +1,5 @@
 import Dexie, { type Table } from "dexie";
-import type { Patient, Assessment, SyncQueueItem, TriageResult } from "@/types/trij";
+import type { Patient, Assessment, SyncQueueItem, SyncConflict, TriageResult } from "@/types/trij";
 import type { ConvMessage } from "@/lib/gemma";
 
 export interface VoiceDraft {
@@ -42,6 +42,7 @@ export class TrijDB extends Dexie {
   errorLogs!: Table<ErrorLog, number>;
   pinAuth!: Table<PinAuthRecord, string>;
   voiceDrafts!: Table<VoiceDraft, string>;
+  syncConflicts!: Table<SyncConflict, number>;
 
   constructor() {
     super("TrijDB");
@@ -59,6 +60,15 @@ export class TrijDB extends Dexie {
       errorLogs: "++id, timestamp",
       pinAuth: "userId, email",
       voiceDrafts: "patientId, chwUserId, updatedAt",
+    });
+    this.version(5).stores({
+      patients: "id, chwUserId, identifier, createdAt, syncedAt",
+      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
+      syncQueue: "++id, table, action, recordId, createdAt",
+      errorLogs: "++id, timestamp",
+      pinAuth: "userId, email",
+      voiceDrafts: "patientId, chwUserId, updatedAt",
+      syncConflicts: "++id, table, recordId, createdAt",
     });
   }
 }

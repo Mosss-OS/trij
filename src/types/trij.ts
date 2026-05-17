@@ -14,6 +14,7 @@ export interface Patient {
   updatedAt: string;
   syncedAt?: string;
   mergedInto?: string;
+  version: number;
 }
 
 export interface PossibleCondition {
@@ -43,6 +44,7 @@ export interface Assessment {
   consentTimestamp?: string;
   createdAt: string;
   syncedAt?: string;
+  version: number;
 }
 
 export interface SyncQueueItem {
@@ -54,6 +56,19 @@ export interface SyncQueueItem {
   createdAt: string;
   attempts: number;
   lastError?: string;
+}
+
+export interface SyncConflict {
+  id?: number;
+  table: "patients" | "assessments";
+  recordId: string;
+  localVersion: number;
+  serverVersion: number;
+  localData: unknown;
+  serverData: unknown;
+  resolution?: "local" | "server" | "manual";
+  resolvedAt?: string;
+  createdAt: string;
 }
 
 export interface TriageResult {
