@@ -147,6 +147,7 @@ export const translations = {
     limitedDifferentialNote: "Limited differential — may need broader evaluation",
     lowProbability: "Low probability",
     whyThisDiagnosis: "Why this diagnosis?",
+    sources: "Sources",
     aiDisclaimer:
       "This is a preliminary AI-assisted assessment and does not constitute a clinical diagnosis. Always verify with clinical judgment and refer when in doubt.",
     scanningDoc: "Scan document",
@@ -450,6 +451,7 @@ export const translations = {
     limitedDifferentialNote: "Diagnostic différentiel limité — une évaluation plus large peut être nécessaire",
     lowProbability: "Faible probabilité",
     whyThisDiagnosis: "Pourquoi ce diagnostic ?",
+    sources: "Sources",
     aiDisclaimer:
       "Ceci est une évaluation préliminaire assistée par l'IA et ne constitue pas un diagnostic clinique. Vérifiez toujours avec un jugement clinique.",
     scanningDoc: "Scanner un document",
@@ -757,6 +759,7 @@ export const translations = {
     limitedDifferentialNote: "Tofauti chache — inaweza kuhitaji tathmini pana zaidi",
     lowProbability: "Uwezekano mdogo",
     whyThisDiagnosis: "Kwa nini utambuzi huu?",
+    sources: "Vyanzo",
     aiDisclaimer:
       "Hii ni tathmini ya awali inayosaidiwa na AI na sio utambuzi wa kimatibabu. Thibitisha kila mara kwa uamuzi wa kimatibabu.",
     scanningDoc: "Changanua hati",
@@ -1062,6 +1065,7 @@ export const translations = {
     limitedDifferentialNote: "सीमित विभेदक — व्यापक मूल्यांकन की आवश्यकता हो सकती है",
     lowProbability: "कम संभावना",
     whyThisDiagnosis: "यह निदान क्यों?",
+    sources: "स्रोत",
     aiDisclaimer:
       "यह एक प्रारंभिक AI-सहायक मूल्यांकन है और यह नैदानिक निदान नहीं है। हमेशा नैदानिक निर्णय से सत्यापित करें और संदेह होने पर रेफर करें।",
     scanningDoc: "दस्तावेज़ स्कैन करें",
@@ -1368,6 +1372,7 @@ export const translations = {
     limitedDifferentialNote: "Diagnóstico diferencial limitado — pode precisar de avaliação mais ampla",
     lowProbability: "Baixa probabilidade",
     whyThisDiagnosis: "Por que este diagnóstico?",
+    sources: "Fontes",
     aiDisclaimer:
       "Esta é uma avaliação preliminar assistida por IA e não constitui um diagnóstico clínico. Sempre verifique com julgamento clínico e encaminhe em caso de dúvida.",
     scanningDoc: "Escanear documento",
@@ -1669,6 +1674,7 @@ export const translations = {
     limitedDifferentialNote: "تشخيص تفريقي محدود — قد يحتاج إلى تقييم أوسع",
     lowProbability: "احتمال منخفض",
     whyThisDiagnosis: "لماذا هذا التشخيص؟",
+    sources: "المصادر",
     aiDisclaimer:
       "هذا تقييم أولي مدعوم بالذكاء الاصطناعي ولا يشكل تشخيصًا سريريًا. تحقق دائمًا بالحكم السريري وأحِل عند الشك.",
     scanningDoc: "مسح المستند",
@@ -1975,6 +1981,7 @@ export const translations = {
     limitedDifferentialNote: "Diagnóstico diferencial limitado — puede necesitar evaluación más amplia",
     lowProbability: "Baja probabilidad",
     whyThisDiagnosis: "¿Por qué este diagnóstico?",
+    sources: "Fuentes",
     aiDisclaimer:
       "Esta es una evaluación preliminar asistida por IA y no constituye un diagnóstico clínico. Verifique siempre con juicio clínico y derive ante la duda.",
     scanningDoc: "Escanear documento",

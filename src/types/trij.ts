@@ -80,6 +80,7 @@ export interface TriageResult {
   recommendation: string;
   referral_advised: boolean;
   follow_up_questions: string[];
+  rag_sources?: Array<{ condition: string; treatment: string; who_guideline: string }>;
 }
 
 export interface DocumentResult {
