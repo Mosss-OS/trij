@@ -1,5 +1,19 @@
 import Dexie, { type Table } from "dexie";
-import type { Patient, Assessment, SyncQueueItem } from "@/types/trij";
+import type { Patient, Assessment, SyncQueueItem, TriageResult } from "@/types/trij";
+import type { ConvMessage } from "@/lib/gemma";
+
+export interface VoiceDraft {
+  patientId: string;
+  chwUserId: string;
+  patient: Patient;
+  triageResult: TriageResult;
+  image: string;
+  messages: ConvMessage[];
+  qaHistory: { question: string; answer: string }[];
+  currentQuestion: string;
+  consent: boolean;
+  updatedAt: string;
+}
 
 export interface ErrorLog {
   id?: number;
