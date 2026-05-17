@@ -265,11 +265,12 @@ function TriagePage() {
 
 
   const handleVoiceAnswer = async (answer: string) => {
-    if (!answer.trim()) return;
+    if (!answer.trim() || !patient || !result || !image) return;
     const updated = [...voiceHistory, { question: currentQuestion, answer: answer.trim() }];
     setVoiceHistory(updated);
     setTypedAnswer("");
     if (updated.length >= 5) {
+      await persistDraft(patient, result, image, updated, "", convoRef.current, consent);
       toast.success(t("voiceComplete"));
       setStep("result");
       return;
@@ -284,11 +285,13 @@ function TriagePage() {
       );
       convoRef.current = messages;
       if (decision.done || !decision.question) {
+        await persistDraft(patient, result, image, updated, "", messages, consent);
         toast.success(t("voiceComplete"));
         setStep("result");
         return;
       }
       setCurrentQuestion(decision.question);
+      await persistDraft(patient, result, image, updated, decision.question, messages, consent);
       if (voiceEnabled) voiceRef.current?.speak(decision.question);
     } catch (err) {
       toast.error(t("voiceFailed") + ": " + (err as Error).message);
@@ -296,6 +299,7 @@ function TriagePage() {
       setVoiceBusy(false);
     }
   };
+
 
   const recordVoiceAnswer = async () => {
     const v = voiceRef.current;
