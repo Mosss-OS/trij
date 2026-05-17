@@ -38,7 +38,7 @@ function clearLastUserId() {
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Trij — Sign in" },
+      { title: "Sign in — Trij" },
       {
         name: "description",
         content:
