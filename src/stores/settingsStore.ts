@@ -7,6 +7,8 @@ interface SettingsState {
   modelId: string;
   voiceEnabled: boolean;
   voiceTestMode: boolean;
+  voiceGuidedMode: boolean;
+  voiceSpeed: number;
   cloudFallbackConsent: boolean;
   engineKind: EngineKind | "auto";
   ollamaUrl: string;
@@ -21,6 +23,8 @@ interface SettingsState {
   setModelId: (id: string) => void;
   setVoiceEnabled: (b: boolean) => void;
   setVoiceTestMode: (b: boolean) => void;
+  setVoiceGuidedMode: (b: boolean) => void;
+  setVoiceSpeed: (v: number) => void;
   setCloudFallbackConsent: (b: boolean) => void;
   setEngineKind: (k: EngineKind | "auto") => void;
   setOllamaUrl: (u: string) => void;
@@ -39,6 +43,8 @@ export const useSettingsStore = create<SettingsState>()(
       modelId: "gemma-4-E2B-it-q4f16_1-MLC",
       voiceEnabled: true,
       voiceTestMode: false,
+      voiceGuidedMode: false,
+      voiceSpeed: 1.0,
       cloudFallbackConsent: false,
       engineKind: "auto",
       ollamaUrl: "http://localhost:11434",
@@ -53,6 +59,8 @@ export const useSettingsStore = create<SettingsState>()(
       setModelId: (modelId) => set({ modelId }),
       setVoiceEnabled: (voiceEnabled) => set({ voiceEnabled }),
       setVoiceTestMode: (voiceTestMode) => set({ voiceTestMode }),
+      setVoiceGuidedMode: (voiceGuidedMode) => set({ voiceGuidedMode }),
+      setVoiceSpeed: (voiceSpeed) => set({ voiceSpeed }),
       setCloudFallbackConsent: (cloudFallbackConsent) => set({ cloudFallbackConsent }),
       setEngineKind: (engineKind) => set({ engineKind }),
       setOllamaUrl: (ollamaUrl) => set({ ollamaUrl }),

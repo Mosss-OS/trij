@@ -18,7 +18,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
 import { Slider } from "@/components/ui/slider";
-import { LogOut, AlertTriangle, ShieldCheck, FlaskConical, Rabbit, KeyRound } from "lucide-react";
+import { LogOut, AlertTriangle, ShieldCheck, FlaskConical, Rabbit, KeyRound, Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { detectOllama, type EngineKind } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
@@ -120,6 +120,36 @@ function SettingsPage() {
             </div>
             <Switch checked={s.voiceEnabled} onCheckedChange={s.setVoiceEnabled} />
           </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>{t("voiceGuidedMode")}</Label>
+              <p className="text-xs text-muted-foreground">{t("voiceGuidedModeDesc")}</p>
+            </div>
+            <Switch
+              checked={s.voiceGuidedMode}
+              onCheckedChange={s.setVoiceGuidedMode}
+              disabled={!s.voiceEnabled}
+            />
+          </div>
+          {s.voiceEnabled && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>{t("voiceSpeed")}</Label>
+                <span className="flex items-center gap-1 font-mono text-sm font-semibold">
+                  <Volume2 className="h-3.5 w-3.5 text-primary" />
+                  {s.voiceSpeed.toFixed(1)}x
+                </span>
+              </div>
+              <Slider
+                min={0.5}
+                max={2.0}
+                step={0.1}
+                value={[s.voiceSpeed]}
+                onValueChange={([v]) => s.setVoiceSpeed(v)}
+              />
+              <p className="text-xs text-muted-foreground">{t("voiceSpeedDesc")}</p>
+            </div>
+          )}
         </Section>
 
         <Section title={t("aiEngine")}>
