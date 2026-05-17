@@ -1,565 +1,617 @@
-import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
-import { useState, useEffect, type FormEvent } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useAuthSession } from "@/hooks/useAuthSession";
-import { useOnlineStatus } from "@/hooks/useOnlineStatus";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ShieldCheck, Loader2, WifiOff, KeyRound } from "lucide-react";
-import { OfflineIndicator } from "@/components/OfflineIndicator";
-import { toast } from "sonner";
-import { hasPinForUser, verifyPin, recordFailedAttempt, setupPin } from "@/lib/pin-auth";
-import { getDB } from "@/lib/db";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { useI18n } from "@/lib/i18n";
-
-const LS_LAST_USER = "trij_last_user_id";
-
-function getLastUserId(): string | null {
-  return localStorage.getItem(LS_LAST_USER);
-}
-
-function setLastUserId(id: string) {
-  localStorage.setItem(LS_LAST_USER, id);
-}
-
-function clearLastUserId() {
-  localStorage.removeItem(LS_LAST_USER);
-}
+  ShieldCheck,
+  WifiOff,
+  Sparkles,
+  Mic,
+  Camera,
+  MapPin,
+  Languages,
+  Activity,
+  ArrowRight,
+  CheckCircle2,
+} from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Trij — Sign in" },
+      { title: "Trij — On-device AI triage for community health workers" },
       {
         name: "description",
         content:
-          "Trij: offline-first AI triage for community health workers, powered by on-device Gemma.",
+          "Trij brings offline-first, privacy-preserving AI triage to the field. Powered by on-device Gemma — works without the internet.",
+      },
+      { property: "og:title", content: "Trij — On-device AI triage" },
+      {
+        property: "og:description",
+        content:
+          "Offline-first triage for community health workers. Camera, voice, and Gemma — all on the device.",
       },
     ],
   }),
-  component: LoginPage,
+  component: LandingPage,
 });
 
-function LoginPage() {
-  const { t } = useI18n();
+function LandingPage() {
   useAuthSession();
   const session = useSessionStore((s) => s.session);
   const offlineUser = useSessionStore((s) => s.offlineUser);
-  const loading = useSessionStore((s) => s.loading);
-  const setOfflineSession = useSessionStore((s) => s.setOfflineSession);
-  const online = useOnlineStatus();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  const [pinMode, setPinMode] = useState(false);
-  const [pin, setPin] = useState("");
-  const [pinError, setPinError] = useState("");
-  const [remainingAttempts, setRemainingAttempts] = useState(5);
-  const [locked, setLocked] = useState(false);
-  const [checkingPin, setCheckingPin] = useState(true);
-
-  const [showPinSetup, setShowPinSetup] = useState(false);
-  const [pendingPinUser, setPendingPinUser] = useState<string | null>(null);
-  const [setupPinValue, setSetupPinValue] = useState("");
-  const [setupPinConfirm, setSetupPinConfirm] = useState("");
-  const [setupPinError, setSetupPinError] = useState("");
-
-  useEffect(() => {
-    if (loading) return;
-    if (session || offlineUser) return;
-    if (online) {
-      setPinMode(false);
-      setCheckingPin(false);
-      return;
-    }
-    setCheckingPin(true);
-    (async () => {
-      try {
-        const lastId = getLastUserId();
-        let records: import("@/lib/pin-auth").PinRecord[];
-        if (lastId) {
-          const r = await getDB().pinAuth.get(lastId);
-          records = r ? [r] : [];
-        } else {
-          records = await getDB().pinAuth.toArray();
-        }
-        if (records.length > 0) {
-          const rec = records[0];
-          setEmail(rec.email);
-          setPinMode(true);
-          setLocked(rec.locked);
-          setRemainingAttempts(Math.max(0, 5 - rec.failedAttempts));
-        } else {
-          setPinMode(false);
-        }
-      } catch {
-        setPinMode(false);
-      } finally {
-        setCheckingPin(false);
-      }
-    })();
-  }, [loading, online, session, offlineUser]);
-
-  if (loading || checkingPin) {
-    return (
-      <div className="grid min-h-screen place-items-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </div>
-    );
-  }
-  if (session || offlineUser) return <Navigate to="/dashboard" />;
-
-  const handleOnlineSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: { name },
-          },
-        });
-        if (error) throw error;
-        if (data.session?.user) {
-          toast.success(t("accountCreated"));
-          setLastUserId(data.session.user.id);
-          const hasPin = await hasPinForUser(data.session.user.id);
-          if (!hasPin) {
-            setPendingPinUser(data.session.user.id);
-            setShowPinSetup(true);
-          }
-        } else {
-          toast.info(t("checkEmailConfirm"));
-        }
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        if (data.session?.user) {
-          const { user } = data.session;
-          setLastUserId(user.id);
-          const hasPin = await hasPinForUser(user.id);
-          if (!hasPin) {
-            setPendingPinUser(user.id);
-            setShowPinSetup(true);
-          }
-        }
-      }
-    } catch (err) {
-      toast.error((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handlePinSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    setPinError("");
-    try {
-      const lastId = getLastUserId();
-      let resolved: import("@/lib/pin-auth").PinRecord[];
-      if (lastId) {
-        const r = await getDB().pinAuth.get(lastId);
-        resolved = r ? [r] : [];
-      } else {
-        resolved = await getDB().pinAuth.toArray();
-      }
-      if (resolved.length === 0) {
-        setPinError(t("noPinConfigured"));
-        return;
-      }
-      const record = resolved[0];
-      if (record.locked) {
-        setLocked(true);
-        setPinError(t("accountLocked"));
-        return;
-      }
-      const ok = await verifyPin(record.userId, pin);
-      if (!ok) {
-        const result = await recordFailedAttempt(record.userId);
-        const remaining = Math.max(0, 5 - result.attempts);
-        setRemainingAttempts(result.locked ? 0 : remaining);
-        if (result.locked) {
-          setLocked(true);
-          setPinError(t("accountLocked"));
-        } else {
-          setPinError(t("incorrectPinAttempts").replace("{remaining}", String(remaining)));
-        }
-        return;
-      }
-      setOfflineSession({ id: record.userId, email: record.email });
-    } catch (err) {
-      setPinError((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleSetupPin = async () => {
-    setSetupPinError("");
-    if (setupPinValue.length < 4 || setupPinValue.length > 6) {
-      setSetupPinError(t("pinDigits"));
-      return;
-    }
-    if (!/^\d+$/.test(setupPinValue)) {
-      setSetupPinError(t("pinDigitsOnly"));
-      return;
-    }
-    if (setupPinValue !== setupPinConfirm) {
-      setSetupPinError(t("pinMismatch"));
-      return;
-    }
-    setBusy(true);
-    try {
-      const s = useSessionStore.getState().session;
-      const uid = pendingPinUser || s?.user?.id;
-      if (!uid) throw new Error(t("noActiveSession"));
-      const userEmail = s?.user?.email ?? email;
-      await setupPin(uid, userEmail, setupPinValue);
-      const newRec = await getDB().pinAuth.get(uid);
-      if (!newRec) throw new Error("Failed to save PIN");
-      toast.success(t("pinConfiguredSuccessfully"));
-      setShowPinSetup(false);
-      setPendingPinUser(null);
-      setSetupPinValue("");
-      setSetupPinConfirm("");
-    } catch (err) {
-      setSetupPinError((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  if (pinMode && !online) {
-    return (
-      <div className="relative min-h-screen overflow-hidden bg-background">
-        <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl" />
-
-        <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-                <span className="font-display text-xl font-bold">T</span>
-              </div>
-              <span className="font-display text-xl font-bold">Trij</span>
-            </div>
-            <OfflineIndicator />
-          </div>
-
-          <div className="mt-12">
-            <div className="flex items-center gap-3">
-              <KeyRound className="h-8 w-8 text-primary" />
-              <h1 className="font-display text-2xl font-bold leading-tight tracking-tight">
-                {t("offlineSignIn")}
-              </h1>
-            </div>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {t("noInternetPin")}
-            </p>
-          </div>
-
-          <form
-            onSubmit={handlePinSubmit}
-            className="mt-10 space-y-4 rounded-3xl border bg-card p-6 shadow-sm"
-          >
-            <div className="space-y-1.5">
-              <Label htmlFor="pin">{t("offlinePin")}</Label>
-              <Input
-                id="pin"
-                type="password"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                value={pin}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, "").slice(0, 6);
-                  setPin(v);
-                  setPinError("");
-                }}
-                placeholder={t("enterPin")}
-                disabled={locked}
-                required
-                autoFocus
-                className="text-center text-2xl tracking-[0.5em]"
-                maxLength={6}
-              />
-              {pinError && <p className="text-xs text-destructive">{pinError}</p>}
-              {!locked && (
-                <p className="text-xs text-muted-foreground">
-                  {t("incorrectPinAttempts").replace("{remaining}", String(remainingAttempts))}
-                </p>
-              )}
-            </div>
-            <Button type="submit" disabled={busy || locked} className="w-full" size="lg">
-              {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {t("unlock")}
-            </Button>
-            <p className="text-center text-xs text-muted-foreground">
-              <WifiOff className="mr-1 inline h-3.5 w-3.5" />
-              {t("offlineModeDataSync")}
-            </p>
-          </form>
-
-          <p className="mt-auto pt-10 text-center text-xs text-muted-foreground">
-            <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
-            {t("patientDataNeverLeaves")}
-          </p>
-        </div>
-
-        <Dialog open={showPinSetup} onOpenChange={setShowPinSetup}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t("setUpOfflinePinTitle")}</DialogTitle>
-              <DialogDescription>{t("pinDescription")}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="setup-pin">{t("newPin")}</Label>
-                <Input
-                  id="setup-pin"
-                  type="password"
-                  inputMode="numeric"
-                  value={setupPinValue}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/\D/g, "").slice(0, 6);
-                    setSetupPinValue(v);
-                    setSetupPinError("");
-                  }}
-                  placeholder={t("pinDigits")}
-                  className="text-center text-2xl tracking-[0.5em]"
-                  maxLength={6}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="setup-pin-confirm">{t("confirmPin")}</Label>
-                <Input
-                  id="setup-pin-confirm"
-                  type="password"
-                  inputMode="numeric"
-                  value={setupPinConfirm}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/\D/g, "").slice(0, 6);
-                    setSetupPinConfirm(v);
-                    setSetupPinError("");
-                  }}
-                  placeholder={t("reEnterPin")}
-                  className="text-center text-2xl tracking-[0.5em]"
-                  maxLength={6}
-                />
-              </div>
-              {setupPinError && <p className="text-xs text-destructive">{setupPinError}</p>}
-              <div className="flex gap-2">
-                <Button onClick={handleSetupPin} disabled={busy} className="flex-1" size="lg">
-                  {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {t("savePin")}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowPinSetup(false);
-                    setPendingPinUser(null);
-                    setSetupPinValue("");
-                    setSetupPinConfirm("");
-                    setSetupPinError("");
-                  }}
-                  disabled={busy}
-                  className="flex-1"
-                  size="lg"
-                >
-                  {t("skip")}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-    );
-  }
+  const authed = !!(session || offlineUser);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
-      <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl" />
-
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-              <span className="font-display text-xl font-bold">T</span>
-            </div>
-            <span className="font-display text-xl font-bold">Trij</span>
-          </Link>
-          <OfflineIndicator />
-        </div>
-
-        <div className="mt-12">
-          <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">
-            {t("fieldReadyTriage")}
-            <br />
-            <span className="text-primary">{t("onEveryDevice")}</span>
-          </h1>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t("gemmaOnDevice")}</p>
-        </div>
-
-        <form
-          onSubmit={handleOnlineSubmit}
-          className="mt-10 space-y-4 rounded-3xl border bg-card p-6 shadow-sm"
-        >
-          {mode === "signup" && (
-            <div className="space-y-1.5">
-              <Label htmlFor="name">{t("yourName")}</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="A. Patel"
-                required
-              />
-            </div>
-          )}
-          <div className="space-y-1.5">
-            <Label htmlFor="email">{t("email")}</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="password">{t("password")}</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              autoComplete={mode === "signup" ? "new-password" : "current-password"}
-            />
-          </div>
-          <Button type="submit" disabled={busy} className="w-full" size="lg">
-            {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === "signup" ? t("createAccount") : t("signIn")}
-          </Button>
-          <button
-            type="button"
-            onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
-            className="block w-full text-center text-xs text-muted-foreground hover:text-foreground"
-          >
-            {mode === "signin" ? t("firstTimeRegister") : t("haveAccountSignIn")}
-          </button>
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">{t("or")}</span>
-            </div>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setOfflineSession({ id: crypto.randomUUID(), email: "demo@trij.app" })}
-            className="w-full"
-            size="lg"
-          >
-            {t("continueWithoutAccount")}
-          </Button>
-        </form>
-
-        <p className="mt-auto pt-10 text-center text-xs text-muted-foreground">
-          <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
-          {t("patientDataNeverLeaves")}
-        </p>
-      </div>
-
-      <Dialog open={showPinSetup} onOpenChange={setShowPinSetup}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("setUpOfflinePinTitle")}</DialogTitle>
-            <DialogDescription>{t("pinDescription")}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="setup-pin-online">{t("newPin")}</Label>
-              <Input
-                id="setup-pin-online"
-                type="password"
-                inputMode="numeric"
-                value={setupPinValue}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, "").slice(0, 6);
-                  setSetupPinValue(v);
-                  setSetupPinError("");
-                }}
-                placeholder={t("pinDigits")}
-                className="text-center text-2xl tracking-[0.5em]"
-                maxLength={6}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="setup-pin-confirm-online">{t("confirmPin")}</Label>
-              <Input
-                id="setup-pin-confirm-online"
-                type="password"
-                inputMode="numeric"
-                value={setupPinConfirm}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, "").slice(0, 6);
-                  setSetupPinConfirm(v);
-                  setSetupPinError("");
-                }}
-                placeholder={t("reEnterPin")}
-                className="text-center text-2xl tracking-[0.5em]"
-                maxLength={6}
-              />
-            </div>
-            {setupPinError && <p className="text-xs text-destructive">{setupPinError}</p>}
-            <div className="flex gap-2">
-              <Button onClick={handleSetupPin} disabled={busy} className="flex-1" size="lg">
-                {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t("savePin")}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowPinSetup(false);
-                  setPendingPinUser(null);
-                  setSetupPinValue("");
-                  setSetupPinConfirm("");
-                  setSetupPinError("");
-                }}
-                disabled={busy}
-                className="flex-1"
-                size="lg"
-              >
-                {t("skip")}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+    <div className="font-serif min-h-screen overflow-x-hidden bg-[oklch(0.98_0.008_85)] text-[oklch(0.18_0.02_240)] antialiased">
+      <BackgroundOrbs />
+      <Nav authed={authed} />
+      <Hero authed={authed} />
+      <LogosStrip />
+      <BentoFeatures />
+      <FlowSection />
+      <PrivacySection />
+      <StatsSection />
+      <CTASection authed={authed} />
+      <Footer />
     </div>
+  );
+}
+
+/* ---------- background ---------- */
+function BackgroundOrbs() {
+  return (
+    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <motion.div
+        animate={{ x: [0, 60, 0], y: [0, 40, 0] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -left-32 top-10 h-[28rem] w-[28rem] rounded-full bg-[oklch(0.78_0.13_185)] opacity-30 blur-3xl"
+      />
+      <motion.div
+        animate={{ x: [0, -80, 0], y: [0, 60, 0] }}
+        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute right-[-10rem] top-40 h-[32rem] w-[32rem] rounded-full bg-[oklch(0.82_0.12_60)] opacity-25 blur-3xl"
+      />
+      <motion.div
+        animate={{ x: [0, 40, 0], y: [0, -40, 0] }}
+        transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-0 left-1/3 h-[24rem] w-[24rem] rounded-full bg-[oklch(0.85_0.10_300)] opacity-25 blur-3xl"
+      />
+    </div>
+  );
+}
+
+/* ---------- nav ---------- */
+function Nav({ authed }: { authed: boolean }) {
+  return (
+    <motion.header
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="sticky top-3 z-40 mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-full border border-white/30 bg-white/40 px-4 py-2.5 backdrop-blur-xl backdrop-saturate-150 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_8px_24px_-12px_rgba(15,42,60,0.15)] sm:px-6"
+    >
+      <Link to="/" className="flex items-center gap-2">
+        <div className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-[oklch(0.55_0.10_200)] to-[oklch(0.35_0.08_220)] text-white shadow-md">
+          <ShieldCheck className="h-4 w-4" />
+        </div>
+        <span className="font-sans text-base font-semibold tracking-tight">Trij</span>
+      </Link>
+      <nav className="hidden items-center gap-7 font-sans text-sm text-foreground/70 md:flex">
+        <a href="#features" className="transition-colors hover:text-foreground">
+          Features
+        </a>
+        <a href="#flow" className="transition-colors hover:text-foreground">
+          How it works
+        </a>
+        <a href="#privacy" className="transition-colors hover:text-foreground">
+          Privacy
+        </a>
+      </nav>
+      <Link
+        to={authed ? "/dashboard" : "/login"}
+        className="group inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 font-sans text-sm font-medium text-background transition-all hover:opacity-90"
+      >
+        {authed ? "Open app" : "Sign in"}
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+      </Link>
+    </motion.header>
+  );
+}
+
+/* ---------- hero ---------- */
+function Hero({ authed }: { authed: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], [0, 100]);
+  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  return (
+    <section ref={ref} className="relative mx-auto max-w-6xl px-5 pt-16 pb-24 sm:pt-24 sm:pb-32">
+      <motion.div style={{ y, opacity }} className="text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.6 }}
+          className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/50 px-3 py-1 font-sans text-xs font-medium text-foreground/70 backdrop-blur-xl"
+        >
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          </span>
+          Powered by on-device Gemma
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="font-serif text-[2.6rem] font-medium leading-[1.05] tracking-tight sm:text-6xl md:text-7xl"
+        >
+          Triage at the speed of
+          <br />
+          <span className="bg-gradient-to-br from-[oklch(0.45_0.08_220)] via-[oklch(0.55_0.10_200)] to-[oklch(0.65_0.13_185)] bg-clip-text italic text-transparent">
+            human care.
+          </span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.7 }}
+          className="mx-auto mt-6 max-w-2xl font-sans text-base leading-relaxed text-foreground/65 sm:text-lg"
+        >
+          Trij is an offline-first AI assistant built for community health workers. Capture, listen,
+          and assess — all on the device. No cloud, no compromises, no patient data leaves the
+          phone.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.7 }}
+          className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
+        >
+          <Link
+            to={authed ? "/dashboard" : "/login"}
+            className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 font-sans text-sm font-medium text-background shadow-lg shadow-black/10 transition-all hover:shadow-xl hover:shadow-black/20"
+          >
+            {authed ? "Continue to dashboard" : "Get started for free"}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <a
+            href="#features"
+            className="inline-flex items-center gap-2 rounded-full border border-foreground/15 bg-white/40 px-6 py-3 font-sans text-sm font-medium text-foreground/80 backdrop-blur-xl transition-colors hover:bg-white/60"
+          >
+            Explore the product
+          </a>
+        </motion.div>
+      </motion.div>
+
+      <PhoneMockup />
+    </section>
+  );
+}
+
+function PhoneMockup() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 60, rotateX: 12 }}
+      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+      style={{ perspective: 1200 }}
+      className="mx-auto mt-16 w-full max-w-[320px] sm:max-w-[360px]"
+    >
+      <div className="relative rounded-[3rem] border border-black/10 bg-gradient-to-b from-zinc-900 to-black p-3 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.3)]">
+        {/* notch */}
+        <div className="absolute left-1/2 top-5 z-10 h-6 w-28 -translate-x-1/2 rounded-full bg-black" />
+        <div className="relative aspect-[9/19.5] overflow-hidden rounded-[2.4rem] bg-gradient-to-br from-[oklch(0.96_0.01_85)] to-[oklch(0.92_0.02_200)] p-5">
+          <div className="mt-10 space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+              className="rounded-2xl border border-white/60 bg-white/60 p-3 backdrop-blur-xl"
+            >
+              <p className="font-sans text-[10px] uppercase tracking-wider text-foreground/50">
+                Assessment
+              </p>
+              <p className="mt-1 font-serif text-sm font-semibold">Suspected dermatitis</p>
+              <div className="mt-2 flex items-center gap-1.5">
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 font-sans text-[10px] font-medium text-amber-800">
+                  Yellow
+                </span>
+                <span className="font-sans text-[10px] text-foreground/50">92% confidence</span>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+              className="rounded-2xl border border-white/60 bg-white/60 p-3 backdrop-blur-xl"
+            >
+              <div className="flex items-center gap-2">
+                <Mic className="h-3.5 w-3.5 text-emerald-700" />
+                <p className="font-sans text-xs">Voice follow-up</p>
+              </div>
+              <p className="mt-1 font-serif text-xs italic text-foreground/70">
+                "How long has the rash been present?"
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.7 }}
+              className="rounded-2xl border border-white/60 bg-white/60 p-3 backdrop-blur-xl"
+            >
+              <div className="flex items-center justify-between">
+                <p className="font-sans text-[10px] uppercase tracking-wider text-foreground/50">
+                  Saved offline
+                </p>
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+              </div>
+              <p className="mt-1 font-sans text-xs text-foreground/70">3 pending in sync queue</p>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ---------- logos ---------- */
+function LogosStrip() {
+  const items = ["Offline-first", "On-device AI", "WebGPU", "Gemma 3n", "PWA installable"];
+  return (
+    <section className="mx-auto max-w-6xl px-5 py-8">
+      <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 font-sans text-xs uppercase tracking-[0.18em] text-foreground/40">
+        {items.map((i) => (
+          <span key={i}>{i}</span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ---------- bento ---------- */
+function BentoFeatures() {
+  return (
+    <section id="features" className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
+      <SectionHeading
+        eyebrow="Built for the field"
+        title="A complete kit, in one quiet app."
+        subtitle="Every piece designed for low-bandwidth, low-light, high-stakes work."
+      />
+
+      <div className="mt-14 grid auto-rows-[12rem] grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:auto-rows-[14rem]">
+        <BentoCard className="lg:col-span-2 lg:row-span-2" delay={0.0}>
+          <div className="flex h-full flex-col justify-between">
+            <Camera className="h-7 w-7 text-[oklch(0.45_0.08_220)]" />
+            <div>
+              <h3 className="font-serif text-2xl font-medium tracking-tight">
+                Capture &amp; analyze
+              </h3>
+              <p className="mt-2 max-w-sm font-sans text-sm text-foreground/65">
+                Snap a photo of skin, wounds, or documents. Gemma runs locally on the device —
+                returning condition, urgency, and confidence in seconds.
+              </p>
+            </div>
+          </div>
+        </BentoCard>
+
+        <BentoCard delay={0.1}>
+          <Mic className="h-6 w-6 text-emerald-700" />
+          <h3 className="mt-auto font-serif text-lg font-medium">Voice-guided</h3>
+          <p className="font-sans text-xs text-foreground/60">
+            Iterative follow-ups via on-device speech.
+          </p>
+        </BentoCard>
+
+        <BentoCard delay={0.15}>
+          <WifiOff className="h-6 w-6 text-[oklch(0.55_0.13_30)]" />
+          <h3 className="mt-auto font-serif text-lg font-medium">Offline-first</h3>
+          <p className="font-sans text-xs text-foreground/60">
+            Works on a plane, in a clinic, in a village.
+          </p>
+        </BentoCard>
+
+        <BentoCard delay={0.2}>
+          <Languages className="h-6 w-6 text-[oklch(0.55_0.13_280)]" />
+          <h3 className="mt-auto font-serif text-lg font-medium">Multilingual</h3>
+          <p className="font-sans text-xs text-foreground/60">
+            English, French, Swahili, Hindi, Portuguese, Arabic.
+          </p>
+        </BentoCard>
+
+        <BentoCard delay={0.25}>
+          <MapPin className="h-6 w-6 text-rose-600" />
+          <h3 className="mt-auto font-serif text-lg font-medium">Geo-aware</h3>
+          <p className="font-sans text-xs text-foreground/60">
+            Every patient pin lives on the supervisor map.
+          </p>
+        </BentoCard>
+
+        <BentoCard className="lg:col-span-2" delay={0.3}>
+          <div className="flex h-full items-center justify-between gap-4">
+            <div>
+              <Activity className="h-6 w-6 text-[oklch(0.55_0.10_200)]" />
+              <h3 className="mt-3 font-serif text-lg font-medium">Supervisor dashboard</h3>
+              <p className="font-sans text-xs text-foreground/60">
+                Live queue, regional analytics, CSV export.
+              </p>
+            </div>
+            <div className="hidden h-24 w-32 shrink-0 rounded-xl border border-white/60 bg-white/40 p-2 backdrop-blur sm:block">
+              <div className="space-y-1.5">
+                <div className="h-1.5 w-3/4 rounded-full bg-foreground/15" />
+                <div className="h-1.5 w-1/2 rounded-full bg-foreground/10" />
+                <div className="mt-2 flex h-12 items-end gap-1">
+                  {[40, 70, 30, 90, 55, 80].map((h, i) => (
+                    <div
+                      key={i}
+                      style={{ height: `${h}%` }}
+                      className="flex-1 rounded-sm bg-[oklch(0.55_0.10_200)]/60"
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </BentoCard>
+
+        <BentoCard className="lg:col-span-2" delay={0.35}>
+          <div className="flex h-full flex-col justify-between">
+            <Sparkles className="h-6 w-6 text-amber-600" />
+            <div>
+              <h3 className="font-serif text-lg font-medium">Resumable interviews</h3>
+              <p className="font-sans text-xs text-foreground/60">
+                Step away, come back — the voice interview picks up where you left off.
+              </p>
+            </div>
+          </div>
+        </BentoCard>
+      </div>
+    </section>
+  );
+}
+
+function BentoCard({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -4 }}
+      className={`group relative flex flex-col gap-2 overflow-hidden rounded-3xl border border-white/50 bg-white/40 p-5 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_12px_40px_-20px_rgba(15,42,60,0.18)] transition-shadow hover:shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_20px_50px_-20px_rgba(15,42,60,0.25)] ${className}`}
+    >
+      <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/40 opacity-0 blur-2xl transition-opacity group-hover:opacity-100" />
+      {children}
+    </motion.div>
+  );
+}
+
+/* ---------- flow ---------- */
+function FlowSection() {
+  const steps = [
+    {
+      n: "01",
+      title: "Capture",
+      body: "Take a photo of the patient's skin, wound, or document with the in-app camera.",
+    },
+    {
+      n: "02",
+      title: "Analyze",
+      body: "Gemma runs locally through WebGPU — no upload, no waiting on connectivity.",
+    },
+    {
+      n: "03",
+      title: "Interview",
+      body: "Voice follow-up gathers context with function-calling and adapts each question.",
+    },
+    {
+      n: "04",
+      title: "Refer & sync",
+      body: "Save offline. When you're back online, records sync to your supervisor's dashboard.",
+    },
+  ];
+  return (
+    <section id="flow" className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
+      <SectionHeading
+        eyebrow="The flow"
+        title="Four taps. One quiet decision."
+        subtitle="A workflow tuned for the realities of community health."
+      />
+      <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {steps.map((s, i) => (
+          <motion.div
+            key={s.n}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="relative rounded-3xl border border-white/50 bg-white/40 p-6 backdrop-blur-xl"
+          >
+            <span className="font-sans text-xs font-semibold tracking-[0.2em] text-foreground/40">
+              {s.n}
+            </span>
+            <h3 className="mt-3 font-serif text-xl font-medium">{s.title}</h3>
+            <p className="mt-2 font-sans text-sm text-foreground/65">{s.body}</p>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ---------- privacy ---------- */
+function PrivacySection() {
+  return (
+    <section id="privacy" className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="relative overflow-hidden rounded-[2.5rem] border border-white/50 bg-gradient-to-br from-[oklch(0.25_0.04_220)] via-[oklch(0.2_0.04_230)] to-[oklch(0.18_0.03_240)] p-8 text-white shadow-2xl sm:p-14"
+      >
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(120,200,255,0.18),transparent_60%)]" />
+        <div className="relative grid gap-10 lg:grid-cols-2 lg:items-center">
+          <div>
+            <p className="font-sans text-xs uppercase tracking-[0.2em] text-white/50">Privacy</p>
+            <h2 className="mt-3 font-serif text-3xl font-medium leading-tight tracking-tight sm:text-5xl">
+              Patient data <em className="italic text-white/80">never</em> leaves the device.
+            </h2>
+            <p className="mt-5 max-w-md font-sans text-sm leading-relaxed text-white/65">
+              Images are analyzed locally with Gemma through WebGPU. Only structured, consented
+              assessment records sync to your encrypted backend — and only when you choose.
+            </p>
+          </div>
+          <ul className="space-y-3 font-sans text-sm">
+            {[
+              "Local-only image inference",
+              "Encrypted, queued sync",
+              "Consent captured per patient",
+              "Role-based access with RLS",
+              "PIN fallback for offline auth",
+            ].map((f) => (
+              <li
+                key={f}
+                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur"
+              >
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-300" />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
+/* ---------- stats ---------- */
+function StatsSection() {
+  const stats = [
+    { v: "0 ms", l: "Network latency at inference" },
+    { v: "6", l: "Supported languages" },
+    { v: "~2B", l: "On-device model parameters" },
+    { v: "100%", l: "Of triage runs offline" },
+  ];
+  return (
+    <section className="mx-auto max-w-6xl px-5 py-16">
+      <div className="grid grid-cols-2 gap-3 rounded-3xl border border-white/50 bg-white/40 p-6 backdrop-blur-xl sm:grid-cols-4 sm:p-10">
+        {stats.map((s, i) => (
+          <motion.div
+            key={s.l}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: i * 0.08 }}
+            className="text-center"
+          >
+            <p className="font-serif text-3xl font-medium tracking-tight sm:text-4xl">{s.v}</p>
+            <p className="mt-1 font-sans text-xs text-foreground/60">{s.l}</p>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ---------- cta ---------- */
+function CTASection({ authed }: { authed: boolean }) {
+  return (
+    <section className="mx-auto max-w-6xl px-5 py-24 sm:py-32">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.8 }}
+        className="text-center"
+      >
+        <h2 className="font-serif text-4xl font-medium leading-tight tracking-tight sm:text-6xl">
+          Make a quiet,
+          <br />
+          <span className="italic text-foreground/60">confident decision.</span>
+        </h2>
+        <p className="mx-auto mt-5 max-w-lg font-sans text-base text-foreground/65">
+          Trij is free to try. Install it as a PWA and you're ready for the next visit.
+        </p>
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            to={authed ? "/dashboard" : "/login"}
+            className="group inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-3.5 font-sans text-sm font-medium text-background shadow-lg shadow-black/10 transition-all hover:shadow-xl"
+          >
+            {authed ? "Open Trij" : "Start your first triage"}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
+/* ---------- footer ---------- */
+function Footer() {
+  return (
+    <footer className="mx-auto max-w-6xl px-5 py-10">
+      <div className="flex flex-col items-center justify-between gap-4 border-t border-foreground/10 pt-8 font-sans text-xs text-foreground/50 sm:flex-row">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          <span>© {new Date().getFullYear()} Trij. Built for the field.</span>
+        </div>
+        <div className="flex items-center gap-5">
+          <a href="#privacy" className="hover:text-foreground">
+            Privacy
+          </a>
+          <a href="#features" className="hover:text-foreground">
+            Features
+          </a>
+          <Link to="/login" className="hover:text-foreground">
+            Sign in
+          </Link>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ---------- shared ---------- */
+function SectionHeading({
+  eyebrow,
+  title,
+  subtitle,
+}: {
+  eyebrow: string;
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.5 }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      className="mx-auto max-w-2xl text-center"
+    >
+      <p className="font-sans text-xs uppercase tracking-[0.22em] text-foreground/40">{eyebrow}</p>
+      <h2 className="mt-3 font-serif text-3xl font-medium leading-tight tracking-tight sm:text-5xl">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="mx-auto mt-4 max-w-xl font-sans text-base text-foreground/60">{subtitle}</p>
+      )}
+    </motion.div>
   );
 }
