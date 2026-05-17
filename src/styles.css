@@ -16,6 +16,7 @@
 @theme inline {
   --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: "Source Serif 4", "Iowan Old Style", "Apple Garamond", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
