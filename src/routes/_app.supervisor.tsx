@@ -207,6 +207,18 @@ function Supervisor() {
     return chwPerformance.filter((c) => c.unsynced > 5);
   }, [chwPerformance]);
 
+  const chwAssessmentCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const today = new Date().toISOString().slice(0, 10);
+    for (const a of items) {
+      if (!a.chw_user_id) continue;
+      if (a.created_at?.startsWith(today)) {
+        counts[a.chw_user_id] = (counts[a.chw_user_id] || 0) + 1;
+      }
+    }
+    return counts;
+  }, [items]);
+
   const exportAllCsv = () => {
     const headers = ["Patient", "Condition", "Urgency", "Referral Status", "Created"];
     const rows = items.map((a) => [
@@ -515,7 +527,7 @@ function Supervisor() {
                   </div>
                 }
               >
-                {showMap && <CHWMap locations={chwLocations} />}
+                {showMap && <CHWMap locations={chwLocations} assessmentCounts={chwAssessmentCounts} />}
               </Suspense>
             )}
           </div>
