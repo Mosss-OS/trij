@@ -36,6 +36,7 @@ export interface Assessment {
   voiceLog?: string;
   language: string;
   referralStatus: "none" | "pending" | "active" | "resolved";
+  referralStatusUpdatedAt?: string;
   referralAdvised?: boolean;
   followUpQuestions?: string[];
   patientConsent?: boolean;
