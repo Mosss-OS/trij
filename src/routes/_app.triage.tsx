@@ -234,7 +234,7 @@ function TriagePage() {
   };
 
   const startVoiceAssessment = async () => {
-    if (!result) return;
+    if (!result || !patient || !image) return;
     setVoiceHistory([]);
     convoRef.current = initVoiceConversation(language, result);
     setStep("voice");
@@ -253,6 +253,7 @@ function TriagePage() {
         return;
       }
       setCurrentQuestion(decision.question);
+      await persistDraft(patient, result, image, [], decision.question, messages, consent);
       if (voiceEnabled) voiceRef.current?.speak(decision.question);
     } catch (err) {
       toast.error(t("voiceFailed") + ": " + (err as Error).message);
@@ -261,6 +262,7 @@ function TriagePage() {
       setVoiceBusy(false);
     }
   };
+
 
   const handleVoiceAnswer = async (answer: string) => {
     if (!answer.trim()) return;
