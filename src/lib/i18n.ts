@@ -265,6 +265,11 @@ export const translations = {
     testConnection: "Test connection",
     csvExport: "Export CSV",
     skip: "Skip",
+    kioskMode: "Kiosk mode",
+    kioskModeDesc: "Large icons, voice narration, and simplified UI for low-literacy users",
+    kioskScreenLabel: "Screen {n} of {total}",
+    hapticFeedback: "Haptic feedback",
+    hapticFeedbackDesc: "Vibrate on button press for tactile confirmation",
   },
   "fr-FR": {
     dashboard: "Tableau de bord",
