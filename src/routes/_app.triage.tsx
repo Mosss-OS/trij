@@ -420,9 +420,10 @@ function TriagePage() {
               <p className="mt-1 text-sm text-muted-foreground">{t("patientCodeDesc")}</p>
             </div>
             <div className="space-y-1.5">
-              <Label>{t("patientIdentifier")}</Label>
+              <Label htmlFor="patient-id">{t("patientIdentifier")}</Label>
               <div className="flex gap-2">
                 <Input
+                  id="patient-id"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder="e.g. AP-0142"
@@ -447,9 +448,10 @@ function TriagePage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>{t("ageYears")}</Label>
+                <Label htmlFor="patient-age">{t("ageYears")}</Label>
                 <div className="flex gap-2">
                   <Input
+                    id="patient-age"
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
                     type="number"
@@ -479,10 +481,16 @@ function TriagePage() {
               </div>
               <div className="space-y-1.5">
                 <Label>{t("sex")}</Label>
-                <div className="flex rounded-lg border p-1">
+                <div
+                  className="flex rounded-lg border p-1"
+                  role="radiogroup"
+                  aria-label={t("sex")}
+                >
                   {(["F", "M", "other"] as const).map((s) => (
                     <button
                       key={s}
+                      role="radio"
+                      aria-checked={sex === s}
                       onClick={() => setSex(s)}
                       className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${sex === s ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
                     >

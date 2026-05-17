@@ -4,6 +4,7 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { BottomNav } from "@/components/BottomNav";
 import { DisclaimerDialog } from "@/components/DisclaimerDialog";
+import { SyncStatusIndicator } from "@/components/SyncStatusIndicator";
 import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app")({
@@ -36,6 +37,7 @@ function AppLayout() {
       <main id="main-content" role="main">
         <Outlet />
       </main>
+      <SyncStatusIndicator />
       <BottomNav />
     </div>
   );
