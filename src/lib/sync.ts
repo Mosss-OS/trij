@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Patient, Assessment, SyncQueueItem, SyncConflict } from "@/types/trij";
 import { registerBackgroundSync } from "./sw-register";
 
+export const MAX_RETRIES = 3;
+export const RETRY_BACKOFF_MS = [5_000, 30_000, 120_000];
+
 export interface SyncProgressItem {
   id: number;
   table: string;
@@ -207,11 +210,15 @@ export async function processSyncQueue(
       ok++;
       onProgress?.({ ...progress, status: "ok" });
     } catch (err) {
+      const attempts = (item.attempts ?? 0) + 1;
       failed++;
       await db.syncQueue.update(item.id!, {
-        attempts: (item.attempts ?? 0) + 1,
+        attempts,
         lastError: (err as Error).message,
       });
+      if (attempts >= MAX_RETRIES) {
+        console.warn(`Sync failed after ${attempts} attempts for ${item.table}/${item.recordId}:`, (err as Error).message);
+      }
       onProgress?.({ ...progress, status: "failed", error: (err as Error).message });
     }
   }
@@ -267,4 +274,33 @@ export async function resolveConflict(
     resolvedAt: now,
   });
   registerBackgroundSync().catch(() => {});
+}
+
+export async function retryFailedSyncItems(): Promise<number> {
+  const db = getDB();
+  const failed = await db.syncQueue
+    .where("attempts")
+    .between(1, MAX_RETRIES)
+    .toArray();
+
+  const now = Date.now();
+  let retried = 0;
+
+  for (const item of failed) {
+    const attempt = item.attempts ?? 0;
+    if (attempt >= MAX_RETRIES) continue;
+
+    const backoffIndex = Math.min(attempt - 1, RETRY_BACKOFF_MS.length - 1);
+    const waitMs = RETRY_BACKOFF_MS[backoffIndex];
+    const createdAt = new Date(item.createdAt).getTime();
+    const elapsed = now - createdAt;
+
+    if (elapsed >= waitMs) {
+      await db.syncQueue.update(item.id!, { attempts: 0, lastError: undefined });
+      retried++;
+    }
+  }
+
+  if (retried > 0) registerBackgroundSync().catch(() => {});
+  return retried;
 }
