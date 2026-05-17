@@ -333,6 +333,48 @@ function TriagePage() {
 
         {step === "patient" && (
           <div className="mt-7 space-y-5">
+            {resumableDrafts.length > 0 && (
+              <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
+                <p className="text-sm font-medium">Resume voice interview</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  You have {resumableDrafts.length} unfinished interview
+                  {resumableDrafts.length > 1 ? "s" : ""}.
+                </p>
+                <div className="mt-3 space-y-2">
+                  {resumableDrafts.slice(0, 3).map((d) => (
+                    <div
+                      key={d.patientId}
+                      className="flex items-center justify-between gap-2 rounded-lg bg-background/60 p-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{d.patient.identifier}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {d.qaHistory.length} answered ·{" "}
+                          {new Date(d.updatedAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" onClick={() => resumeDraft(d.patientId)}>
+                          Resume
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={async () => {
+                            await clearVoiceDraft(d.patientId);
+                            setResumableDrafts((arr) =>
+                              arr.filter((x) => x.patientId !== d.patientId),
+                            );
+                          }}
+                        >
+                          Discard
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div>
               <h2 className="font-display text-xl font-semibold">{t("whoIsPatient")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{t("patientCodeDesc")}</p>
