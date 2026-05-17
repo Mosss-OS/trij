@@ -32,6 +32,7 @@ import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { TriageResult, Patient, Assessment } from "@/types/trij";
 import { getDB } from "@/lib/db";
 import { queuePatient, queueAssessment } from "@/lib/sync";
+import { saveVoiceDraft, getVoiceDraft, clearVoiceDraft, listVoiceDrafts } from "@/lib/voice-draft";
 import { getCurrentPosition } from "@/lib/geolocation";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -90,6 +91,58 @@ function TriagePage() {
   }, [language]);
 
   const [capturingLocation, setCapturingLocation] = useState(false);
+  const [resumableDrafts, setResumableDrafts] = useState<
+    Awaited<ReturnType<typeof listVoiceDrafts>>
+  >([]);
+
+  useEffect(() => {
+    if (!user) return;
+    listVoiceDrafts(user.id).then(setResumableDrafts).catch(() => {});
+  }, [user]);
+
+  const persistDraft = async (
+    p: Patient,
+    res: TriageResult,
+    img: string,
+    qa: QAPair[],
+    currentQ: string,
+    msgs: ConvMessage[],
+    consentVal: boolean,
+  ) => {
+    try {
+      await saveVoiceDraft({
+        patientId: p.id,
+        chwUserId: p.chwUserId,
+        patient: p,
+        triageResult: res,
+        image: img,
+        messages: msgs,
+        qaHistory: qa,
+        currentQuestion: currentQ,
+        consent: consentVal,
+      });
+    } catch (err) {
+      console.warn("Failed to save voice draft", err);
+    }
+  };
+
+  const resumeDraft = async (patientId: string) => {
+    const draft = await getVoiceDraft(patientId);
+    if (!draft) return;
+    setPatient(draft.patient);
+    setIdentifier(draft.patient.identifier);
+    setAge(draft.patient.ageYears ? String(draft.patient.ageYears) : "");
+    setSex(draft.patient.sex ?? "F");
+    setImage(draft.image);
+    setResult(draft.triageResult);
+    setVoiceHistory(draft.qaHistory);
+    setCurrentQuestion(draft.currentQuestion);
+    setConsent(draft.consent);
+    convoRef.current = draft.messages;
+    setStep("voice");
+    toast.success("Resumed voice interview");
+  };
+
 
   const startPatient = async () => {
     if (!user || !identifier.trim()) return;
@@ -175,12 +228,13 @@ function TriagePage() {
       createdAt: new Date().toISOString(),
     };
     await queueAssessment(a);
+    await clearVoiceDraft(patient.id).catch(() => {});
     toast.success(t("savedOffline"));
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
   };
 
   const startVoiceAssessment = async () => {
-    if (!result) return;
+    if (!result || !patient || !image) return;
     setVoiceHistory([]);
     convoRef.current = initVoiceConversation(language, result);
     setStep("voice");
@@ -199,6 +253,7 @@ function TriagePage() {
         return;
       }
       setCurrentQuestion(decision.question);
+      await persistDraft(patient, result, image, [], decision.question, messages, consent);
       if (voiceEnabled) voiceRef.current?.speak(decision.question);
     } catch (err) {
       toast.error(t("voiceFailed") + ": " + (err as Error).message);
@@ -208,12 +263,14 @@ function TriagePage() {
     }
   };
 
+
   const handleVoiceAnswer = async (answer: string) => {
-    if (!answer.trim()) return;
+    if (!answer.trim() || !patient || !result || !image) return;
     const updated = [...voiceHistory, { question: currentQuestion, answer: answer.trim() }];
     setVoiceHistory(updated);
     setTypedAnswer("");
     if (updated.length >= 5) {
+      await persistDraft(patient, result, image, updated, "", convoRef.current, consent);
       toast.success(t("voiceComplete"));
       setStep("result");
       return;
@@ -228,11 +285,13 @@ function TriagePage() {
       );
       convoRef.current = messages;
       if (decision.done || !decision.question) {
+        await persistDraft(patient, result, image, updated, "", messages, consent);
         toast.success(t("voiceComplete"));
         setStep("result");
         return;
       }
       setCurrentQuestion(decision.question);
+      await persistDraft(patient, result, image, updated, decision.question, messages, consent);
       if (voiceEnabled) voiceRef.current?.speak(decision.question);
     } catch (err) {
       toast.error(t("voiceFailed") + ": " + (err as Error).message);
@@ -240,6 +299,7 @@ function TriagePage() {
       setVoiceBusy(false);
     }
   };
+
 
   const recordVoiceAnswer = async () => {
     const v = voiceRef.current;
@@ -273,6 +333,48 @@ function TriagePage() {
 
         {step === "patient" && (
           <div className="mt-7 space-y-5">
+            {resumableDrafts.length > 0 && (
+              <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
+                <p className="text-sm font-medium">Resume voice interview</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  You have {resumableDrafts.length} unfinished interview
+                  {resumableDrafts.length > 1 ? "s" : ""}.
+                </p>
+                <div className="mt-3 space-y-2">
+                  {resumableDrafts.slice(0, 3).map((d) => (
+                    <div
+                      key={d.patientId}
+                      className="flex items-center justify-between gap-2 rounded-lg bg-background/60 p-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{d.patient.identifier}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {d.qaHistory.length} answered ·{" "}
+                          {new Date(d.updatedAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" onClick={() => resumeDraft(d.patientId)}>
+                          Resume
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={async () => {
+                            await clearVoiceDraft(d.patientId);
+                            setResumableDrafts((arr) =>
+                              arr.filter((x) => x.patientId !== d.patientId),
+                            );
+                          }}
+                        >
+                          Discard
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div>
               <h2 className="font-display text-xl font-semibold">{t("whoIsPatient")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{t("patientCodeDesc")}</p>

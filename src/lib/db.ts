@@ -1,5 +1,19 @@
 import Dexie, { type Table } from "dexie";
-import type { Patient, Assessment, SyncQueueItem } from "@/types/trij";
+import type { Patient, Assessment, SyncQueueItem, TriageResult } from "@/types/trij";
+import type { ConvMessage } from "@/lib/gemma";
+
+export interface VoiceDraft {
+  patientId: string;
+  chwUserId: string;
+  patient: Patient;
+  triageResult: TriageResult;
+  image: string;
+  messages: ConvMessage[];
+  qaHistory: { question: string; answer: string }[];
+  currentQuestion: string;
+  consent: boolean;
+  updatedAt: string;
+}
 
 export interface ErrorLog {
   id?: number;
@@ -27,6 +41,7 @@ export class TrijDB extends Dexie {
   syncQueue!: Table<SyncQueueItem, number>;
   errorLogs!: Table<ErrorLog, number>;
   pinAuth!: Table<PinAuthRecord, string>;
+  voiceDrafts!: Table<VoiceDraft, string>;
 
   constructor() {
     super("TrijDB");
@@ -36,6 +51,14 @@ export class TrijDB extends Dexie {
       syncQueue: "++id, table, action, recordId, createdAt",
       errorLogs: "++id, timestamp",
       pinAuth: "userId, email",
+    });
+    this.version(4).stores({
+      patients: "id, chwUserId, identifier, createdAt, syncedAt",
+      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
+      syncQueue: "++id, table, action, recordId, createdAt",
+      errorLogs: "++id, timestamp",
+      pinAuth: "userId, email",
+      voiceDrafts: "patientId, chwUserId, updatedAt",
     });
   }
 }
