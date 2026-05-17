@@ -64,6 +64,7 @@ function TriagePage() {
   const ollamaUrl = useSettingsStore((s) => s.ollamaUrl);
   const minConfidenceForLocalCare = useSettingsStore((s) => s.minConfidenceForLocalCare);
   const voiceEnabled = useSettingsStore((s) => s.voiceEnabled);
+  const voiceTestMode = useSettingsStore((s) => s.voiceTestMode);
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("patient");
   const [patient, setPatient] = useState<Patient | null>(null);

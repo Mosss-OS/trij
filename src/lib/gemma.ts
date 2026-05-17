@@ -567,7 +567,24 @@ export async function nextFollowUp(
   history: string[],
   kind: EngineKind,
   ollamaUrl?: string,
+  testMode: boolean = false,
 ): Promise<string> {
+  // Test mode: simulate voice turns with predefined sequence
+  if (testMode) {
+    const testPool = [
+      "How long has the condition been present?",
+      "Is there any pain, itching or burning?",
+      "Any fever, chills or feeling unwell?",
+      "Have you tried any treatment so far?",
+      "Any allergies or other medical conditions?",
+    ];
+    const index = Math.min(history.length, testPool.length - 1);
+    if (index >= testPool.length - 1) {
+      return ""; // No more questions
+    }
+    return testPool[index];
+  }
+
   if (kind === "demo") {
     const pool = [
       "Is the area painful when touched?",
@@ -662,7 +679,38 @@ export async function nextVoiceTurn(
   patientAnswer: string | null,
   kind: EngineKind,
   ollamaUrl?: string,
+  testMode: boolean = false,
 ): Promise<VoiceTurnResult> {
+  // Test mode: simulate voice turns with predefined sequence
+  if (testMode) {
+    const updated: ConvMessage[] = [...messages];
+    if (patientAnswer && patientAnswer.trim()) {
+      updated.push({ role: "user", content: `Patient answered: "${patientAnswer.trim()}"` });
+    } else if (messages.length === 1) {
+      updated.push({
+        role: "user",
+        content: "Start the interview. Ask the first follow-up question.",
+      });
+    }
+    
+    const askedCount = updated.filter((m) => m.role === "assistant").length;
+    const testPool = [
+      "How long has the condition been present?",
+      "Is there any pain, itching or burning?",
+      "Any fever, chills or feeling unwell?",
+      "Have you tried any treatment so far?",
+      "Any allergies or other medical conditions?",
+    ];
+    if (askedCount >= testPool.length) {
+      const decision: FollowUpDecision = { question: "", done: true };
+      updated.push({ role: "assistant", content: JSON.stringify(decision) });
+      return { decision, messages: updated };
+    }
+    const decision: FollowUpDecision = { question: testPool[askedCount], done: false };
+    updated.push({ role: "assistant", content: JSON.stringify(decision) });
+    return { decision, messages: updated };
+  }
+
   const updated: ConvMessage[] = [...messages];
   if (patientAnswer && patientAnswer.trim()) {
     updated.push({ role: "user", content: `Patient answered: "${patientAnswer.trim()}"` });
