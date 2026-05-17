@@ -119,8 +119,9 @@ export const translations = {
     resolved: "Resolved",
     noDataYet: "No data yet.",
     topConditions: "Top conditions",
-    dailyAssessmentVolume: "Daily assessment volume (14 days)",
+    dailyAssessmentVolume: "Daily assessment volume",
     chwLocations: "CHW locations",
+    chwPerformance: "CHW performance",
     gpsDataDesc: "CHW(s) with GPS data",
     noGpsData:
       "No CHW location data yet. Configure GPS in your profile to appear on the map.",
