@@ -1,7 +1,40 @@
 import jsPDF from "jspdf";
+import QRCode from "qrcode";
 import type { Patient, Assessment } from "@/types/trij";
 
-export function generateReferralPdf(patient: Patient, a: Assessment) {
+interface ReferralData {
+  patientId: string;
+  assessmentId: string;
+  urgency: string;
+  chwContact: string;
+  timestamp: string;
+}
+
+function getQRData(patient: Patient, a: Assessment): ReferralData {
+  return {
+    patientId: patient.identifier,
+    assessmentId: a.id,
+    urgency: a.urgency ?? "unknown",
+    chwContact: "",
+    timestamp: a.createdAt,
+  };
+}
+
+function encodeQRPayload(data: ReferralData): string {
+  return JSON.stringify(data);
+}
+
+export async function generateReferralPdfBlob(
+  patient: Patient,
+  a: Assessment,
+): Promise<Blob> {
+  const qrPayload = encodeQRPayload(getQRData(patient, a));
+  const qrDataUrl = await QRCode.toDataURL(qrPayload, {
+    width: 120,
+    margin: 1,
+    color: { dark: "#000000", light: "#ffffff" },
+  });
+
   const doc = new jsPDF({ unit: "pt", format: "a5" });
   const W = doc.internal.pageSize.getWidth();
   let y = 40;
@@ -62,6 +95,10 @@ export function generateReferralPdf(patient: Patient, a: Assessment) {
     });
   }
 
+  const qrX = W - 40 - 80;
+  const qrY = doc.internal.pageSize.getHeight() - 130;
+  doc.addImage(qrDataUrl, "PNG", qrX, qrY, 80, 80);
+
   y = doc.internal.pageSize.getHeight() - 60;
   doc.setDrawColor(180);
   doc.line(40, y, W - 40, y);
@@ -72,5 +109,39 @@ export function generateReferralPdf(patient: Patient, a: Assessment) {
     align: "center",
   });
 
-  doc.save(`referral-${patient.identifier}-${Date.now()}.pdf`);
+  return doc.output("blob");
+}
+
+export async function downloadReferralPdf(patient: Patient, a: Assessment) {
+  const blob = await generateReferralPdfBlob(patient, a);
+  const url = URL.createObjectURL(blob);
+  const aEl = document.createElement("a");
+  aEl.href = url;
+  aEl.download = `referral-${patient.identifier}-${Date.now()}.pdf`;
+  aEl.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function shareReferralPdf(patient: Patient, a: Assessment) {
+  const blob = await generateReferralPdfBlob(patient, a);
+  const file = new File([blob], `referral-${patient.identifier}-${Date.now()}.pdf`, {
+    type: "application/pdf",
+  });
+  if (navigator.share && navigator.canShare({ files: [file] })) {
+    await navigator.share({
+      title: `Referral — ${patient.identifier}`,
+      files: [file],
+    });
+  } else {
+    const url = URL.createObjectURL(blob);
+    const aEl = document.createElement("a");
+    aEl.href = url;
+    aEl.download = `referral-${patient.identifier}-${Date.now()}.pdf`;
+    aEl.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
+export async function generateReferralPdf(patient: Patient, a: Assessment) {
+  await downloadReferralPdf(patient, a);
 }

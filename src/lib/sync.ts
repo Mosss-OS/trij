@@ -45,16 +45,17 @@ export async function updateReferralStatus(
   assessmentId: string,
   status: "none" | "pending" | "active" | "resolved",
 ): Promise<void> {
+  const now = new Date().toISOString();
   const db = getDB();
-  await db.assessments.update(assessmentId, { referralStatus: status });
+  await db.assessments.update(assessmentId, { referralStatus: status, referralStatusUpdatedAt: now });
   const a = await db.assessments.get(assessmentId);
   if (!a) return;
   await db.syncQueue.add({
     table: "assessments",
     action: "update",
     recordId: assessmentId,
-    payload: { ...a, referralStatus: status },
-    createdAt: new Date().toISOString(),
+    payload: { ...a, referralStatus: status, referralStatusUpdatedAt: now },
+    createdAt: now,
     attempts: 0,
   });
   registerBackgroundSync().catch(() => {});
