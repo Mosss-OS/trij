@@ -12,9 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, FileDown, UserRound, RefreshCw } from "lucide-react";
+import { Camera, FileDown, Share2, UserRound, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
-import { generateReferralPdf } from "@/lib/referral";
+import { downloadReferralPdf, shareReferralPdf } from "@/lib/referral";
 import { updateReferralStatus } from "@/lib/sync";
 import { toast } from "sonner";
 
@@ -163,9 +163,17 @@ function PatientDetail() {
                       variant="outline"
                       size="sm"
                       className="h-7 gap-1 text-xs"
-                      onClick={() => generateReferralPdf(patient, a)}
+                      onClick={() => downloadReferralPdf(patient, a)}
                     >
                       <FileDown className="h-3.5 w-3.5" /> PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1 text-xs"
+                      onClick={() => shareReferralPdf(patient, a)}
+                    >
+                      <Share2 className="h-3.5 w-3.5" /> Share
                     </Button>
                   </div>
                 )}
