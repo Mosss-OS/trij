@@ -1,27 +1,33 @@
-let server;
+import { join } from "path";
 
-async function getServer() {
-  if (!server) {
-    const mod = await import("../dist/server/index.js");
-    server = mod.default ?? mod;
-  }
-  return server;
-}
+let server;
 
 export default async function handler(req, res) {
   try {
-    const { default: handler } = await getServer();
+    if (!server) {
+      const serverPath = join(process.cwd(), "dist/server/index.js");
+      const mod = await import(serverPath);
+      server = mod.default ?? mod;
+    }
     const url = new URL(req.url, `https://${req.headers.host}`);
-    const request = new Request(url, {
-      method: req.method,
-      headers: new Headers(req.headers),
-      body: req.method !== "GET" && req.method !== "HEAD" ? await new Promise((resolve) => {
-        const chunks = [];
-        req.on("data", (c) => chunks.push(c));
-        req.on("end", () => resolve(Buffer.concat(chunks)));
-      }) : undefined,
-    });
-    const response = await handler.fetch(request, {}, {});
+    const headers = new Headers();
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (Array.isArray(value)) {
+        for (const v of value) headers.append(key, v);
+      } else if (value !== undefined) {
+        headers.set(key, value);
+      }
+    }
+    const body =
+      req.method !== "GET" && req.method !== "HEAD"
+        ? await new Promise((resolve) => {
+            const chunks = [];
+            req.on("data", (c) => chunks.push(c));
+            req.on("end", () => resolve(Buffer.concat(chunks)));
+          })
+        : undefined;
+    const request = new Request(url, { method: req.method, headers, body });
+    const response = await server.fetch(request, {}, {});
     res.statusCode = response.status;
     response.headers.forEach((value, key) => res.setHeader(key, value));
     const text = await response.text();
