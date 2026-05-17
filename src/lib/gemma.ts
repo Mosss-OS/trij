@@ -9,10 +9,11 @@ import {
 import type { TriageResult, DocumentResult, Urgency } from "@/types/trij";
 import { TRIAGE_TOOL, DOCUMENT_TOOL, FOLLOW_UP_TOOL, parseToolCall, triesJson } from "./tools";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useSessionStore } from "@/stores/sessionStore";
 
 /* ─── Engine type ─────────────────────────────────────────── */
 
-export type EngineKind = "webllm" | "ollama" | "demo";
+export type EngineKind = "webllm" | "ollama" | "demo" | "cloud";
 
 /* ─── WebLLM internals ────────────────────────────────────── */
 
@@ -401,6 +402,96 @@ function demoDocument(): DocumentResult {
   return DEMO_DOCUMENTS[Math.floor(Math.random() * DEMO_DOCUMENTS.length)];
 }
 
+/* ─── Cloud inference ──────────────────────────────────────── */
+
+const DEFAULT_CLOUD_URL = `${typeof window !== "undefined" ? window.location.origin : ""}/functions/v1/infer-gemma4`;
+const CLOUD_QUOTA_KEY = "trij-cloud-quota";
+const MAX_CLOUD_INFERENCES = 50;
+
+let _cloudQuota = 0;
+
+export function getCloudQuota(): { used: number; max: number } {
+  return { used: _cloudQuota, max: MAX_CLOUD_INFERENCES };
+}
+
+export function resetCloudQuota() {
+  _cloudQuota = 0;
+  if (typeof localStorage !== "undefined") {
+    localStorage.removeItem(CLOUD_QUOTA_KEY);
+  }
+}
+
+function loadCloudQuota() {
+  try {
+    const raw = localStorage.getItem(CLOUD_QUOTA_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      const today = new Date().toISOString().slice(0, 10);
+      if (data.date === today) {
+        _cloudQuota = data.count;
+      } else {
+        localStorage.removeItem(CLOUD_QUOTA_KEY);
+        _cloudQuota = 0;
+      }
+    }
+  } catch {
+    _cloudQuota = 0;
+  }
+}
+
+function saveCloudQuota() {
+  try {
+    localStorage.setItem(
+      CLOUD_QUOTA_KEY,
+      JSON.stringify({ date: new Date().toISOString().slice(0, 10), count: _cloudQuota }),
+    );
+  } catch {
+    /* noop */
+  }
+}
+
+async function cloudInference(
+  imageDataUrl: string,
+  language: string,
+  supabaseUrl?: string,
+  supabaseAnonKey?: string,
+): Promise<TriageResult> {
+  loadCloudQuota();
+  if (_cloudQuota >= MAX_CLOUD_INFERENCES) {
+    throw new Error("Daily cloud inference quota exceeded");
+  }
+
+  const functionUrl = supabaseUrl
+    ? `${supabaseUrl}/functions/v1/infer-gemma4`
+    : DEFAULT_CLOUD_URL;
+
+  const session = useSettingsStore.getState();
+  const token = useSessionStore.getState().session?.access_token;
+
+  const res = await fetch(functionUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token || ""}`,
+    },
+    body: JSON.stringify({
+      image: imageDataUrl,
+      prompt: "Analyze this medical image and return the triage assessment.",
+      language,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `Cloud inference failed (${res.status})`);
+  }
+
+  const result: TriageResult = await res.json();
+  _cloudQuota++;
+  saveCloudQuota();
+  return result;
+}
+
 /* ─── Public API ──────────────────────────────────────────── */
 
 export async function loadEngine(
@@ -436,57 +527,78 @@ export async function triageImage(
   kind: EngineKind,
   ollamaUrl?: string,
 ): Promise<TriageResult> {
+  const settings = useSettingsStore.getState();
+
+  if (kind === "cloud") {
+    return cloudInference(imageDataUrl, language);
+  }
+
   if (kind === "demo") {
     await sleep(2000 + Math.random() * 1500);
     return demoAssessment();
   }
 
   if (kind === "ollama") {
-    const response = await ollamaChat(
-      [
-        { role: "system", content: getTriageSystemPrompt(language) },
-        {
-          role: "user",
-          content: "Analyze this medical image and return the triage assessment.",
-          images: [imageDataUrl],
-        },
-      ],
-      ollamaUrl ?? "http://localhost:11434",
-      [TRIAGE_TOOL],
-    );
-    const result = parseToolCall<TriageResult>(response.message, null);
-    if (result) return result;
-    return triesJson<TriageResult>(response.message.content ?? "", FALLBACK_TRIAGE);
+    try {
+      const response = await ollamaChat(
+        [
+          { role: "system", content: getTriageSystemPrompt(language) },
+          {
+            role: "user",
+            content: "Analyze this medical image and return the triage assessment.",
+            images: [imageDataUrl],
+          },
+        ],
+        ollamaUrl ?? "http://localhost:11434",
+        [TRIAGE_TOOL],
+      );
+      const result = parseToolCall<TriageResult>(response.message, null);
+      if (result) return result;
+      return triesJson<TriageResult>(response.message.content ?? "", FALLBACK_TRIAGE);
+    } catch (err) {
+      if (settings.cloudFallbackConsent) {
+        console.warn("Ollama failed, falling back to cloud:", err);
+        return cloudInference(imageDataUrl, language);
+      }
+      throw err;
+    }
   }
 
-  const e = await loadWebLLM();
-  const settings = useSettingsStore.getState();
-  const temperature = settings.thinkingMode ? 0.7 : 0.1;
+  try {
+    const e = await loadWebLLM();
+    const temperature = settings.thinkingMode ? 0.7 : 0.1;
 
-  const reply = await e.chat.completions.create({
-    messages: [
-      { role: "system", content: getTriageSystemPrompt(language, settings.thinkingMode) },
-      {
-        role: "user",
-        content: [
-          { type: "image_url", image_url: { url: imageDataUrl } },
-          { type: "text", text: "Analyze this medical image and return the triage assessment." },
-        ] as never,
-      },
-    ],
-    tools: [TRIAGE_TOOL as never],
-    tool_choice: {
-      type: "function",
-      function: { name: "triage_assessment" },
-    } as never,
-    max_tokens: 800,
-    temperature,
-  });
-  const message = reply.choices[0]?.message;
-  if (!message) return FALLBACK_TRIAGE;
-  const result = parseToolCall<TriageResult>(message, null);
-  if (result) return result;
-  return triesJson<TriageResult>(message.content ?? "", FALLBACK_TRIAGE);
+    const reply = await e.chat.completions.create({
+      messages: [
+        { role: "system", content: getTriageSystemPrompt(language, settings.thinkingMode) },
+        {
+          role: "user",
+          content: [
+            { type: "image_url", image_url: { url: imageDataUrl } },
+            { type: "text", text: "Analyze this medical image and return the triage assessment." },
+          ] as never,
+        },
+      ],
+      tools: [TRIAGE_TOOL as never],
+      tool_choice: {
+        type: "function",
+        function: { name: "triage_assessment" },
+      } as never,
+      max_tokens: 800,
+      temperature,
+    });
+    const message = reply.choices[0]?.message;
+    if (!message) return FALLBACK_TRIAGE;
+    const result = parseToolCall<TriageResult>(message, null);
+    if (result) return result;
+    return triesJson<TriageResult>(message.content ?? "", FALLBACK_TRIAGE);
+  } catch (err) {
+    if (settings.cloudFallbackConsent) {
+      console.warn("WebLLM failed, falling back to cloud:", err);
+      return cloudInference(imageDataUrl, language);
+    }
+    throw err;
+  }
 }
 
 /* ─── Document analysis ───────────────────────────────────── */

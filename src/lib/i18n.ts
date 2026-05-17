@@ -180,6 +180,8 @@ export const translations = {
     frameArea: "Frame the affected area",
     lightingDesc: "Good lighting and steady hands help the AI get accurate results.",
     runningLocally: "Running on your device — no data sent to the cloud.",
+    runningCloud: "Running on secure cloud — data encrypted in transit.",
+    cloudQuota: "Cloud quota: {used}/{max} used today",
     preparing: "Preparing",
     analyzing: "Analyzing",
     inferenceFailed: "Inference failed",

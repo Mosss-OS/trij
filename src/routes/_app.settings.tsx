@@ -80,6 +80,7 @@ function SettingsPage() {
     { value: "auto", label: "Auto-detect", desc: "WebGPU → Ollama → Demo" },
     { value: "webllm", label: "WebLLM (WebGPU)", desc: "In-browser Gemma via WebGPU" },
     { value: "ollama", label: "Ollama (local)", desc: "Local Ollama server" },
+    { value: "cloud", label: "Cloud inference", desc: "Remote Gemma 4 26B via Supabase" },
     { value: "demo", label: "Demo mode", desc: "Mock data, no real model needed" },
   ];
 
