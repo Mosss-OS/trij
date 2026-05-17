@@ -10,6 +10,7 @@ import type { TriageResult, DocumentResult, Urgency } from "@/types/trij";
 import { TRIAGE_TOOL, DOCUMENT_TOOL, FOLLOW_UP_TOOL, parseToolCall, triesJson } from "./tools";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSessionStore } from "@/stores/sessionStore";
+import { retrieve } from "./rag";
 
 /* ─── Engine type ─────────────────────────────────────────── */
 
@@ -528,14 +529,19 @@ export async function triageImage(
   ollamaUrl?: string,
 ): Promise<TriageResult> {
   const settings = useSettingsStore.getState();
+  let result: TriageResult;
 
   if (kind === "cloud") {
-    return cloudInference(imageDataUrl, language);
+    result = await cloudInference(imageDataUrl, language);
+    result = attachRagSources(result);
+    return result;
   }
 
   if (kind === "demo") {
     await sleep(2000 + Math.random() * 1500);
-    return demoAssessment();
+    result = demoAssessment();
+    result = attachRagSources(result);
+    return result;
   }
 
   if (kind === "ollama") {
@@ -552,13 +558,16 @@ export async function triageImage(
         ollamaUrl ?? "http://localhost:11434",
         [TRIAGE_TOOL],
       );
-      const result = parseToolCall<TriageResult>(response.message, null);
-      if (result) return result;
-      return triesJson<TriageResult>(response.message.content ?? "", FALLBACK_TRIAGE);
+      result = parseToolCall<TriageResult>(response.message, null) ||
+        triesJson<TriageResult>(response.message.content ?? "", FALLBACK_TRIAGE);
+      result = attachRagSources(result);
+      return result;
     } catch (err) {
       if (settings.cloudFallbackConsent) {
         console.warn("Ollama failed, falling back to cloud:", err);
-        return cloudInference(imageDataUrl, language);
+        result = await cloudInference(imageDataUrl, language);
+        result = attachRagSources(result);
+        return result;
       }
       throw err;
     }
@@ -588,17 +597,39 @@ export async function triageImage(
       temperature,
     });
     const message = reply.choices[0]?.message;
-    if (!message) return FALLBACK_TRIAGE;
-    const result = parseToolCall<TriageResult>(message, null);
-    if (result) return result;
-    return triesJson<TriageResult>(message.content ?? "", FALLBACK_TRIAGE);
+    if (!message) {
+      result = FALLBACK_TRIAGE;
+      result.rag_sources = undefined;
+      return result;
+    }
+    result = parseToolCall<TriageResult>(message, null) ||
+      triesJson<TriageResult>(message.content ?? "", FALLBACK_TRIAGE);
+    result = attachRagSources(result);
+    return result;
   } catch (err) {
     if (settings.cloudFallbackConsent) {
       console.warn("WebLLM failed, falling back to cloud:", err);
-      return cloudInference(imageDataUrl, language);
+      result = await cloudInference(imageDataUrl, language);
+      result = attachRagSources(result);
+      return result;
     }
     throw err;
   }
+}
+
+function attachRagSources(r: TriageResult): TriageResult {
+  const features = r.key_visual_features || [];
+  if (features.length === 0) return r;
+  const { sources } = retrieve(features, 3);
+  if (sources.length === 0) return r;
+  return {
+    ...r,
+    rag_sources: sources.map((s) => ({
+      condition: s.condition,
+      treatment: s.treatment,
+      who_guideline: s.who_guideline,
+    })),
+  };
 }
 
 /* ─── Document analysis ───────────────────────────────────── */
