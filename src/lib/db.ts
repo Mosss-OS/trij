@@ -41,6 +41,7 @@ export class TrijDB extends Dexie {
   syncQueue!: Table<SyncQueueItem, number>;
   errorLogs!: Table<ErrorLog, number>;
   pinAuth!: Table<PinAuthRecord, string>;
+  voiceDrafts!: Table<VoiceDraft, string>;
 
   constructor() {
     super("TrijDB");
@@ -50,6 +51,14 @@ export class TrijDB extends Dexie {
       syncQueue: "++id, table, action, recordId, createdAt",
       errorLogs: "++id, timestamp",
       pinAuth: "userId, email",
+    });
+    this.version(4).stores({
+      patients: "id, chwUserId, identifier, createdAt, syncedAt",
+      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
+      syncQueue: "++id, table, action, recordId, createdAt",
+      errorLogs: "++id, timestamp",
+      pinAuth: "userId, email",
+      voiceDrafts: "patientId, chwUserId, updatedAt",
     });
   }
 }
