@@ -39,6 +39,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { VoiceAssistant } from "@/lib/voice";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { useVoiceGuidance } from "@/hooks/useVoiceGuidance";
 
 interface QAPair {
   question: string;
@@ -66,6 +67,7 @@ function TriagePage() {
   const voiceEnabled = useSettingsStore((s) => s.voiceEnabled);
   const voiceTestMode = useSettingsStore((s) => s.voiceTestMode);
   const navigate = useNavigate();
+  const voice = useVoiceGuidance();
   const [step, setStep] = useState<Step>("patient");
   const [patient, setPatient] = useState<Patient | null>(null);
   const [identifier, setIdentifier] = useState("");
@@ -91,6 +93,36 @@ function TriagePage() {
     }
     voiceRef.current.setLanguage(language);
   }, [language]);
+
+  useEffect(() => {
+    if (!voice.active) return;
+    if (voice.speaking || voice.listening) return;
+    switch (step) {
+      case "patient":
+        voice.narrate(
+          `${t("voiceGuideWhoIsPatient")} ${t("voiceGuidePatientId")} ${t("voiceGuideAge")} ${t("voiceGuideSex")} ${t("voiceGuideConsent")}`,
+        );
+        break;
+      case "capture":
+        voice.narrate(t("voiceGuideCapture"));
+        break;
+      case "analyzing":
+        voice.narrate(t("analyzing") + "...");
+        break;
+      case "result":
+        if (result) {
+          const txt = [
+            t("voiceGuideResult"),
+            t("likelyCondition") + ": " + result.condition,
+            t("voiceGuideConfidence").replace("{pct}", String(Math.round(result.confidence))),
+            t("voiceGuideUrgency").replace("{level}", result.urgency),
+            t("voiceGuideRecommended") + " " + (result.recommendation ?? ""),
+          ].join(". ");
+          voice.narrate(txt);
+        }
+        break;
+    }
+  }, [step, voice.active]);
 
   const [capturingLocation, setCapturingLocation] = useState(false);
   const [resumableDrafts, setResumableDrafts] = useState<
@@ -207,6 +239,7 @@ function TriagePage() {
 
   const save = async () => {
     if (!user || !patient || !result || !image) return;
+    voice.narrate(t("voiceGuideSaving"));
     const a: Assessment = {
       id: crypto.randomUUID(),
       patientId: patient.id,
@@ -234,6 +267,7 @@ function TriagePage() {
     };
     await queueAssessment(a);
     await clearVoiceDraft(patient.id).catch(() => {});
+    voice.narrate(t("voiceGuideSaved"));
     toast.success(t("savedOffline"));
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
   };
@@ -386,22 +420,61 @@ function TriagePage() {
             </div>
             <div className="space-y-1.5">
               <Label>{t("patientIdentifier")}</Label>
-              <Input
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="e.g. AP-0142"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="e.g. AP-0142"
+                  className="flex-1"
+                />
+                {voice.active && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={async () => {
+                      const id = await voice.ask(
+                        voice.language === "en-US" ? "Say the patient ID" : t("voiceGuidePatientId"),
+                      );
+                      if (id) setIdentifier(id);
+                    }}
+                    disabled={voice.listening}
+                  >
+                    <Mic className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>{t("ageYears")}</Label>
-                <Input
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  type="number"
-                  min={0}
-                  max={120}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    type="number"
+                    min={0}
+                    max={120}
+                    className="flex-1"
+                  />
+                  {voice.active && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={async () => {
+                        const a = await voice.ask(
+                          voice.language === "en-US" ? "Say the age in years" : t("voiceGuideAge"),
+                        );
+                        if (a) {
+                          const num = a.replace(/\D/g, "");
+                          if (num) setAge(num);
+                        }
+                      }}
+                      disabled={voice.listening}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label>{t("sex")}</Label>
@@ -416,6 +489,27 @@ function TriagePage() {
                     </button>
                   ))}
                 </div>
+                {voice.active && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-1 w-full gap-1 text-xs"
+                    onClick={async () => {
+                      const s = await voice.ask(
+                        voice.language === "en-US" ? "Say male, female, or other" : t("voiceGuideSex"),
+                      );
+                      if (s) {
+                        const lower = s.toLowerCase();
+                        if (lower.includes("female") || lower.includes("f") || lower.includes("woman") || lower.includes("girl")) setSex("F");
+                        else if (lower.includes("male") || lower.includes("m") || lower.includes("man") || lower.includes("boy")) setSex("M");
+                        else setSex("other");
+                      }
+                    }}
+                    disabled={voice.listening}
+                  >
+                    <Mic className="mr-1 h-3 w-3" /> {t("voiceAssistant")}
+                  </Button>
+                )}
               </div>
             </div>
             <label className="flex items-start gap-3 rounded-xl border bg-secondary/20 p-4">
@@ -424,6 +518,23 @@ function TriagePage() {
                 {t("consentDesc")}
               </span>
             </label>
+            {voice.active && !consent && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={async () => {
+                  const ok = await voice.confirm(t("voiceGuideConsent"));
+                  if (ok) {
+                    setConsent(true);
+                    voice.narrate(t("voiceGuideConsentConfirmed"));
+                  }
+                }}
+                disabled={voice.listening}
+              >
+                <Volume2 className="h-4 w-4" /> {t("voiceAssistant")} — {t("voiceGuideConsentConfirmed")}
+              </Button>
+            )}
             <Button
               onClick={startPatient}
               disabled={!identifier.trim() || !consent || capturingLocation}
@@ -573,6 +684,39 @@ function TriagePage() {
                 </Button>
               </div>
             </div>
+          </div>
+        )}
+
+        {voice.active && (
+          <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-2">
+            <Button
+              variant="secondary"
+              size="icon"
+              className="h-12 w-12 rounded-full shadow-lg"
+              onClick={() => {
+                if (voice.speaking) {
+                  voice.stop();
+                } else {
+                  const txt = {
+                    patient: `${t("voiceGuideWhoIsPatient")} ${t("voiceGuidePatientId")} ${t("voiceGuideAge")} ${t("voiceGuideSex")} ${t("voiceGuideConsent")}`,
+                    capture: t("voiceGuideCapture"),
+                    analyzing: t("analyzing") + "...",
+                    result: result
+                      ? `${t("voiceGuideResult")}. ${t("likelyCondition")}: ${result.condition}. ${t("voiceGuideConfidence").replace("{pct}", String(Math.round(result.confidence)))}. ${t("voiceGuideUrgency").replace("{level}", result.urgency)}.`
+                      : "",
+                    voice: currentQuestion,
+                  }[step];
+                  if (txt) voice.narrate(txt);
+                }
+              }}
+              title={voice.speaking ? "Stop" : "Guide me"}
+            >
+              {voice.speaking ? (
+                <MicOff className="h-5 w-5" />
+              ) : (
+                <Volume2 className="h-5 w-5" />
+              )}
+            </Button>
           </div>
         )}
       </div>
