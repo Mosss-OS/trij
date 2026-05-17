@@ -228,6 +228,7 @@ function TriagePage() {
       createdAt: new Date().toISOString(),
     };
     await queueAssessment(a);
+    await clearVoiceDraft(patient.id).catch(() => {});
     toast.success(t("savedOffline"));
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
   };
