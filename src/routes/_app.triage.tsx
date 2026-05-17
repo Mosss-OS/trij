@@ -91,6 +91,58 @@ function TriagePage() {
   }, [language]);
 
   const [capturingLocation, setCapturingLocation] = useState(false);
+  const [resumableDrafts, setResumableDrafts] = useState<
+    Awaited<ReturnType<typeof listVoiceDrafts>>
+  >([]);
+
+  useEffect(() => {
+    if (!user) return;
+    listVoiceDrafts(user.id).then(setResumableDrafts).catch(() => {});
+  }, [user]);
+
+  const persistDraft = async (
+    p: Patient,
+    res: TriageResult,
+    img: string,
+    qa: QAPair[],
+    currentQ: string,
+    msgs: ConvMessage[],
+    consentVal: boolean,
+  ) => {
+    try {
+      await saveVoiceDraft({
+        patientId: p.id,
+        chwUserId: p.chwUserId,
+        patient: p,
+        triageResult: res,
+        image: img,
+        messages: msgs,
+        qaHistory: qa,
+        currentQuestion: currentQ,
+        consent: consentVal,
+      });
+    } catch (err) {
+      console.warn("Failed to save voice draft", err);
+    }
+  };
+
+  const resumeDraft = async (patientId: string) => {
+    const draft = await getVoiceDraft(patientId);
+    if (!draft) return;
+    setPatient(draft.patient);
+    setIdentifier(draft.patient.identifier);
+    setAge(draft.patient.ageYears ? String(draft.patient.ageYears) : "");
+    setSex(draft.patient.sex ?? "F");
+    setImage(draft.image);
+    setResult(draft.triageResult);
+    setVoiceHistory(draft.qaHistory);
+    setCurrentQuestion(draft.currentQuestion);
+    setConsent(draft.consent);
+    convoRef.current = draft.messages;
+    setStep("voice");
+    toast.success("Resumed voice interview");
+  };
+
 
   const startPatient = async () => {
     if (!user || !identifier.trim()) return;
