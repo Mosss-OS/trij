@@ -6,7 +6,7 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { getDB } from "@/lib/db";
 import type { Assessment, Patient } from "@/types/trij";
 import { UrgencyPill } from "@/components/UrgencyPill";
-import { Camera, FileText, Stethoscope, Map as MapIcon, ArrowRight, HardDrive } from "lucide-react";
+import { Camera, FileText, Stethoscope, Map as MapIcon, ArrowRight, HardDrive, ExternalLink } from "lucide-react";
 import { StorageMonitor } from "@/components/StorageMonitor";
 import { formatDistanceToNow } from "date-fns";
 import { useI18n } from "@/lib/i18n";
@@ -89,9 +89,10 @@ function DashboardPage() {
           </Link>
         </section>
 
-        <section className="mt-5 grid grid-cols-3 gap-3">
+        <section className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <QuickTile to="/document" icon={FileText} label={t("scanDoc")} />
           <QuickTile to="/patients" icon={Stethoscope} label={t("patients")} />
+          <QuickTile to="/referrals" icon={ExternalLink} label={t("referrals")} />
           <QuickTile to="/supervisor" icon={MapIcon} label={t("map")} />
         </section>
 
