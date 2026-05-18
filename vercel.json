@@ -1,9 +1,10 @@
 {
   "buildCommand": "vite build",
-  "installCommand": "bun install",
+  "installCommand": "npm install",
+  "outputDirectory": "dist/client",
   "functions": {
     "api/index.mjs": {
-      "includeFiles": "dist/**",
+      "includeFiles": "dist/server/**",
       "maxDuration": 30
     }
   },

@@ -80,7 +80,9 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: "trij-settings",
       storage: createJSONStorage(() =>
-        typeof window !== "undefined" ? localStorage : (undefined as never),
+        typeof window !== "undefined"
+          ? localStorage
+          : { getItem: () => null, setItem: () => {}, removeItem: () => {} },
       ),
     },
   ),
