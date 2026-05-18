@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { useSessionStore } from "@/stores/sessionStore";
+import { useReferralAlerts } from "@/hooks/useReferralAlerts";
 import { getDB } from "@/lib/db";
 import type { Assessment, Patient } from "@/types/trij";
 import { UrgencyPill } from "@/components/UrgencyPill";
-import { Camera, FileText, Stethoscope, Map as MapIcon, ArrowRight, HardDrive, ExternalLink } from "lucide-react";
+import { Camera, FileText, Stethoscope, Map as MapIcon, ArrowRight, HardDrive, ExternalLink, BellRing } from "lucide-react";
 import { StorageMonitor } from "@/components/StorageMonitor";
 import { formatDistanceToNow } from "date-fns";
 import { useI18n } from "@/lib/i18n";
@@ -21,6 +22,7 @@ function DashboardPage() {
   const user = useSessionStore((s) => s.user);
   const name = (user?.user_metadata?.name as string) || user?.email?.split("@")[0] || "CHW";
   const [recent, setRecent] = useState<(Assessment & { patient?: Patient })[]>([]);
+  const { unseen, count: alertCount, markAllAsSeen } = useReferralAlerts();
 
   useEffect(() => {
     let alive = true;
@@ -88,6 +90,32 @@ function DashboardPage() {
             </div>
           </Link>
         </section>
+
+        {alertCount > 0 && (
+          <section className="mt-5">
+            <Link
+              to={"/referrals" as never}
+              className="flex items-center gap-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 transition-colors hover:bg-blue-100"
+            >
+              <BellRing className="h-5 w-5 flex-shrink-0 text-blue-600" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-blue-800">
+                  {alertCount} unacknowledged referral{alertCount > 1 ? "s" : ""}
+                </p>
+                <p className="text-xs text-blue-600/70">Tap to view in Referrals</p>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  markAllAsSeen();
+                }}
+                className="rounded-lg bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
+              >
+                Dismiss
+              </button>
+            </Link>
+          </section>
+        )}
 
         <section className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <QuickTile to="/document" icon={FileText} label={t("scanDoc")} />
