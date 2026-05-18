@@ -3,6 +3,7 @@ import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { I18nErrorBoundary } from "@/components/ErrorBoundary";
 import { CameraCapture } from "@/components/CameraCapture";
+import { ImageEditor } from "@/components/ImageEditor";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { analyzeDocument, detectEngine } from "@/lib/gemma";
@@ -28,13 +29,18 @@ function DocumentScan() {
   const engineKind = useSettingsStore((s) => s.engineKind);
   const ollamaUrl = useSettingsStore((s) => s.ollamaUrl);
   const navigate = useNavigate();
-  const [step, setStep] = useState<"capture" | "analyzing" | "result">("capture");
+  const [step, setStep] = useState<"capture" | "edit" | "analyzing" | "result">("capture");
   const [image, setImage] = useState<string | null>(null);
   const [result, setResult] = useState<DocumentResult | null>(null);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
 
-  const onCapture = async (dataUrl: string) => {
+  const onCapture = (dataUrl: string) => {
+    setImage(dataUrl);
+    setStep("edit");
+  };
+
+  const onCropConfirm = async (dataUrl: string) => {
     setImage(dataUrl);
     setStep("analyzing");
     try {
@@ -59,6 +65,13 @@ function DocumentScan() {
             <WebGPUCheck engineKind={engineKind} ollamaUrl={ollamaUrl} compact />
             <CameraCapture onCapture={onCapture} onCancel={() => navigate({ to: "/dashboard" })} />
           </div>
+        )}
+        {step === "edit" && image && (
+          <ImageEditor
+            image={image}
+            onConfirm={onCropConfirm}
+            onRetake={() => setStep("capture")}
+          />
         )}
         {step === "analyzing" && (
           <div className="mt-10 flex flex-col items-center gap-5 text-center">
