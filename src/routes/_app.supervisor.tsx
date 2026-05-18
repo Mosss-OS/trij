@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useReferralAlerts } from "@/hooks/useReferralAlerts";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +13,9 @@ import {
   Download,
   TrendingUp,
   AlertTriangle,
+  BellRing,
+  X,
+  ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useI18n } from "@/lib/i18n";
@@ -95,6 +99,7 @@ function Supervisor() {
   const [referralFilter, setReferralFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRange>(30);
   const [showMap, setShowMap] = useState(false);
+  const { unseen, count: alertCount, markAllAsSeen, markAsSeen } = useReferralAlerts();
 
   useEffect(() => {
     if (!online) {
@@ -256,6 +261,58 @@ function Supervisor() {
         {!online && (
           <div className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
             {t("connectivityRequired")}
+          </div>
+        )}
+
+        {alertCount > 0 && (
+          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+            <div className="flex items-start gap-3">
+              <BellRing className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-blue-800">
+                    {alertCount} new referral{alertCount > 1 ? "s" : ""}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={markAllAsSeen}
+                      className="whitespace-nowrap rounded-lg bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
+                    >
+                      Dismiss all
+                    </button>
+                  </div>
+                </div>
+                <ul className="mt-2 space-y-1.5">
+                  {unseen.slice(0, 5).map((a) => (
+                    <li key={a.assessment.id} className="flex items-center gap-2">
+                      <Link
+                        to="/patients/$patientId"
+                        params={{ patientId: a.assessment.patientId }}
+                        className="flex items-center gap-1 text-xs font-medium text-blue-700 hover:underline"
+                      >
+                        {a.patient?.identifier ?? "Unknown"}
+                        <ExternalLink className="h-3 w-3" />
+                      </Link>
+                      <span className="text-xs text-blue-600/70">
+                        {a.assessment.condition ?? "Assessment"}
+                      </span>
+                      <button
+                        onClick={() => markAsSeen(a.assessment.id)}
+                        className="ml-auto rounded p-0.5 text-blue-400 hover:text-blue-600"
+                        aria-label="Dismiss"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  ))}
+                  {unseen.length > 5 && (
+                    <li className="text-xs text-blue-500/70">
+                      +{unseen.length - 5} more
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
           </div>
         )}
 
