@@ -5,9 +5,16 @@ let server;
 export default async function handler(req, res) {
   try {
     if (!server) {
-      const serverPath = join(process.cwd(), "dist/server/index.js");
-      const mod = await import(serverPath);
-      server = mod.default ?? mod;
+      const base = join(process.cwd(), "dist/server");
+      const candidates = ["server.js", "index.js"];
+      let mod;
+      for (const file of candidates) {
+        try {
+          mod = await import(join(base, file));
+          if (mod) break;
+        } catch {}
+      }
+      server = mod?.default ?? mod;
     }
     const url = new URL(req.url, `https://${req.headers.host}`);
     const headers = new Headers();
