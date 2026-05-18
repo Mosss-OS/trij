@@ -30,8 +30,8 @@ export default async function handler(req, res) {
     const response = await server.fetch(request, {}, {});
     res.statusCode = response.status;
     response.headers.forEach((value, key) => res.setHeader(key, value));
-    const text = await response.text();
-    res.end(text);
+    const buf = Buffer.from(await response.arrayBuffer());
+    res.end(buf);
   } catch (error) {
     console.error(error);
     res.statusCode = 500;
