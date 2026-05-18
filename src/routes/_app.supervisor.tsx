@@ -71,7 +71,41 @@ const PIE_COLORS = [
 ];
 
 export const Route = createFileRoute("/_app/supervisor")({
-  head: () => ({ meta: [{ title: "Supervisor — Trij" }] }),
+  head: () => ({
+    meta: [
+      {
+        title: "Supervisor Dashboard — Analytics & Map | Trij Free Medical Triage",
+      },
+      {
+        name: "description",
+        content:
+          "Supervisor dashboard for community health programs. View geolocated assessment map, referral queue, condition analytics, CHW performance metrics, and CSV exports. Free open-source healthcare management.",
+      },
+      {
+        name: "keywords",
+        content:
+          "health supervisor dashboard, CHW management, healthcare analytics, medical assessment map, community health monitoring, referral queue management, healthcare CSV export",
+      },
+      {
+        property: "og:title",
+        content: "Supervisor Dashboard — Healthcare Analytics | Trij",
+      },
+      {
+        property: "og:description",
+        content:
+          "Free supervisor dashboard for community health programs. Analytics, maps, and CHW management tools.",
+      },
+      {
+        name: "twitter:title",
+        content: "Supervisor Dashboard — Healthcare Analytics | Trij",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Free supervisor dashboard for community health programs. Analytics, maps, and CHW management tools.",
+      },
+    ],
+  }),
   component: Supervisor,
 });
 
@@ -142,10 +176,7 @@ function Supervisor() {
     return d.toISOString();
   }, [dateRange]);
 
-  const rangeFiltered = useMemo(
-    () => items.filter((a) => a.created_at >= cutoff),
-    [items, cutoff],
-  );
+  const rangeFiltered = useMemo(() => items.filter((a) => a.created_at >= cutoff), [items, cutoff]);
 
   const counts = rangeFiltered.reduce(
     (acc, a) => {
@@ -306,9 +337,7 @@ function Supervisor() {
                     </li>
                   ))}
                   {unseen.length > 5 && (
-                    <li className="text-xs text-blue-500/70">
-                      +{unseen.length - 5} more
-                    </li>
+                    <li className="text-xs text-blue-500/70">+{unseen.length - 5} more</li>
                   )}
                 </ul>
               </div>
@@ -412,7 +441,11 @@ function Supervisor() {
             ) : (
               <ul className="divide-y" role="list">
                 {filteredItems.slice(0, 30).map((a) => (
-                  <li key={a.id} className="flex items-center justify-between gap-3 py-3" tabIndex={0}>
+                  <li
+                    key={a.id}
+                    className="flex items-center justify-between gap-3 py-3"
+                    tabIndex={0}
+                  >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
                         {a.patients?.identifier ?? "—"} · {a.condition ?? t("pending_status")}
@@ -460,7 +493,11 @@ function Supervisor() {
               ) : (
                 <div className="grid gap-6 md:grid-cols-2">
                   <ResponsiveContainer width="100%" height={260}>
-                    <BarChart data={conditionData} layout="vertical" margin={{ left: 0, right: 20 }}>
+                    <BarChart
+                      data={conditionData}
+                      layout="vertical"
+                      margin={{ left: 0, right: 20 }}
+                    >
                       <XAxis type="number" tick={{ fontSize: 11 }} />
                       <YAxis dataKey="name" type="category" width={150} tick={{ fontSize: 10 }} />
                       <Tooltip />
@@ -476,9 +513,7 @@ function Supervisor() {
                         cx="50%"
                         cy="50%"
                         outerRadius={100}
-                        label={({ name, percent }) =>
-                          `${name} (${(percent * 100).toFixed(0)}%)`
-                        }
+                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                         labelLine
                       >
                         {conditionData.map((_, i) => (
@@ -550,7 +585,10 @@ function Supervisor() {
                 <p className="text-sm text-muted-foreground">{t("noDataYet")}</p>
               ) : (
                 <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={chwPerformance} margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                  <BarChart
+                    data={chwPerformance}
+                    margin={{ top: 0, right: 20, left: 0, bottom: 0 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                     <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                     <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
@@ -584,7 +622,9 @@ function Supervisor() {
                   </div>
                 }
               >
-                {showMap && <CHWMap locations={chwLocations} assessmentCounts={chwAssessmentCounts} />}
+                {showMap && (
+                  <CHWMap locations={chwLocations} assessmentCounts={chwAssessmentCounts} />
+                )}
               </Suspense>
             )}
           </div>

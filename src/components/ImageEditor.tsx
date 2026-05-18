@@ -81,7 +81,10 @@ export function ImageEditor({ image, onConfirm, onRetake }: Props) {
       newCrop.x = Math.max(0, Math.min(cw - newCrop.width, dragRect.x + dx));
       newCrop.y = Math.max(0, Math.min(ch - newCrop.height, dragRect.y + dy));
     } else {
-      const handleDirs: Record<string, { left: boolean; right: boolean; top: boolean; bottom: boolean }> = {
+      const handleDirs: Record<
+        string,
+        { left: boolean; right: boolean; top: boolean; bottom: boolean }
+      > = {
         "top-left": { left: true, right: false, top: true, bottom: false },
         "top-right": { left: false, right: true, top: true, bottom: false },
         "bottom-left": { left: true, right: false, top: false, bottom: true },
@@ -171,7 +174,12 @@ export function ImageEditor({ image, onConfirm, onRetake }: Props) {
         return c.name;
       }
     }
-    if (pos.x >= rect.x && pos.x <= rect.x + rect.width && pos.y >= rect.y && pos.y <= rect.y + rect.height) {
+    if (
+      pos.x >= rect.x &&
+      pos.x <= rect.x + rect.width &&
+      pos.y >= rect.y &&
+      pos.y <= rect.y + rect.height
+    ) {
       return "move";
     }
     return null;
@@ -191,7 +199,7 @@ export function ImageEditor({ image, onConfirm, onRetake }: Props) {
         <img
           ref={imgRef}
           src={image}
-          alt=""
+          alt="Medical image preview for cropping before AI analysis"
           onLoad={initCrop}
           className="block w-full select-none"
           draggable={false}
@@ -238,7 +246,14 @@ export function ImageEditor({ image, onConfirm, onRetake }: Props) {
                   style={{
                     left: isLeft ? crop.x - 2 : crop.x + crop.width - 18,
                     top: isTop ? crop.y - 2 : crop.y + crop.height - 18,
-                    cursor: isTop && isLeft ? "nwse-resize" : isTop && !isLeft ? "nesw-resize" : !isTop && isLeft ? "nesw-resize" : "nwse-resize",
+                    cursor:
+                      isTop && isLeft
+                        ? "nwse-resize"
+                        : isTop && !isLeft
+                          ? "nesw-resize"
+                          : !isTop && isLeft
+                            ? "nesw-resize"
+                            : "nwse-resize",
                   }}
                 />
               );
@@ -256,15 +271,8 @@ export function ImageEditor({ image, onConfirm, onRetake }: Props) {
         >
           <RotateCcw className="h-4 w-4" />
         </Button>
-        <span className="min-w-[4rem] text-center text-xs text-muted-foreground">
-          {rotation}°
-        </span>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => rotate(1)}
-          title="Rotate clockwise"
-        >
+        <span className="min-w-[4rem] text-center text-xs text-muted-foreground">{rotation}°</span>
+        <Button variant="outline" size="icon" onClick={() => rotate(1)} title="Rotate clockwise">
           <RotateCw className="h-4 w-4" />
         </Button>
       </div>

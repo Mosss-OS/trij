@@ -13,7 +13,41 @@ import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_app/patients/")({
-  head: () => ({ meta: [{ title: "Patients — Trij" }] }),
+  head: () => ({
+    meta: [
+      {
+        title: "Patients — Patient Record Management | Trij Free Medical Triage",
+      },
+      {
+        name: "description",
+        content:
+          "Manage patient records offline with Trij's free patient management system. View visit history, search patients by ID, and track assessment timelines. Built for community health workers in remote areas.",
+      },
+      {
+        name: "keywords",
+        content:
+          "patient record management, community health patient tracking, offline medical records, free patient database, CHW patient management, healthcare record keeping",
+      },
+      {
+        property: "og:title",
+        content: "Patients — Patient Record Management | Trij",
+      },
+      {
+        property: "og:description",
+        content:
+          "Free offline patient record management for community health workers. Track visits, assessments, and referrals.",
+      },
+      {
+        name: "twitter:title",
+        content: "Patients — Patient Record Management | Trij",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Free offline patient record management for community health workers. Track visits, assessments, and referrals.",
+      },
+    ],
+  }),
   component: () => (
     <I18nErrorBoundary kind="database">
       <PatientsList />
