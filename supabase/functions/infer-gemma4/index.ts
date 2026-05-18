@@ -20,12 +20,6 @@ interface TriageResult {
 
 const HF_API_URL = "https://api-inference.huggingface.co/models/google/gemma-4-26b-a4b-it";
 const MAX_INFERENCES_PER_DAY = 50;
-const QUOTA_CACHE_TTL = 86_400_000;
-
-function getQuotaKey(userId: string) {
-  const today = new Date().toISOString().slice(0, 10);
-  return `quota:${userId}:${today}`;
-}
 
 serve(async (req) => {
   try {
@@ -64,9 +58,14 @@ serve(async (req) => {
       });
     }
 
-    const quotaKey = getQuotaKey(user.user.id);
-    const kv = await supabase.kv;
-    const current = parseInt((await kv.get(quotaKey)) || "0", 10);
+    const today = new Date().toISOString().slice(0, 10);
+    const { count: current } = await supabase
+      .from("inference_quota")
+      .select("count")
+      .eq("user_id", user.user.id)
+      .eq("date", today)
+      .maybeSingle()
+      .then((r) => r.data ?? { count: 0 });
     if (current >= MAX_INFERENCES_PER_DAY) {
       return new Response(JSON.stringify({ error: "Daily quota exceeded" }), {
         status: 429,
@@ -145,7 +144,12 @@ Language: ${body.language}`;
       });
     }
 
-    await kv.set(quotaKey, String(current + 1), { ttlMs: QUOTA_CACHE_TTL });
+    await supabase
+      .from("inference_quota")
+      .upsert(
+        { user_id: user.user.id, date: today, count: current + 1 },
+        { onConflict: "user_id,date" },
+      );
 
     console.log(`Inference by user ${user.user.id.slice(0, 8)}: ${result.condition} (${result.confidence}%)`);
 

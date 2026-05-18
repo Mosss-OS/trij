@@ -608,6 +608,7 @@ function TriagePage() {
               result={result}
               onSpeak={speak}
               minConfidenceForLocalCare={minConfidenceForLocalCare}
+              engineKind={kindRef.current as "webllm" | "ollama" | "demo" | "cloud" | "auto"}
             />
             <div className="flex flex-wrap gap-3">
               <Button

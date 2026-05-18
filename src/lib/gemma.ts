@@ -12,6 +12,15 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { useSessionStore } from "@/stores/sessionStore";
 import { retrieve } from "./rag";
 
+type MultimodalContent = Array<
+  | { type: "image_url"; image_url: { url: string } }
+  | { type: "text"; text: string }
+>;
+
+function multimodal(content: MultimodalContent): unknown {
+  return content;
+}
+
 /* ─── Engine type ─────────────────────────────────────────── */
 
 export type EngineKind = "webllm" | "ollama" | "demo" | "cloud";
@@ -20,7 +29,7 @@ export type EngineKind = "webllm" | "ollama" | "demo" | "cloud";
 
 let webllmEngine: MLCEngine | null = null;
 let webllmLoading: Promise<MLCEngine> | null = null;
-let WEBLLM_MODEL_ID = "gemma-2-2b-it-q4f16_1-MLC";
+let WEBLLM_MODEL_ID = "Phi-3.5-vision-instruct-q4f16_1-MLC";
 
 export function setModelId(id: string) {
   WEBLLM_MODEL_ID = id;
@@ -583,18 +592,18 @@ export async function triageImage(
         { role: "system", content: getTriageSystemPrompt(language, settings.thinkingMode) },
         {
           role: "user",
-          content: [
+          content: multimodal([
             { type: "image_url", image_url: { url: imageDataUrl } },
             { type: "text", text: "Analyze this medical image and return the triage assessment." },
-          ] as never,
+          ]),
         },
       ],
-      tools: [TRIAGE_TOOL as never],
+      tools: [TRIAGE_TOOL],
       tool_choice: {
         type: "function",
         function: { name: "triage_assessment" },
-      } as never,
-      max_tokens: 800,
+      },
+      max_tokens: 1024,
       temperature,
     });
     const message = reply.choices[0]?.message;
@@ -682,19 +691,19 @@ export async function analyzeDocument(
       { role: "system", content: getDocumentSystemPrompt(language, settings.thinkingMode) },
       {
         role: "user",
-        content: [
+        content: multimodal([
           { type: "image_url", image_url: { url: imageDataUrl } },
           { type: "text", text: "Extract the key information from this document." },
-        ] as never,
+        ]),
       },
     ],
-    tools: [DOCUMENT_TOOL as never],
+    tools: [DOCUMENT_TOOL],
     tool_choice: {
       type: "function",
       function: { name: "document_analysis" },
-    } as never,
+    },
     temperature,
-    max_tokens: 800,
+    max_tokens: 1024,
   });
   const message = reply.choices[0]?.message;
   if (!message) return FALLBACK_DOC;
@@ -767,11 +776,11 @@ export async function nextFollowUp(
       { role: "system", content: prompt },
       { role: "user", content: "Generate the next follow-up question." },
     ],
-    tools: [FOLLOW_UP_TOOL as never],
+    tools: [FOLLOW_UP_TOOL],
     tool_choice: {
       type: "function",
       function: { name: "generate_follow_up" },
-    } as never,
+    },
     temperature,
     max_tokens: 120,
   });
@@ -904,12 +913,12 @@ export async function nextVoiceTurn(
   const settings = useSettingsStore.getState();
   const temperature = settings.thinkingMode ? 0.7 : 0.4;
   const reply = await e.chat.completions.create({
-    messages: updated as never,
-    tools: [FOLLOW_UP_TOOL as never],
+    messages: updated,
+    tools: [FOLLOW_UP_TOOL],
     tool_choice: {
       type: "function",
       function: { name: "generate_follow_up" },
-    } as never,
+    },
     temperature,
     max_tokens: 200,
   });
