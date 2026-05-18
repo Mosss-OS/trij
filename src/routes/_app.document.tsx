@@ -15,7 +15,41 @@ import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_app/document")({
-  head: () => ({ meta: [{ title: "Document scan — Trij" }] }),
+  head: () => ({
+    meta: [
+      {
+        title: "Medical Document Scanner — AI OCR | Trij Free Medical Triage",
+      },
+      {
+        name: "description",
+        content:
+          "Free AI-powered medical document scanner. Analyze lab reports, prescriptions, and referral letters with on-device OCR. Get structured summaries and abnormal value highlights — no internet needed.",
+      },
+      {
+        name: "keywords",
+        content:
+          "medical document scanner, OCR lab reports, prescription analysis AI, free document analyzer, offline medical OCR, healthcare document scanner, lab result reader",
+      },
+      {
+        property: "og:title",
+        content: "Medical Document Scanner — AI OCR | Trij",
+      },
+      {
+        property: "og:description",
+        content:
+          "Free AI medical document scanner. Analyze lab reports and prescriptions on-device. No internet needed.",
+      },
+      {
+        name: "twitter:title",
+        content: "Medical Document Scanner — AI OCR | Trij",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Free AI medical document scanner. Analyze lab reports and prescriptions on-device. No internet needed.",
+      },
+    ],
+  }),
   component: () => (
     <I18nErrorBoundary kind="document">
       <DocumentScan />
@@ -85,7 +119,11 @@ function DocumentScan() {
         {step === "result" && result && (
           <div className="mt-2 space-y-5">
             {image && (
-              <img src={image} alt="" className="aspect-video w-full rounded-2xl object-cover" />
+              <img
+                src={image}
+                alt="Captured medical document being analyzed by AI"
+                className="aspect-video w-full rounded-2xl object-cover"
+              />
             )}
             <div className="rounded-3xl border bg-card p-6">
               <p className="text-xs uppercase tracking-wider text-muted-foreground">

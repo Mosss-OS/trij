@@ -18,7 +18,41 @@ import { updateReferralStatus } from "@/lib/sync";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/referrals")({
-  head: () => ({ meta: [{ title: "Referrals — Trij" }] }),
+  head: () => ({
+    meta: [
+      {
+        title: "Referrals — Referral Management | Trij Free Medical Triage",
+      },
+      {
+        name: "description",
+        content:
+          "Manage medical referrals with Trij's free referral system. Track referral status (pending, in transit, resolved), generate referral PDFs, and share with clinics. Built for community health workers.",
+      },
+      {
+        name: "keywords",
+        content:
+          "medical referral management, patient referral tracking, healthcare referral system, referral PDF generator, community health referral, free referral management",
+      },
+      {
+        property: "og:title",
+        content: "Referrals — Referral Management | Trij",
+      },
+      {
+        property: "og:description",
+        content:
+          "Free medical referral management for community health workers. Track, generate PDFs, and share referrals.",
+      },
+      {
+        name: "twitter:title",
+        content: "Referrals — Referral Management | Trij",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Free medical referral management for community health workers. Track, generate PDFs, and share referrals.",
+      },
+    ],
+  }),
   component: ReferralsPage,
 });
 
@@ -50,16 +84,10 @@ function ReferralsPage() {
     (async () => {
       try {
         const db = getDB();
-        const all = await db.assessments
-          .filter((a) => a.referralAdvised === true)
-          .toArray();
-        const patients = await Promise.all(
-          all.map((a) => db.patients.get(a.patientId)),
-        );
+        const all = await db.assessments.filter((a) => a.referralAdvised === true).toArray();
+        const patients = await Promise.all(all.map((a) => db.patients.get(a.patientId)));
         if (!alive) return;
-        setItems(
-          all.map((a, i) => ({ ...a, patient: patients[i] ?? undefined })),
-        );
+        setItems(all.map((a, i) => ({ ...a, patient: patients[i] ?? undefined })));
       } catch {
         /* */
       } finally {
@@ -133,9 +161,7 @@ function ReferralsPage() {
             >
               {label}
               {statusCounts[key] > 0 && (
-                <span className="ml-1.5 text-[10px] opacity-60">
-                  {statusCounts[key]}
-                </span>
+                <span className="ml-1.5 text-[10px] opacity-60">{statusCounts[key]}</span>
               )}
             </button>
           ))}
@@ -196,10 +222,7 @@ function ReferralsPage() {
                   <Select
                     value={a.referralStatus}
                     onValueChange={(v) =>
-                      handleStatusChange(
-                        a.id,
-                        v as "none" | "pending" | "active" | "resolved",
-                      )
+                      handleStatusChange(a.id, v as "none" | "pending" | "active" | "resolved")
                     }
                   >
                     <SelectTrigger className="h-8 w-32 text-xs">

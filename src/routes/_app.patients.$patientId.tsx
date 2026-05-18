@@ -19,7 +19,35 @@ import { updateReferralStatus } from "@/lib/sync";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/patients/$patientId")({
-  head: () => ({ meta: [{ title: "Patient — Trij" }] }),
+  head: () => ({
+    meta: [
+      {
+        title: "Patient Details — Medical History & Triage Results | Trij",
+      },
+      {
+        name: "description",
+        content:
+          "View patient medical history, past triage assessments, wound analysis results, referral status, and visit timeline. Part of Trij's free offline-first patient management system for community health workers.",
+      },
+      {
+        name: "keywords",
+        content:
+          "patient medical history, triage results, wound assessment history, patient visit timeline, medical records view, CHW patient detail",
+      },
+      { property: "og:title", content: "Patient Details — Trij Medical Triage" },
+      {
+        property: "og:description",
+        content:
+          "View comprehensive patient history, triage assessments, and referral status. Free offline medical records.",
+      },
+      { name: "twitter:title", content: "Patient Details — Trij Medical Triage" },
+      {
+        name: "twitter:description",
+        content:
+          "View comprehensive patient history, triage assessments, and referral status. Free offline medical records.",
+      },
+    ],
+  }),
   component: PatientDetail,
 });
 
@@ -135,7 +163,7 @@ function PatientDetail() {
                 {a.images?.[0] && (
                   <img
                     src={a.images[0]}
-                    alt=""
+                    alt="Patient assessment photo"
                     className="mt-3 h-32 w-32 rounded-xl object-cover"
                   />
                 )}

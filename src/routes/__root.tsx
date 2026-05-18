@@ -52,30 +52,108 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+const SITE_URL = "https://trij.vercel.app";
+const LOGO_URL = "https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png";
+const GLOBAL_DESC =
+  "Trij is a free, open-source, offline-first AI medical triage app for community health workers. On-device wound assessment, rash analysis, and document scanning powered by Google DeepMind Gemma 4. No internet needed — patient data never leaves the device.";
+const GLOBAL_TITLE = "Trij — Free Offline AI Medical Triage for Community Health Workers";
+const GLOBAL_KEYWORDS =
+  "free medical triage app, offline AI healthcare, community health worker tools, wound assessment app, rash analysis AI, on-device medical AI, Gemma 4 healthcare, open source medical software, remote healthcare, telemedicine alternative, primary care triage, health equity, global health, AI for good, medical document scanner, privacy-first healthcare";
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#0f5d63" },
-      { title: "Trij — On-device AI triage for CHWs" },
-      {
-        name: "description",
-        content:
-          "Trij: offline-first AI triage for community health workers. Powered by on-device Gemma. No patient data leaves the phone.",
-      },
-      { property: "og:title", content: "Trij — On-device AI triage" },
-      {
-        property: "og:description",
-        content: "Field-ready medical triage. Gemma runs entirely on-device.",
-      },
+      { name: "color-scheme", content: "light" },
+      { title: GLOBAL_TITLE },
+      { name: "description", content: GLOBAL_DESC },
+      { name: "keywords", content: GLOBAL_KEYWORDS },
+      { name: "robots", content: "index, follow, max-image-preview:large" },
+      { name: "googlebot", content: "index, follow" },
+      { name: "application-name", content: "Trij" },
+      { name: "apple-mobile-web-app-title", content: "Trij" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "format-detection", content: "telephone=no" },
+      { name: "referrer", content: "strict-origin-when-cross-origin" },
+      { property: "og:title", content: GLOBAL_TITLE },
+      { property: "og:description", content: GLOBAL_DESC },
+      { property: "og:image", content: LOGO_URL },
+      { property: "og:image:width", content: "512" },
+      { property: "og:image:height", content: "512" },
+      { property: "og:image:alt", content: "Trij logo — on-device AI medical triage" },
+      { property: "og:url", content: SITE_URL },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Trij" },
+      { property: "og:locale", content: "en_US" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:site", content: "@Trij_app" },
+      { name: "twitter:creator", content: "@Trij_app" },
+      { name: "twitter:title", content: GLOBAL_TITLE },
+      { name: "twitter:description", content: GLOBAL_DESC },
+      { name: "twitter:image", content: LOGO_URL },
+      { name: "twitter:image:alt", content: "Trij logo — on-device AI medical triage" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "canonical", href: SITE_URL },
+      { rel: "icon", href: LOGO_URL, type: "image/png" },
+      { rel: "apple-touch-icon", href: LOGO_URL, type: "image/png" },
       { rel: "dns-prefetch", href: "https://api.supabase.com" },
       { rel: "preconnect", href: "https://api.supabase.com", crossOrigin: "anonymous" },
+      { rel: "dns-prefetch", href: "https://res.cloudinary.com" },
+      { rel: "preconnect", href: "https://res.cloudinary.com" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        innerHTML: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "MedicalWebPage",
+              "@id": SITE_URL,
+              url: SITE_URL,
+              name: GLOBAL_TITLE,
+              description: GLOBAL_DESC,
+              about: {
+                "@type": "MedicalSpecialty",
+                name: "Triage",
+              },
+              audience: {
+                "@type": "Audience",
+                audienceType: "Community Health Workers",
+              },
+              keywords: GLOBAL_KEYWORDS,
+              inLanguage: ["en", "fr", "sw", "hi", "pt", "ar", "es"],
+              isAccessibleForFree: true,
+              license: "https://www.apache.org/licenses/LICENSE-2.0",
+            },
+            {
+              "@type": "WebApplication",
+              name: "Trij",
+              url: SITE_URL,
+              description: GLOBAL_DESC,
+              applicationCategory: "HealthApplication",
+              operatingSystem: "Android, iOS, Web",
+              browserRequirements: "Requires Chrome, Firefox, or Safari",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              author: {
+                "@type": "Organization",
+                name: "Trij Team",
+              },
+            },
+          ],
+        }),
+      },
     ],
   }),
   shellComponent: RootShell,

@@ -48,7 +48,41 @@ interface QAPair {
 }
 
 export const Route = createFileRoute("/_app/triage")({
-  head: () => ({ meta: [{ title: "New triage — Trij" }] }),
+  head: () => ({
+    meta: [
+      {
+        title: "New Triage — AI Wound & Rash Assessment | Trij Free Medical Triage",
+      },
+      {
+        name: "description",
+        content:
+          "Perform a free AI-assisted medical triage assessment. Capture a photo of a wound, rash, or skin condition and get instant urgency classification (Green/Yellow/Red) with confidence scoring — all on-device, no internet required.",
+      },
+      {
+        name: "keywords",
+        content:
+          "wound assessment AI, rash analysis app, skin condition triage, free medical assessment, on-device triage, community health assessment, wound care app, dermatology AI",
+      },
+      {
+        property: "og:title",
+        content: "New Triage — AI Wound & Rash Assessment | Trij",
+      },
+      {
+        property: "og:description",
+        content:
+          "Free AI-powered wound and rash assessment. Snap a photo, get instant urgency level and treatment recommendation — all offline.",
+      },
+      {
+        name: "twitter:title",
+        content: "New Triage — AI Wound & Rash Assessment | Trij",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Free AI-powered wound and rash assessment. Snap a photo, get instant urgency level and treatment recommendation — all offline.",
+      },
+    ],
+  }),
   component: () => (
     <I18nErrorBoundary kind="triage">
       <TriagePage />
@@ -132,7 +166,9 @@ function TriagePage() {
 
   useEffect(() => {
     if (!user) return;
-    listVoiceDrafts(user.id).then(setResumableDrafts).catch(() => {});
+    listVoiceDrafts(user.id)
+      .then(setResumableDrafts)
+      .catch(() => {});
   }, [user]);
 
   const persistDraft = async (
@@ -177,7 +213,6 @@ function TriagePage() {
     setStep("voice");
     toast.success("Resumed voice interview");
   };
-
 
   const startPatient = async () => {
     if (!user || !identifier.trim()) return;
@@ -303,7 +338,6 @@ function TriagePage() {
     }
   };
 
-
   const handleVoiceAnswer = async (answer: string) => {
     if (!answer.trim() || !patient || !result || !image) return;
     const updated = [...voiceHistory, { question: currentQuestion, answer: answer.trim() }];
@@ -339,7 +373,6 @@ function TriagePage() {
       setVoiceBusy(false);
     }
   };
-
 
   const recordVoiceAnswer = async () => {
     const v = voiceRef.current;
@@ -389,8 +422,7 @@ function TriagePage() {
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{d.patient.identifier}</p>
                         <p className="text-[11px] text-muted-foreground">
-                          {d.qaHistory.length} answered ·{" "}
-                          {new Date(d.updatedAt).toLocaleString()}
+                          {d.qaHistory.length} answered · {new Date(d.updatedAt).toLocaleString()}
                         </p>
                       </div>
                       <div className="flex gap-1">
@@ -435,7 +467,9 @@ function TriagePage() {
                     size="icon"
                     onClick={async () => {
                       const id = await voice.ask(
-                        voice.language === "en-US" ? "Say the patient ID" : t("voiceGuidePatientId"),
+                        voice.language === "en-US"
+                          ? "Say the patient ID"
+                          : t("voiceGuidePatientId"),
                       );
                       if (id) setIdentifier(id);
                     }}
@@ -481,11 +515,7 @@ function TriagePage() {
               </div>
               <div className="space-y-1.5">
                 <Label>{t("sex")}</Label>
-                <div
-                  className="flex rounded-lg border p-1"
-                  role="radiogroup"
-                  aria-label={t("sex")}
-                >
+                <div className="flex rounded-lg border p-1" role="radiogroup" aria-label={t("sex")}>
                   {(["F", "M", "other"] as const).map((s) => (
                     <button
                       key={s}
@@ -505,12 +535,26 @@ function TriagePage() {
                     className="mt-1 w-full gap-1 text-xs"
                     onClick={async () => {
                       const s = await voice.ask(
-                        voice.language === "en-US" ? "Say male, female, or other" : t("voiceGuideSex"),
+                        voice.language === "en-US"
+                          ? "Say male, female, or other"
+                          : t("voiceGuideSex"),
                       );
                       if (s) {
                         const lower = s.toLowerCase();
-                        if (lower.includes("female") || lower.includes("f") || lower.includes("woman") || lower.includes("girl")) setSex("F");
-                        else if (lower.includes("male") || lower.includes("m") || lower.includes("man") || lower.includes("boy")) setSex("M");
+                        if (
+                          lower.includes("female") ||
+                          lower.includes("f") ||
+                          lower.includes("woman") ||
+                          lower.includes("girl")
+                        )
+                          setSex("F");
+                        else if (
+                          lower.includes("male") ||
+                          lower.includes("m") ||
+                          lower.includes("man") ||
+                          lower.includes("boy")
+                        )
+                          setSex("M");
                         else setSex("other");
                       }
                     }}
@@ -541,7 +585,8 @@ function TriagePage() {
                 }}
                 disabled={voice.listening}
               >
-                <Volume2 className="h-4 w-4" /> {t("voiceAssistant")} — {t("voiceGuideConsentConfirmed")}
+                <Volume2 className="h-4 w-4" /> {t("voiceAssistant")} —{" "}
+                {t("voiceGuideConsentConfirmed")}
               </Button>
             )}
             <Button
@@ -573,7 +618,11 @@ function TriagePage() {
               </div>
             </div>
             <WebGPUCheck engineKind={engineKind} ollamaUrl={ollamaUrl} compact />
-            <CameraCapture onCapture={onCapture} onSource={(s) => setImageSource(s)} onCancel={() => setStep("patient")} />
+            <CameraCapture
+              onCapture={onCapture}
+              onSource={(s) => setImageSource(s)}
+              onCancel={() => setStep("patient")}
+            />
           </div>
         )}
 
@@ -582,7 +631,7 @@ function TriagePage() {
             {image && (
               <img
                 src={image}
-                alt=""
+                alt="Captured wound or skin condition photo being analyzed by AI"
                 className="h-40 w-40 rounded-2xl object-cover ring-4 ring-primary/20"
               />
             )}
@@ -602,7 +651,11 @@ function TriagePage() {
         {step === "result" && result && (
           <div className="mt-6 space-y-5">
             {image && (
-              <img src={image} alt="" className="aspect-video w-full rounded-2xl object-cover" />
+              <img
+                src={image}
+                alt="Captured wound or skin condition photo assessment result"
+                className="aspect-video w-full rounded-2xl object-cover"
+              />
             )}
             <AssessmentResult
               result={result}
@@ -725,11 +778,7 @@ function TriagePage() {
               }}
               title={voice.speaking ? "Stop" : "Guide me"}
             >
-              {voice.speaking ? (
-                <MicOff className="h-5 w-5" />
-              ) : (
-                <Volume2 className="h-5 w-5" />
-              )}
+              {voice.speaking ? <MicOff className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
             </Button>
           </div>
         )}
