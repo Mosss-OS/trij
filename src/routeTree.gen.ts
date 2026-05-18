@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppTriageRouteImport } from './routes/_app.triage'
 import { Route as AppSupervisorRouteImport } from './routes/_app.supervisor'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppReferralsRouteImport } from './routes/_app.referrals'
 import { Route as AppDocumentRouteImport } from './routes/_app.document'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppPatientsIndexRouteImport } from './routes/_app.patients.index'
@@ -49,6 +50,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReferralsRoute = AppReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDocumentRoute = AppDocumentRouteImport.update({
   id: '/document',
   path: '/document',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/dashboard': typeof AppDashboardRoute
   '/document': typeof AppDocumentRoute
+  '/referrals': typeof AppReferralsRoute
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/dashboard': typeof AppDashboardRoute
   '/document': typeof AppDocumentRoute
+  '/referrals': typeof AppReferralsRoute
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/document': typeof AppDocumentRoute
+  '/_app/referrals': typeof AppReferralsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/supervisor': typeof AppSupervisorRoute
   '/_app/triage': typeof AppTriageRoute
@@ -192,6 +201,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/referrals': {
+      id: '/_app/referrals'
+      path: '/referrals'
+      fullPath: '/referrals'
+      preLoaderRoute: typeof AppReferralsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/document': {
       id: '/_app/document'
       path: '/document'
@@ -226,6 +242,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppDocumentRoute: typeof AppDocumentRoute
+  AppReferralsRoute: typeof AppReferralsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSupervisorRoute: typeof AppSupervisorRoute
   AppTriageRoute: typeof AppTriageRoute
@@ -236,6 +253,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppDocumentRoute: AppDocumentRoute,
+  AppReferralsRoute: AppReferralsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSupervisorRoute: AppSupervisorRoute,
   AppTriageRoute: AppTriageRoute,
@@ -253,3 +271,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
