@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { getDB } from "@/lib/db";
 import type { Assessment, Patient } from "@/types/trij";
@@ -43,6 +43,7 @@ function ReferralsPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TabType>("all");
   const [syncingId, setSyncingId] = useState<string | null>(null);
+  const reqSeq = useRef<Map<string, number>>(new Map());
 
   useEffect(() => {
     let alive = true;
@@ -79,9 +80,12 @@ function ReferralsPage() {
     assessmentId: string,
     status: "none" | "pending" | "active" | "resolved",
   ) => {
+    const seq = (reqSeq.current.get(assessmentId) ?? 0) + 1;
+    reqSeq.current.set(assessmentId, seq);
     setSyncingId(assessmentId);
     try {
       await updateReferralStatus(assessmentId, status);
+      if (reqSeq.current.get(assessmentId) !== seq) return;
       setItems((prev) =>
         prev.map((a) =>
           a.id === assessmentId
@@ -93,7 +97,7 @@ function ReferralsPage() {
     } catch {
       toast.error("Failed to update referral status");
     } finally {
-      setSyncingId(null);
+      if (reqSeq.current.get(assessmentId) === seq) setSyncingId(null);
     }
   };
 
