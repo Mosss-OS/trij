@@ -7,13 +7,48 @@ import { useReferralAlerts } from "@/hooks/useReferralAlerts";
 import { getDB } from "@/lib/db";
 import type { Assessment, Patient } from "@/types/trij";
 import { UrgencyPill } from "@/components/UrgencyPill";
-import { Camera, FileText, Stethoscope, Map as MapIcon, ArrowRight, HardDrive, ExternalLink, BellRing } from "lucide-react";
+import {
+  Camera,
+  FileText,
+  Stethoscope,
+  Map as MapIcon,
+  ArrowRight,
+  HardDrive,
+  ExternalLink,
+  BellRing,
+} from "lucide-react";
 import { StorageMonitor } from "@/components/StorageMonitor";
 import { formatDistanceToNow } from "date-fns";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_app/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Trij" }] }),
+  head: () => ({
+    meta: [
+      { title: "Dashboard — Trij Free Offline AI Medical Triage" },
+      {
+        name: "description",
+        content:
+          "Community health worker dashboard for Trij, the free offline AI medical triage app. Start a new wound or rash assessment, view recent patients, and manage referrals.",
+      },
+      {
+        name: "keywords",
+        content:
+          "CHW dashboard, medical triage dashboard, community health worker tools, patient assessment overview",
+      },
+      { property: "og:title", content: "Dashboard — Trij Medical Triage" },
+      {
+        property: "og:description",
+        content:
+          "Manage patient assessments, triage results, and referrals from your CHW dashboard.",
+      },
+      { name: "twitter:title", content: "Dashboard — Trij Medical Triage" },
+      {
+        name: "twitter:description",
+        content:
+          "Manage patient assessments, triage results, and referrals from your CHW dashboard.",
+      },
+    ],
+  }),
   component: DashboardPage,
 });
 

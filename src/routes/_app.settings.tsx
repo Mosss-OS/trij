@@ -18,7 +18,19 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "@tanstack/react-router";
 import { Slider } from "@/components/ui/slider";
-import { LogOut, AlertTriangle, ShieldCheck, FlaskConical, Rabbit, KeyRound, Volume2 } from "lucide-react";
+import {
+  LogOut,
+  AlertTriangle,
+  ShieldCheck,
+  FlaskConical,
+  Rabbit,
+  KeyRound,
+  Volume2,
+  UserPlus,
+  Copy,
+  Check,
+  Loader2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { detectOllama, type EngineKind } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
@@ -38,7 +50,41 @@ import {
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_app/settings")({
-  head: () => ({ meta: [{ title: "Settings — Trij" }] }),
+  head: () => ({
+    meta: [
+      {
+        title: "Settings — Language, Voice & AI Engine | Trij Medical Triage",
+      },
+      {
+        name: "description",
+        content:
+          "Configure Trij settings: choose AI inference engine (WebLLM, Ollama, cloud, or demo), set interface language (English, French, Swahili, Hindi, Arabic, Portuguese), adjust voice guidance, manage storage, and set up offline PIN access.",
+      },
+      {
+        name: "keywords",
+        content:
+          "medical app settings, AI inference setup, WebGPU medical AI, Ollama healthcare, multilingual medical app, voice guidance healthcare, offline PIN, medical app configuration",
+      },
+      {
+        property: "og:title",
+        content: "Settings — Configure Trij Medical Triage",
+      },
+      {
+        property: "og:description",
+        content:
+          "Configure AI engine, language, voice guidance, and privacy settings for Trij medical triage app.",
+      },
+      {
+        name: "twitter:title",
+        content: "Settings — Configure Trij Medical Triage",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Configure AI engine, language, voice guidance, and privacy settings for Trij medical triage app.",
+      },
+    ],
+  }),
   component: () => (
     <I18nErrorBoundary kind="engine">
       <SettingsPage />
@@ -59,12 +105,76 @@ function SettingsPage() {
   const [pinConfirm, setPinConfirm] = useState("");
   const [pinError, setPinError] = useState("");
   const [pinBusy, setPinBusy] = useState(false);
+  const [isSupervisor, setIsSupervisor] = useState(false);
+  const [codes, setCodes] = useState<
+    { code: string; used_by_user_id: string | null; used_at: string | null; created_at: string }[]
+  >([]);
+  const [genBusy, setGenBusy] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
   useEffect(() => {
     if (offlineUser) {
       hasPinForUser(offlineUser.id).then(setHasPin);
     }
   }, [offlineUser]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        if (!session.session) return;
+        const { data: hasRole } = await (supabase.rpc as any)("has_role", {
+          _user_id: session.session.user.id,
+          _role: "supervisor",
+        });
+        setIsSupervisor(!!hasRole);
+        if (hasRole) {
+          const { data: codesData } = await (supabase.from as any)("supervisor_codes")
+            .select("code, used_by_user_id, used_at, created_at")
+            .order("created_at", { ascending: false });
+          setCodes(codesData ?? []);
+        }
+      } catch {
+        /* */
+      }
+    })();
+  }, []);
+
+  const generateCode = async () => {
+    setGenBusy(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, "")}/functions/v1/generate-supervisor-code`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token ?? ""}`,
+          },
+        },
+      );
+      const data = await res.json();
+      if (data.code) {
+        setCodes((prev) => [
+          {
+            code: data.code,
+            used_by_user_id: null,
+            used_at: null,
+            created_at: new Date().toISOString(),
+          },
+          ...prev,
+        ]);
+        navigator.clipboard?.writeText(data.code);
+        toast.success(`Code ${data.code} generated and copied!`);
+      } else {
+        toast.error(data.error ?? "Failed to generate code");
+      }
+    } catch {
+      toast.error("Failed to generate code");
+    } finally {
+      setGenBusy(false);
+    }
+  };
 
   const signOut = async () => {
     try {
@@ -223,6 +333,60 @@ function SettingsPage() {
             </div>
           )}
         </Section>
+
+        {isSupervisor && (
+          <Section title="Supervisor Codes">
+            <p className="text-xs text-muted-foreground">
+              Generate invitation codes that CHWs can enter during signup to link themselves to you.
+            </p>
+            <Button onClick={generateCode} disabled={genBusy} className="gap-2">
+              {genBusy ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <UserPlus className="h-4 w-4" />
+              )}
+              Generate new code
+            </Button>
+            {codes.length > 0 && (
+              <ul className="space-y-2">
+                {codes.map((c, i) => (
+                  <li
+                    key={c.code}
+                    className="flex items-center justify-between gap-3 rounded-xl border bg-secondary/20 p-3"
+                  >
+                    <div className="min-w-0">
+                      <code className="rounded bg-muted px-2 py-0.5 font-mono text-sm font-semibold tracking-wider">
+                        {c.code}
+                      </code>
+                      {c.used_by_user_id ? (
+                        <p className="mt-0.5 text-xs text-muted-foreground">Used</p>
+                      ) : (
+                        <p className="mt-0.5 text-xs text-emerald-600">Available</p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 gap-1 text-xs"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(c.code);
+                        setCopiedIdx(i);
+                        setTimeout(() => setCopiedIdx(null), 2000);
+                      }}
+                    >
+                      {copiedIdx === i ? (
+                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                      {copiedIdx === i ? "Copied" : "Copy"}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Section>
+        )}
 
         {offlineUser && (
           <Section title={t("offlinePin")}>

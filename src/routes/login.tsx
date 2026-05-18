@@ -12,6 +12,7 @@ import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { toast } from "sonner";
 import { hasPinForUser, verifyPin, recordFailedAttempt, setupPin } from "@/lib/pin-auth";
 import { getDB } from "@/lib/db";
+import { validateSupervisorCode } from "@/lib/supervisor-codes";
 import {
   Dialog,
   DialogContent,
@@ -38,11 +39,28 @@ function clearLastUserId() {
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Sign in — Trij" },
+      { title: "Sign In — Trij Free Offline AI Medical Triage" },
       {
         name: "description",
         content:
-          "Trij: offline-first AI triage for community health workers, powered by on-device Gemma.",
+          "Sign in to Trij, the free offline-first AI medical triage app for community health workers. Access wound assessment, rash analysis, and patient records — with or without internet.",
+      },
+      {
+        name: "keywords",
+        content:
+          "sign in medical triage, community health worker login, offline healthcare app, free medical assessment",
+      },
+      { property: "og:title", content: "Sign In — Trij Medical Triage" },
+      {
+        property: "og:description",
+        content:
+          "Access free offline AI medical triage. Sign in to assess wounds, rashes, and documents on-device.",
+      },
+      { name: "twitter:title", content: "Sign In — Trij Medical Triage" },
+      {
+        name: "twitter:description",
+        content:
+          "Access free offline AI medical triage. Sign in to assess wounds, rashes, and documents on-device.",
       },
     ],
   }),
@@ -61,6 +79,10 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [supervisorCode, setSupervisorCode] = useState("");
+  const [supervisorName, setSupervisorName] = useState("");
+  const [codeValidating, setCodeValidating] = useState(false);
+  const [codeValid, setCodeValid] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
 
   const [pinMode, setPinMode] = useState(false);
@@ -121,17 +143,35 @@ function LoginPage() {
   }
   if (session || offlineUser) return <Navigate to="/dashboard" />;
 
+  useEffect(() => {
+    if (mode !== "signup" || supervisorCode.length < 4) {
+      setCodeValid(null);
+      setSupervisorName("");
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setCodeValidating(true);
+      const res = await validateSupervisorCode(supervisorCode);
+      setCodeValid(res.valid);
+      setSupervisorName(res.supervisor_name ?? "");
+      setCodeValidating(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [supervisorCode, mode]);
+
   const handleOnlineSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
       if (mode === "signup") {
+        const meta: Record<string, string> = { name };
+        if (supervisorCode.trim()) meta.supervisor_code = supervisorCode.trim();
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: { name },
+            data: meta,
           },
         });
         if (error) throw error;
@@ -257,9 +297,11 @@ function LoginPage() {
         <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-                <span className="font-display text-xl font-bold">T</span>
-              </div>
+              <img
+                src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
+                alt="Trij logo — free offline AI medical triage"
+                className="h-10 w-10 rounded-2xl object-contain shadow-lg shadow-primary/30"
+              />
               <span className="font-display text-xl font-bold">Trij</span>
             </div>
             <OfflineIndicator />
@@ -402,9 +444,11 @@ function LoginPage() {
       <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-              <span className="font-display text-xl font-bold">T</span>
-            </div>
+            <img
+              src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
+              alt="Trij logo — free offline AI medical triage"
+              className="h-10 w-10 rounded-2xl object-contain shadow-lg shadow-primary/30"
+            />
             <span className="font-display text-xl font-bold">Trij</span>
           </Link>
           <OfflineIndicator />
@@ -424,16 +468,65 @@ function LoginPage() {
           className="mt-10 space-y-4 rounded-3xl border bg-card p-6 shadow-sm"
         >
           {mode === "signup" && (
-            <div className="space-y-1.5">
-              <Label htmlFor="name">{t("yourName")}</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="A. Patel"
-                required
-              />
-            </div>
+            <>
+              <div className="space-y-1.5">
+                <Label htmlFor="name">{t("yourName")}</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="A. Patel"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="supervisor-code">
+                  Supervisor code <span className="text-xs text-muted-foreground">(optional)</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="supervisor-code"
+                    value={supervisorCode}
+                    onChange={(e) => {
+                      setSupervisorCode(e.target.value.toUpperCase().slice(0, 8));
+                      setCodeValid(null);
+                      setSupervisorName("");
+                    }}
+                    placeholder="e.g. ABC3X7K2"
+                    className={
+                      codeValid === true
+                        ? "pr-10"
+                        : codeValid === false
+                          ? "pr-10 border-destructive"
+                          : ""
+                    }
+                    maxLength={8}
+                  />
+                  {codeValidating && (
+                    <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                  )}
+                  {codeValid === true && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-emerald-600">
+                      ✓
+                    </span>
+                  )}
+                  {codeValid === false && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-destructive">
+                      ✗
+                    </span>
+                  )}
+                </div>
+                {supervisorName && codeValid && (
+                  <p className="text-xs text-emerald-600">Linked to {supervisorName}</p>
+                )}
+                {codeValid === false && (
+                  <p className="text-xs text-destructive">Code not found or already used</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Enter the 8-character code from your supervisor (if you have one).
+                </p>
+              </div>
+            </>
           )}
           <div className="space-y-1.5">
             <Label htmlFor="email">{t("email")}</Label>
