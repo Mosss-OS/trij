@@ -10,6 +10,7 @@ import {
   ChevronUp,
   Info,
   BookOpen,
+  Beaker,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -19,6 +20,7 @@ interface Props {
   result: TriageResult;
   onSpeak?: (text: string) => void;
   minConfidenceForLocalCare?: number;
+  engineKind?: "webllm" | "ollama" | "demo" | "cloud" | "auto";
 }
 
 const COLORS = [
@@ -204,7 +206,7 @@ function WhyThisDiagnosis({ features }: { features: string[] }) {
   );
 }
 
-export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 70 }: Props) {
+export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 70, engineKind }: Props) {
   const { t } = useI18n();
   const belowThreshold = result.confidence < minConfidenceForLocalCare;
   const effectiveReferral = belowThreshold || result.referral_advised;
@@ -212,6 +214,12 @@ export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border bg-card p-6 shadow-sm">
+        {engineKind === "demo" && (
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300">
+            <Beaker className="h-4 w-4" />
+            {t("demoMode")}
+          </div>
+        )}
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-wider text-muted-foreground">

@@ -40,7 +40,7 @@ export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
       language: "en-US",
-      modelId: "gemma-4-E2B-it-q4f16_1-MLC",
+      modelId: "Phi-3.5-vision-instruct-q4f16_1-MLC",
       voiceEnabled: true,
       voiceTestMode: false,
       voiceGuidedMode: false,
