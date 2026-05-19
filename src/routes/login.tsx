@@ -7,7 +7,7 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShieldCheck, Loader2, WifiOff, KeyRound } from "lucide-react";
+import { ShieldCheck, Loader2, WifiOff, KeyRound, MailCheck } from "lucide-react";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { toast } from "sonner";
 import { hasPinForUser, verifyPin, recordFailedAttempt, setupPin } from "@/lib/pin-auth";
