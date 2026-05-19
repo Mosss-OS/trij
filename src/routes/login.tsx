@@ -139,15 +139,11 @@ function LoginPage() {
     (async () => {
       try {
         const lastId = getLastUserId();
-        let records: import("@/lib/pin-auth").PinRecord[];
+        let rec: import("@/lib/pin-auth").PinRecord | undefined;
         if (lastId) {
-          const r = await getDB().pinAuth.get(lastId);
-          records = r ? [r] : [];
-        } else {
-          records = await getDB().pinAuth.toArray();
+          rec = await getDB().pinAuth.get(lastId);
         }
-        if (records.length > 0) {
-          const rec = records[0];
+        if (rec) {
           setEmail(rec.email);
           setPinMode(true);
           setLocked(rec.locked);
@@ -164,18 +160,27 @@ function LoginPage() {
   }, [loading, online, session, offlineUser]);
 
   useEffect(() => {
-    if (mode !== "signup" || supervisorCode.length < 4) {
+    if (mode !== "signup" || supervisorCode.length < 6) {
       setCodeValid(null);
       setSupervisorName("");
       return;
     }
     const timer = setTimeout(async () => {
       setCodeValidating(true);
-      const res = await validateSupervisorCode(supervisorCode);
-      setCodeValid(res.valid);
-      setSupervisorName(res.supervisor_name ?? "");
-      setCodeValidating(false);
-    }, 500);
+      let cancelled = false;
+      const timeout = setTimeout(() => { cancelled = true; setCodeValidating(false); }, 8_000);
+      try {
+        const res = await validateSupervisorCode(supervisorCode);
+        if (cancelled) return;
+        setCodeValid(res.valid);
+        setSupervisorName(res.supervisor_name ?? "");
+      } catch {
+        if (!cancelled) setCodeValid(false);
+      } finally {
+        clearTimeout(timeout);
+        if (!cancelled) setCodeValidating(false);
+      }
+    }, 600);
     return () => clearTimeout(timer);
   }, [supervisorCode, mode]);
 
@@ -188,9 +193,17 @@ function LoginPage() {
   }
   if (session || offlineUser) return <Navigate to="/dashboard" />;
 
+  const AUTH_TIMEOUT = 15_000;
+
   const handleOnlineSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      cancelled = true;
+      setBusy(false);
+      toast.error("Request timed out — check your connection and try again.");
+    }, AUTH_TIMEOUT);
     try {
       if (mode === "signup") {
         const meta: Record<string, string> = { name };
@@ -203,6 +216,7 @@ function LoginPage() {
             data: meta,
           },
         });
+        if (cancelled) return;
         if (error) throw error;
         if (data.session?.user) {
           toast.success(t("accountCreated"));
@@ -222,6 +236,7 @@ function LoginPage() {
           email,
           password,
         });
+        if (cancelled) return;
         if (error) throw error;
         if (data.session?.user) {
           const { user } = data.session;
@@ -234,9 +249,11 @@ function LoginPage() {
         }
       }
     } catch (err) {
+      if (cancelled) return;
       toast.error((err as Error).message);
     } finally {
-      setBusy(false);
+      clearTimeout(timer);
+      if (!cancelled) setBusy(false);
     }
   };
 
