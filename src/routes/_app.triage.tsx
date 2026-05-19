@@ -344,6 +344,7 @@ function TriagePage() {
       images: [image],
       vitalSigns: buildVitalSigns(),
       condition: result.condition,
+      icd10Code: result.icd10_code,
       confidence: result.confidence,
       urgency: result.urgency,
       possibleConditions: result.possible_conditions,

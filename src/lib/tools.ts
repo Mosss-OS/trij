@@ -68,6 +68,10 @@ export const TRIAGE_TOOL: ToolDefinition = {
           description: "Suggested follow-up questions for the CHW to ask",
           items: { type: "string" },
         },
+        icd10_code: {
+          type: "string",
+          description: "ICD-10 code for the primary condition (e.g. L01.0 for impetigo, L03.9 for cellulitis)",
+        },
       },
       required: ["condition", "confidence", "urgency", "recommendation", "referral_advised"],
     },

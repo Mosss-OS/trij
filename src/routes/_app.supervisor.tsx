@@ -257,7 +257,7 @@ function Supervisor() {
 
   const exportAllCsv = () => {
     const headers: string[] = [
-      "Patient", "Condition", "Urgency", "Referral Status",
+      "Patient", "Condition", "ICD-10", "Urgency", "Referral Status",
       "BP Systolic", "BP Diastolic", "HR", "RR", "Temp", "SpO2", "MUAC", "Weight", "Pain",
       "Created",
     ];
@@ -266,6 +266,7 @@ function Supervisor() {
       return [
         a.patients?.identifier ?? "",
         a.condition ?? "",
+        (a as unknown as Record<string, unknown>).icd10_code as string ?? "",
         a.urgency ?? "",
         a.referral_status ?? "",
         String(v?.systolicBP ?? ""),
