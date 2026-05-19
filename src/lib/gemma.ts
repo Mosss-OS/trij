@@ -10,7 +10,7 @@ import type { TriageResult, DocumentResult, Urgency } from "@/types/trij";
 import { TRIAGE_TOOL, DOCUMENT_TOOL, FOLLOW_UP_TOOL, parseToolCall, triesJson } from "./tools";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSessionStore } from "@/stores/sessionStore";
-import { retrieve } from "./rag";
+import { retrieve, getCompactKbContext } from "./rag";
 
 type MultimodalContent = Array<
   | { type: "image_url"; image_url: { url: string } }
@@ -502,6 +502,7 @@ function saveCloudQuota() {
 async function cloudInference(
   imageDataUrl: string,
   language: string,
+  ragContext?: string,
   supabaseUrl?: string,
   supabaseAnonKey?: string,
 ): Promise<TriageResult> {
@@ -527,6 +528,7 @@ async function cloudInference(
       image: imageDataUrl,
       prompt: "Analyze this medical image and return the triage assessment.",
       language,
+      ragContext,
     }),
   });
 
@@ -577,10 +579,11 @@ export async function triageImage(
   ollamaUrl?: string,
 ): Promise<TriageResult> {
   const settings = useSettingsStore.getState();
+  const kbContext = getCompactKbContext();
   let result: TriageResult;
 
   if (kind === "cloud") {
-    result = await cloudInference(imageDataUrl, language);
+    result = await cloudInference(imageDataUrl, language, kbContext);
     result = attachRagSources(result);
     return result;
   }
@@ -596,7 +599,7 @@ export async function triageImage(
     try {
       const response = await ollamaChat(
         [
-          { role: "system", content: getTriageSystemPrompt(language) },
+          { role: "system", content: getTriageSystemPrompt(language, false, kbContext) },
           {
             role: "user",
             content: "Analyze this medical image and return the triage assessment.",
@@ -613,7 +616,7 @@ export async function triageImage(
     } catch (err) {
       if (settings.cloudFallbackConsent) {
         console.warn("Ollama failed, falling back to cloud:", err);
-        result = await cloudInference(imageDataUrl, language);
+        result = await cloudInference(imageDataUrl, language, kbContext);
         result = attachRagSources(result);
         return result;
       }
@@ -629,7 +632,7 @@ export async function triageImage(
 
     const reply = await e.chat.completions.create({
       messages: [
-        { role: "system", content: getTriageSystemPrompt(language, settings.thinkingMode) },
+        { role: "system", content: getTriageSystemPrompt(language, settings.thinkingMode, kbContext) },
         {
           role: "user",
           content: multimodal([
@@ -659,7 +662,7 @@ export async function triageImage(
   } catch (err) {
     if (settings.cloudFallbackConsent) {
       console.warn("WebLLM failed, falling back to cloud:", err);
-      result = await cloudInference(imageDataUrl, language);
+      result = await cloudInference(imageDataUrl, language, kbContext);
       result = attachRagSources(result);
       return result;
     }

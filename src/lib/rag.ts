@@ -62,6 +62,17 @@ export async function fetchRemoteKb(supabaseUrl?: string, supabaseAnonKey?: stri
   }
 }
 
+export function getCompactKbContext(topK = 51): string {
+  const entries = remoteKb || (kb as KnowledgeEntry[]);
+  const subset = entries.slice(0, topK);
+  return subset
+    .map(
+      (e) =>
+        `- ${e.condition}: ${e.keywords.join(", ")}. Treatment: ${e.treatment.split(".")[0]}. Refer if: ${e.referral_criteria.split(".")[0]}.`,
+    )
+    .join("\n");
+}
+
 export function retrieve(queryFeatures: string[], topK = 3): RagResult {
   const query = queryFeatures.join(" ");
   const queryTokens = tokenize(query);
