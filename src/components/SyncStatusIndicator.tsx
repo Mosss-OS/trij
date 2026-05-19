@@ -31,7 +31,11 @@ export function SyncStatusIndicator() {
     setState((s) => ({ ...s, syncing: true }));
     const retried = await retryFailedSyncItems();
     const result = await processSyncQueue();
-    setState({ pending: await pendingCount(), syncing: false, lastSynced: new Date().toISOString() });
+    setState({
+      pending: await pendingCount(),
+      syncing: false,
+      lastSynced: new Date().toISOString(),
+    });
     if (retried > 0 || result.ok > 0 || result.failed > 0) {
       refresh();
     }

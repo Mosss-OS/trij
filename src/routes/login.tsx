@@ -168,7 +168,10 @@ function LoginPage() {
     const timer = setTimeout(async () => {
       setCodeValidating(true);
       let cancelled = false;
-      const timeout = setTimeout(() => { cancelled = true; setCodeValidating(false); }, 8_000);
+      const timeout = setTimeout(() => {
+        cancelled = true;
+        setCodeValidating(false);
+      }, 8_000);
       try {
         const res = await validateSupervisorCode(supervisorCode);
         if (cancelled) return;

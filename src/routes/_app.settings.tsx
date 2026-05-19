@@ -32,7 +32,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { detectOllama, type EngineKind, PHI_VISION_MODEL_ID, GEMMA4_E2B_MODEL_ID } from "@/lib/gemma";
+import {
+  detectOllama,
+  type EngineKind,
+  PHI_VISION_MODEL_ID,
+  GEMMA4_E2B_MODEL_ID,
+} from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import { OllamaSetup } from "@/components/OllamaSetup";
 import { StorageMonitor } from "@/components/StorageMonitor";
@@ -282,10 +287,7 @@ function SettingsPage() {
         <Section title={t("aiEngine")}>
           <div className="space-y-1.5">
             <Label>{t("inferenceEngine")}</Label>
-            <Select
-              value={s.engineKind}
-              onValueChange={handleEngineChange}
-            >
+            <Select value={s.engineKind} onValueChange={handleEngineChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -604,7 +606,8 @@ function SettingsPage() {
               Demo Mode — Not for Medical Use
             </DialogTitle>
             <DialogDescription className="pt-2">
-              Demo mode returns <strong>simulated results</strong> for testing only. Do <strong>not</strong> use for actual patient assessment.
+              Demo mode returns <strong>simulated results</strong> for testing only. Do{" "}
+              <strong>not</strong> use for actual patient assessment.
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-xl border bg-amber-50 p-4 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">

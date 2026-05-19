@@ -18,7 +18,10 @@ export interface RagResult {
 }
 
 function normalize(text: string): string {
-  return text.toLowerCase().replace(/[^a-z0-9\s]/g, "").trim();
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .trim();
 }
 
 function tokenize(text: string): string[] {
@@ -87,14 +90,15 @@ export function retrieve(queryFeatures: string[], topK = 3): RagResult {
 
   const sources = scored.map((s) => s.entry);
 
-  const contextText = sources.length > 0
-    ? sources
-        .map(
-          (s) =>
-            `[${s.condition}]\nCause: ${s.cause}\nEpidemiology: ${s.epidemiology}\nTreatment: ${s.treatment}\nReferral: ${s.referral_criteria}\nWHO guideline: ${s.who_guideline}`,
-        )
-        .join("\n\n")
-    : "";
+  const contextText =
+    sources.length > 0
+      ? sources
+          .map(
+            (s) =>
+              `[${s.condition}]\nCause: ${s.cause}\nEpidemiology: ${s.epidemiology}\nTreatment: ${s.treatment}\nReferral: ${s.referral_criteria}\nWHO guideline: ${s.who_guideline}`,
+          )
+          .join("\n\n")
+      : "";
 
   return { sources, contextText };
 }

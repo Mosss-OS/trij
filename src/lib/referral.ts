@@ -24,10 +24,7 @@ function encodeQRPayload(data: ReferralData): string {
   return JSON.stringify(data);
 }
 
-export async function generateReferralPdfBlob(
-  patient: Patient,
-  a: Assessment,
-): Promise<Blob> {
+export async function generateReferralPdfBlob(patient: Patient, a: Assessment): Promise<Blob> {
   const qrPayload = encodeQRPayload(getQRData(patient, a));
   const qrDataUrl = await QRCode.toDataURL(qrPayload, {
     width: 120,

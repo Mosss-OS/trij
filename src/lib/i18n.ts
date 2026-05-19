@@ -15,7 +15,7 @@ export const translations = {
     start: "Start",
     recentTriage: "Recent patients",
     viewAll: "View all",
-    noAssessments: "No assessments yet. Tap \"New triage\" to start.",
+    noAssessments: 'No assessments yet. Tap "New triage" to start.',
     goodMorning: "Good morning",
     goodAfternoon: "Good afternoon",
     goodEvening: "Good evening",
@@ -75,8 +75,7 @@ export const translations = {
     aboutTrij: "About Trij",
     disclaimerTitle:
       "Trij is an AI-assisted preliminary triage tool for community health workers. It is not a clinical diagnostic device.",
-    disclaimerItem1:
-      "All assessments are preliminary and must be verified with clinical judgment.",
+    disclaimerItem1: "All assessments are preliminary and must be verified with clinical judgment.",
     disclaimerItem2: "Trij does not replace professional medical evaluation.",
     disclaimerItem3: "Always refer patients when in doubt or when urgency is indicated.",
     disclaimerItem4: "Patient data is stored on-device and synced to your encrypted backend.",
@@ -125,8 +124,7 @@ export const translations = {
     chwLocations: "CHW locations",
     chwPerformance: "CHW performance",
     gpsDataDesc: "CHW(s) with GPS data",
-    noGpsData:
-      "No CHW location data yet. Configure GPS in your profile to appear on the map.",
+    noGpsData: "No CHW location data yet. Configure GPS in your profile to appear on the map.",
     online: "Online",
     offline: "Offline",
     lowLight: "Low light",
@@ -152,7 +150,8 @@ export const translations = {
     sources: "Sources",
     aiDisclaimer:
       "This is a preliminary AI-assisted assessment and does not constitute a clinical diagnosis. Always verify with clinical judgment and refer when in doubt.",
-    lowConfidenceWarning: "Low confidence assessment — verify with in-person examination and consider referral",
+    lowConfidenceWarning:
+      "Low confidence assessment — verify with in-person examination and consider referral",
     veryLowConfidenceWarning: "Very low confidence — seek immediate clinical supervision",
     confidenceGood: "Good",
     confidenceModerate: "Moderate",
@@ -226,8 +225,7 @@ export const translations = {
     webgpuNotAvailableBrowser:
       "WebGPU not available on this browser. Use Ollama or Demo mode instead.",
     downloadingModel: "Downloading...",
-    loadingWeights:
-      "Loading model weights. This may take a few minutes on first run.",
+    loadingWeights: "Loading model weights. This may take a few minutes on first run.",
     downloadModel: "Download model",
     reloadModel: "Reload model",
     clearCache: "Clear cache",
@@ -242,10 +240,10 @@ export const translations = {
     restartApp: "Restart this app or click Test connection",
     viewSetupScript: "View setup script",
     ollamaModel: "Ollama model",
-    modelNotFound: "Model \"{model}\" not found",
+    modelNotFound: 'Model "{model}" not found',
     pullFromTerminal: "Pull it from the terminal or use the button below.",
     pullInstructions: "Pull instructions",
-    modelAvailable: "Model \"{model}\" is available",
+    modelAvailable: 'Model "{model}" is available',
     availableModels: "Available models ({count})",
     webgpuAvailable: "WebGPU available",
     webgpuNotAvailable: "WebGPU not available",
@@ -321,8 +319,7 @@ export const translations = {
     start: "Démarrer",
     recentTriage: "Patients récents",
     viewAll: "Voir tout",
-    noAssessments:
-      "Pas encore d'évaluations. Appuyez sur \"Nouveau triage\" pour commencer.",
+    noAssessments: 'Pas encore d\'évaluations. Appuyez sur "Nouveau triage" pour commencer.',
     goodMorning: "Bon matin",
     goodAfternoon: "Bon après-midi",
     goodEvening: "Bonsoir",
@@ -339,7 +336,8 @@ export const translations = {
       "Mode mains libres complet. L'application lira chaque étape à haute voix et écoutera votre entrée vocale.",
     voiceSpeed: "Vitesse vocale",
     voiceSpeedDesc: "Ajuster la vitesse de parole de l'assistant vocal.",
-    voiceGuideWhoIsPatient: "Qui est le patient ? Dites le code du village ou le numéro d'identification du patient.",
+    voiceGuideWhoIsPatient:
+      "Qui est le patient ? Dites le code du village ou le numéro d'identification du patient.",
     voiceGuidePatientId: "Dites l'ID ou le code du patient.",
     voiceGuideAge: "Dites l'âge du patient en années.",
     voiceGuideSex: "Dites le sexe du patient : masculin, féminin ou autre.",
@@ -456,8 +454,10 @@ export const translations = {
     readAloud: "Lire à haute voix",
     differential: "Diagnostic différentiel",
     keyFeatures: "Caractéristiques clés",
-    closeDifferentialWarning: "Diagnostic différentiel serré — envisager une référence pour un bilan complet",
-    limitedDifferentialNote: "Diagnostic différentiel limité — une évaluation plus large peut être nécessaire",
+    closeDifferentialWarning:
+      "Diagnostic différentiel serré — envisager une référence pour un bilan complet",
+    limitedDifferentialNote:
+      "Diagnostic différentiel limité — une évaluation plus large peut être nécessaire",
     lowProbability: "Faible probabilité",
     whyThisDiagnosis: "Pourquoi ce diagnostic ?",
     sources: "Sources",
@@ -533,8 +533,7 @@ export const translations = {
     webgpuNotAvailableBrowser:
       "WebGPU non disponible sur ce navigateur. Utilisez Ollama ou le mode Démo.",
     downloadingModel: "Téléchargement...",
-    loadingWeights:
-      "Chargement des poids du modèle. Cela peut prendre quelques minutes.",
+    loadingWeights: "Chargement des poids du modèle. Cela peut prendre quelques minutes.",
     downloadModel: "Télécharger le modèle",
     reloadModel: "Recharger le modèle",
     clearCache: "Vider le cache",
@@ -549,10 +548,10 @@ export const translations = {
     restartApp: "Redémarrez l'application ou cliquez sur Tester la connexion",
     viewSetupScript: "Voir le script d'installation",
     ollamaModel: "Modèle Ollama",
-    modelNotFound: "Modèle \"{model}\" introuvable",
+    modelNotFound: 'Modèle "{model}" introuvable',
     pullFromTerminal: "Tirez-le depuis le terminal ou utilisez le bouton ci-dessous.",
     pullInstructions: "Instructions d'installation",
-    modelAvailable: "Le modèle \"{model}\" est disponible",
+    modelAvailable: 'Le modèle "{model}" est disponible',
     availableModels: "Modèles disponibles ({count})",
     webgpuAvailable: "WebGPU disponible",
     webgpuNotAvailable: "WebGPU non disponible",
@@ -565,8 +564,7 @@ export const translations = {
     ollamaNotDetected: "Non détecté — installez Ollama ou vérifiez l'URL",
     mockDataNoModel: "Données simulées, aucun modèle requis",
     offlineSignIn: "Connexion hors ligne",
-    noInternetPin:
-      "Pas de connexion Internet. Entrez votre code PIN hors ligne pour continuer.",
+    noInternetPin: "Pas de connexion Internet. Entrez votre code PIN hors ligne pour continuer.",
     enterPin: "Entrez votre code PIN à 4-6 chiffres",
     unlock: "Déverrouiller",
     offlineModeDataSync: "Mode hors ligne — les données seront synchronisées lorsque connecté",
@@ -586,8 +584,7 @@ export const translations = {
     or: "ou",
     continueWithoutAccount: "Continuer sans compte",
     setUpOfflinePinTitle: "Configurer le code PIN hors ligne",
-    pinDescription:
-      "Choisissez un code PIN à 4-6 chiffres pour vous connecter sans Internet.",
+    pinDescription: "Choisissez un code PIN à 4-6 chiffres pour vous connecter sans Internet.",
     newPin: "Nouveau code PIN",
     confirmPin: "Confirmer le code PIN",
     savePin: "Enregistrer le code PIN",
@@ -633,7 +630,7 @@ export const translations = {
     start: "Anza",
     recentTriage: "Wagonjwa wa hivi karibuni",
     viewAll: "Ona yote",
-    noAssessments: "Bado hakuna tathmini. Gusa \"Triage mpya\" kuanza.",
+    noAssessments: 'Bado hakuna tathmini. Gusa "Triage mpya" kuanza.',
     goodMorning: "Habari za asubuhi",
     goodAfternoon: "Habari za mchana",
     goodEvening: "Habari za jioni",
@@ -695,15 +692,12 @@ export const translations = {
     aboutTrij: "Kuhusu Trij",
     disclaimerTitle:
       "Trij ni chombo cha awali cha triage kinachosaidiwa na AI kwa wafanyakazi wa afya ya jamii. Sio kifaa cha uchunguzi wa kliniki.",
-    disclaimerItem1:
-      "Tathmini zote ni za awali na lazima zithibitishwe kwa uamuzi wa kliniki.",
+    disclaimerItem1: "Tathmini zote ni za awali na lazima zithibitishwe kwa uamuzi wa kliniki.",
     disclaimerItem2: "Trij haichukui nafasi ya tathmini ya matibabu ya kitaaluma.",
-    disclaimerItem3:
-      "Daima elekeza wagonjwa unapokuwa na shaka au wakati dharura inapoonyeshwa.",
+    disclaimerItem3: "Daima elekeza wagonjwa unapokuwa na shaka au wakati dharura inapoonyeshwa.",
     disclaimerItem4:
       "Data ya mgonjwa huhifadhiwa kwenye kifaa na kusawazishwa kwenye mfumo wako uliosimbwa.",
-    disclaimerItem5:
-      "Unawajibika kwa kuzingatia kanuni za faragha za data ya afya ya nchini.",
+    disclaimerItem5: "Unawajibika kwa kuzingatia kanuni za faragha za data ya afya ya nchini.",
     engineStatus: "Hali ya injini",
     signOut: "Ondoka",
     syncing: "Inasawazisha",
@@ -803,8 +797,7 @@ export const translations = {
     continue: "Endelea",
     frameArea: "Panga eneo lililoathiriwa",
     lightingDesc: "Mwanga mzuri na mikono thabiti husaidia AI kupata matokeo sahihi.",
-    runningLocally:
-      "Inafanya kazi kwenye kifaa chako — hakuna data inayotumwa kwenye wingu.",
+    runningLocally: "Inafanya kazi kwenye kifaa chako — hakuna data inayotumwa kwenye wingu.",
     preparing: "Inatayarisha",
     analyzing: "Inachambua",
     inferenceFailed: "Uchambuzi umeshindwa",
@@ -837,13 +830,11 @@ export const translations = {
     pctUsed: "{pct}% imetumika",
     used: "imetumika",
     available: "inapatikana",
-    notEnoughSpace:
-      "Hakuna nafasi ya kutosha. Futa hifadhi au tumia Ollama / Njia ya kuigiza.",
+    notEnoughSpace: "Hakuna nafasi ya kutosha. Futa hifadhi au tumia Ollama / Njia ya kuigiza.",
     webgpuNotAvailableBrowser:
       "WebGPU haipatikani kwenye kivinjari hiki. Tumia Ollama au Njia ya kuigiza.",
     downloadingModel: "Inapakua...",
-    loadingWeights:
-      "Inapakia uzito wa mfano. Hii inaweza kuchukua dakika chache.",
+    loadingWeights: "Inapakia uzito wa mfano. Hii inaweza kuchukua dakika chache.",
     downloadModel: "Pakua mfano",
     reloadModel: "Pakia upya mfano",
     clearCache: "Futa akiba",
@@ -858,10 +849,10 @@ export const translations = {
     restartApp: "Anzisha upya programu au bofya Jaribu muunganisho",
     viewSetupScript: "Tazama hati ya usakinishaji",
     ollamaModel: "Mfano wa Ollama",
-    modelNotFound: "Mfano \"{model}\" haupatikani",
+    modelNotFound: 'Mfano "{model}" haupatikani',
     pullFromTerminal: "Vuta kutoka kwenye terminal au tumia kitufe hapa chini.",
     pullInstructions: "Maagizo ya kuvuta",
-    modelAvailable: "Mfano \"{model}\" unapatikana",
+    modelAvailable: 'Mfano "{model}" unapatikana',
     availableModels: "Mifano inayopatikana ({count})",
     webgpuAvailable: "WebGPU inapatikana",
     webgpuNotAvailable: "WebGPU haipatikani",
@@ -874,15 +865,13 @@ export const translations = {
     ollamaNotDetected: "Haijagunduliwa — sakinisha Ollama au angalia URL",
     mockDataNoModel: "Data ya kuigiza, hakuna mfano unaohitajika",
     offlineSignIn: "Ingia nje ya mtandao",
-    noInternetPin:
-      "Hakuna muunganisho wa intaneti. Ingiza PIN yako ya nje ya mtandao kuendelea.",
+    noInternetPin: "Hakuna muunganisho wa intaneti. Ingiza PIN yako ya nje ya mtandao kuendelea.",
     enterPin: "Ingiza PIN yako ya tarakimu 4-6",
     unlock: "Fungua",
     offlineModeDataSync: "Hali ya nje ya mtandao — data itasawazishwa itakapounganishwa",
     fieldReadyTriage: "Triage ya shambani,",
     onEveryDevice: "kwenye kila kifaa.",
-    gemmaOnDevice:
-      "Gemma inafanya kazi kwenye kifaa chako. Data ya mgonjwa haitoki kwenye simu.",
+    gemmaOnDevice: "Gemma inafanya kazi kwenye kifaa chako. Data ya mgonjwa haitoki kwenye simu.",
     patientDataNeverLeaves:
       "Uchambuzi kwenye kifaa kupitia WebGPU. Usawazishaji wakati tu iko mtandaoni.",
     yourName: "Jina lako",
@@ -902,8 +891,7 @@ export const translations = {
     reEnterPin: "Ingiza PIN tena",
     pinDigits: "tarakimu 4-6",
     incorrectPinAttempts: "PIN si sahihi. {remaining} jaribio limebaki.",
-    accountLocked:
-      "Akaunti imefungwa kwa majaribio mengi. Unganisha kwenye intaneti kuweka upya.",
+    accountLocked: "Akaunti imefungwa kwa majaribio mengi. Unganisha kwenye intaneti kuweka upya.",
     noPinConfigured: "Hakuna PIN ya nje ya mtandao. Unganisha kwenye intaneti kuingia.",
     referralSlipTitle: "TRIJ — FOMU YA RUFFAA",
     ageSexLabel: "Umri / Jinsia: {age} / {sex}",
@@ -941,8 +929,7 @@ export const translations = {
     start: "शुरू करें",
     recentTriage: "हाल के मरीज",
     viewAll: "सभी देखें",
-    noAssessments:
-      "अभी तक कोई मूल्यांकन नहीं। शुरू करने के लिए \"नया ट्राइएज\" पर टैप करें।",
+    noAssessments: 'अभी तक कोई मूल्यांकन नहीं। शुरू करने के लिए "नया ट्राइएज" पर टैप करें।',
     goodMorning: "शुभ प्रभात",
     goodAfternoon: "नमस्कार",
     goodEvening: "शुभ संध्या",
@@ -1003,15 +990,12 @@ export const translations = {
     aboutTrij: "Trij के बारे में",
     disclaimerTitle:
       "Trij सामुदायिक स्वास्थ्य कार्यकर्ताओं के लिए एक AI-सहायक प्रारंभिक ट्राइएज उपकरण है। यह नैदानिक निदान उपकरण नहीं है।",
-    disclaimerItem1:
-      "सभी मूल्यांकन प्रारंभिक हैं और नैदानिक निर्णय से सत्यापित किए जाने चाहिए।",
+    disclaimerItem1: "सभी मूल्यांकन प्रारंभिक हैं और नैदानिक निर्णय से सत्यापित किए जाने चाहिए।",
     disclaimerItem2: "Trij पेशेवर चिकित्सा मूल्यांकन को प्रतिस्थापित नहीं करता है।",
-    disclaimerItem3:
-      "संदेह होने या आपात स्थिति का संकेत मिलने पर हमेशा रोगियों को रेफर करें।",
+    disclaimerItem3: "संदेह होने या आपात स्थिति का संकेत मिलने पर हमेशा रोगियों को रेफर करें।",
     disclaimerItem4:
       "रोगी डेटा डिवाइस पर संग्रहीत किया जाता है और आपके एन्क्रिप्टेड बैकएंड से सिंक किया जाता है।",
-    disclaimerItem5:
-      "आप स्थानीय स्वास्थ्य डेटा गोपनीयता नियमों के अनुपालन के लिए जिम्मेदार हैं।",
+    disclaimerItem5: "आप स्थानीय स्वास्थ्य डेटा गोपनीयता नियमों के अनुपालन के लिए जिम्मेदार हैं।",
     engineStatus: "इंजन स्थिति",
     signOut: "साइन आउट",
     syncing: "सिंक हो रहा है",
@@ -1110,8 +1094,7 @@ export const translations = {
     sex: "लिंग",
     continue: "जारी रखें",
     frameArea: "प्रभावित क्षेत्र को फ्रेम करें",
-    lightingDesc:
-      "अच्छी रोशनी और स्थिर हाथ AI को सटीक परिणाम प्राप्त करने में मदद करते हैं।",
+    lightingDesc: "अच्छी रोशनी और स्थिर हाथ AI को सटीक परिणाम प्राप्त करने में मदद करते हैं।",
     runningLocally: "आपके डिवाइस पर चल रहा है — कोई डेटा क्लाउड को नहीं भेजा गया।",
     preparing: "तैयारी",
     analyzing: "विश्लेषण",
@@ -1151,8 +1134,7 @@ export const translations = {
     webgpuNotAvailableBrowser:
       "इस ब्राउज़र पर WebGPU उपलब्ध नहीं है। इसके बजाय Ollama या डेमो मोड का उपयोग करें।",
     downloadingModel: "डाउनलोड हो रहा है...",
-    loadingWeights:
-      "मॉडल वेट लोड हो रहे हैं। पहली बार में इसमें कुछ मिनट लग सकते हैं।",
+    loadingWeights: "मॉडल वेट लोड हो रहे हैं। पहली बार में इसमें कुछ मिनट लग सकते हैं।",
     downloadModel: "मॉडल डाउनलोड करें",
     reloadModel: "मॉडल पुनः लोड करें",
     clearCache: "कैश साफ़ करें",
@@ -1167,10 +1149,10 @@ export const translations = {
     restartApp: "इस ऐप को पुनरारंभ करें या कनेक्शन परीक्षण पर क्लिक करें",
     viewSetupScript: "सेटअप स्क्रिप्ट देखें",
     ollamaModel: "Ollama मॉडल",
-    modelNotFound: "मॉडल \"{model}\" नहीं मिला",
+    modelNotFound: 'मॉडल "{model}" नहीं मिला',
     pullFromTerminal: "इसे टर्मिनल से पुल करें या नीचे दिए गए बटन का उपयोग करें।",
     pullInstructions: "पुल निर्देश",
-    modelAvailable: "मॉडल \"{model}\" उपलब्ध है",
+    modelAvailable: 'मॉडल "{model}" उपलब्ध है',
     availableModels: "उपलब्ध मॉडल ({count})",
     webgpuAvailable: "WebGPU उपलब्ध",
     webgpuNotAvailable: "WebGPU उपलब्ध नहीं",
@@ -1213,8 +1195,7 @@ export const translations = {
     incorrectPinAttempts: "गलत PIN। {remaining} प्रयास शेष।",
     accountLocked:
       "बहुत अधिक असफल प्रयासों के कारण खाता लॉक हो गया। रीसेट करने के लिए इंटरनेट से कनेक्ट करें।",
-    noPinConfigured:
-      "कोई ऑफ़लाइन PIN कॉन्फ़िगर नहीं। साइन इन करने के लिए इंटरनेट से कनेक्ट करें।",
+    noPinConfigured: "कोई ऑफ़लाइन PIN कॉन्फ़िगर नहीं। साइन इन करने के लिए इंटरनेट से कनेक्ट करें।",
     referralSlipTitle: "TRIJ — रेफरल स्लिप",
     ageSexLabel: "आयु / लिंग: {age} / {sex}",
     dateLabel: "दिनांक: {date}",
@@ -1234,8 +1215,7 @@ export const translations = {
     csvExport: "CSV निर्यात करें",
     skip: "छोड़ें",
     kioskMode: "कियोस्क मोड",
-    kioskModeDesc:
-      "कम साक्षरता वाले उपयोगकर्ताओं के लिए बड़े आइकन, आवाज़ वर्णन और सरलीकृत UI",
+    kioskModeDesc: "कम साक्षरता वाले उपयोगकर्ताओं के लिए बड़े आइकन, आवाज़ वर्णन और सरलीकृत UI",
     kioskScreenLabel: "स्क्रीन {n} का {total}",
     hapticFeedback: "हैप्टिक फीडबैक",
     hapticFeedbackDesc: "स्पर्श पुष्टि के लिए बटन दबाने पर वाइब्रेट करें",
@@ -1250,7 +1230,7 @@ export const translations = {
     start: "Iniciar",
     recentTriage: "Pacientes recentes",
     viewAll: "Ver todos",
-    noAssessments: "Nenhuma avaliação ainda. Toque em \"Nova triagem\" para começar.",
+    noAssessments: 'Nenhuma avaliação ainda. Toque em "Nova triagem" para começar.',
     goodMorning: "Bom dia",
     goodAfternoon: "Boa tarde",
     goodEvening: "Boa noite",
@@ -1267,7 +1247,8 @@ export const translations = {
       "Modo mãos-livres completo. O aplicativo lerá cada etapa em voz alta e ouvirá sua entrada de voz.",
     voiceSpeed: "Velocidade da voz",
     voiceSpeedDesc: "Ajuste a velocidade de fala do assistente de voz.",
-    voiceGuideWhoIsPatient: "Quem é o paciente? Diga o código da vila ou número de identificação do paciente.",
+    voiceGuideWhoIsPatient:
+      "Quem é o paciente? Diga o código da vila ou número de identificação do paciente.",
     voiceGuidePatientId: "Diga o ID ou código do paciente.",
     voiceGuideAge: "Diga a idade do paciente em anos.",
     voiceGuideSex: "Diga o sexo do paciente: masculino, feminino ou outro.",
@@ -1314,8 +1295,7 @@ export const translations = {
     disclaimerItem1:
       "Todas as avaliações são preliminares e devem ser verificadas com julgamento clínico.",
     disclaimerItem2: "Trij não substitui a avaliação médica profissional.",
-    disclaimerItem3:
-      "Sempre encaminhe pacientes em caso de dúvida ou quando houver urgência.",
+    disclaimerItem3: "Sempre encaminhe pacientes em caso de dúvida ou quando houver urgência.",
     disclaimerItem4:
       "Os dados do paciente são armazenados no dispositivo e sincronizados com seu backend criptografado.",
     disclaimerItem5:
@@ -1383,8 +1363,10 @@ export const translations = {
     readAloud: "Ler em voz alta",
     differential: "Diagnóstico diferencial",
     keyFeatures: "Características principais",
-    closeDifferentialWarning: "Diagnóstico diferencial próximo — considere encaminhamento para avaliação completa",
-    limitedDifferentialNote: "Diagnóstico diferencial limitado — pode precisar de avaliação mais ampla",
+    closeDifferentialWarning:
+      "Diagnóstico diferencial próximo — considere encaminhamento para avaliação completa",
+    limitedDifferentialNote:
+      "Diagnóstico diferencial limitado — pode precisar de avaliação mais ampla",
     lowProbability: "Baixa probabilidade",
     whyThisDiagnosis: "Por que este diagnóstico?",
     sources: "Fontes",
@@ -1428,8 +1410,7 @@ export const translations = {
     voiceFollowUp: "Acompanhamento por voz",
     save: "Salvar",
     savedOffline: "Salvo offline",
-    voiceFollowUpDesc:
-      "Responda algumas perguntas para melhorar a avaliação. Digite ou use a voz.",
+    voiceFollowUpDesc: "Responda algumas perguntas para melhorar a avaliação. Digite ou use a voz.",
     of: "de",
     questionsAnswered: "perguntas respondidas",
     skipAndSave: "Pular e salvar",
@@ -1475,10 +1456,10 @@ export const translations = {
     restartApp: "Reinicie este aplicativo ou clique em Testar conexão",
     viewSetupScript: "Ver script de configuração",
     ollamaModel: "Modelo Ollama",
-    modelNotFound: "Modelo \"{model}\" não encontrado",
+    modelNotFound: 'Modelo "{model}" não encontrado',
     pullFromTerminal: "Baixe do terminal ou use o botão abaixo.",
     pullInstructions: "Instruções de instalação",
-    modelAvailable: "Modelo \"{model}\" está disponível",
+    modelAvailable: 'Modelo "{model}" está disponível',
     availableModels: "Modelos disponíveis ({count})",
     webgpuAvailable: "WebGPU disponível",
     webgpuNotAvailable: "WebGPU não disponível",
@@ -1559,7 +1540,7 @@ export const translations = {
     start: "ابدأ",
     recentTriage: "المرضى الأخيرون",
     viewAll: "عرض الكل",
-    noAssessments: "لا توجد تقييمات بعد. اضغط على \"فرز جديد\" للبدء.",
+    noAssessments: 'لا توجد تقييمات بعد. اضغط على "فرز جديد" للبدء.',
     goodMorning: "صباح الخير",
     goodAfternoon: "مساء الخير",
     goodEvening: "مساء الخير",
@@ -1623,8 +1604,7 @@ export const translations = {
     disclaimerItem2: "تريج لا يحل محل التقييم الطبي المهني.",
     disclaimerItem3: "قم دائمًا بإحالة المرضى عند الشك أو عند الإشارة إلى حالة طارئة.",
     disclaimerItem4: "يتم تخزين بيانات المرضى على الجهاز ومزامنتها مع خادمك المشفر.",
-    disclaimerItem5:
-      "أنت مسؤول عن الامتثال للوائح خصوصية بيانات الصحة المحلية.",
+    disclaimerItem5: "أنت مسؤول عن الامتثال للوائح خصوصية بيانات الصحة المحلية.",
     engineStatus: "حالة المحرك",
     signOut: "تسجيل الخروج",
     syncing: "جارٍ المزامنة",
@@ -1763,8 +1743,7 @@ export const translations = {
     webgpuNotAvailableBrowser:
       "WebGPU غير متاح على هذا المتصفح. استخدم Ollama أو وضع العرض التوضيحي بدلاً من ذلك.",
     downloadingModel: "جارٍ التنزيل...",
-    loadingWeights:
-      "جارٍ تحميل أوزان النموذج. قد يستغرق هذا بضع دقائق في التشغيل الأول.",
+    loadingWeights: "جارٍ تحميل أوزان النموذج. قد يستغرق هذا بضع دقائق في التشغيل الأول.",
     downloadModel: "تنزيل النموذج",
     reloadModel: "إعادة تحميل النموذج",
     clearCache: "مسح ذاكرة التخزين المؤقت",
@@ -1779,10 +1758,10 @@ export const translations = {
     restartApp: "أعد تشغيل هذا التطبيق أو انقر على اختبار الاتصال",
     viewSetupScript: "عرض نص الإعداد",
     ollamaModel: "نموذج Ollama",
-    modelNotFound: "النموذج \"{model}\" غير موجود",
+    modelNotFound: 'النموذج "{model}" غير موجود',
     pullFromTerminal: "اسحبه من الطرفية أو استخدم الزر أدناه.",
     pullInstructions: "تعليمات السحب",
-    modelAvailable: "النموذج \"{model}\" متاح",
+    modelAvailable: 'النموذج "{model}" متاح',
     availableModels: "النماذج المتاحة ({count})",
     webgpuAvailable: "WebGPU متاح",
     webgpuNotAvailable: "WebGPU غير متاح",
@@ -1795,8 +1774,7 @@ export const translations = {
     ollamaNotDetected: "لم يتم اكتشافه — قم بتثبيت Ollama أو تحقق من الرابط",
     mockDataNoModel: "بيانات تجريبية، لا حاجة لنموذج حقيقي",
     offlineSignIn: "تسجيل الدخول دون اتصال",
-    noInternetPin:
-      "لا يوجد اتصال بالإنترنت. أدخل PIN الخاص بك دون اتصال لمتابعة استخدام تريج.",
+    noInternetPin: "لا يوجد اتصال بالإنترنت. أدخل PIN الخاص بك دون اتصال لمتابعة استخدام تريج.",
     enterPin: "أدخل PIN المكون من 4-6 أرقام",
     unlock: "فتح",
     offlineModeDataSync: "وضع عدم الاتصال — ستتم مزامنة البيانات عند الاتصال",
@@ -1816,16 +1794,14 @@ export const translations = {
     or: "أو",
     continueWithoutAccount: "المتابعة بدون حساب",
     setUpOfflinePinTitle: "إعداد PIN دون اتصال",
-    pinDescription:
-      "اختر PIN من 4-6 أرقام لتسجيل الدخول عندما لا يكون لديك وصول إلى الإنترنت.",
+    pinDescription: "اختر PIN من 4-6 أرقام لتسجيل الدخول عندما لا يكون لديك وصول إلى الإنترنت.",
     newPin: "PIN جديد",
     confirmPin: "تأكيد PIN",
     savePin: "حفظ PIN",
     reEnterPin: "إعادة إدخال PIN",
     pinDigits: "4-6 أرقام",
     incorrectPinAttempts: "PIN غير صحيح. {remaining} محاولة (محاولات) متبقية.",
-    accountLocked:
-      "تم قفل الحساب بسبب كثرة المحاولات الفاشلة. اتصل بالإنترنت لإعادة التعيين.",
+    accountLocked: "تم قفل الحساب بسبب كثرة المحاولات الفاشلة. اتصل بالإنترنت لإعادة التعيين.",
     noPinConfigured: "لم يتم تكوين PIN دون اتصال. اتصل بالإنترنت لتسجيل الدخول.",
     referralSlipTitle: "تريج — قسيمة الإحالة",
     ageSexLabel: "العمر / الجنس: {age} / {sex}",
@@ -1863,7 +1839,7 @@ export const translations = {
     start: "Iniciar",
     recentTriage: "Pacientes recientes",
     viewAll: "Ver todo",
-    noAssessments: "Aún no hay evaluaciones. Pulse \"Nuevo triaje\" para empezar.",
+    noAssessments: 'Aún no hay evaluaciones. Pulse "Nuevo triaje" para empezar.',
     goodMorning: "Buenos días",
     goodAfternoon: "Buenas tardes",
     goodEvening: "Buenas noches",
@@ -1880,7 +1856,8 @@ export const translations = {
       "Modo manos libres completo. La aplicación leerá cada paso en voz alta y escuchará su entrada de voz.",
     voiceSpeed: "Velocidad de voz",
     voiceSpeedDesc: "Ajuste la velocidad de habla del asistente de voz.",
-    voiceGuideWhoIsPatient: "¿Quién es el paciente? Diga el código de aldea o número de identificación del paciente.",
+    voiceGuideWhoIsPatient:
+      "¿Quién es el paciente? Diga el código de aldea o número de identificación del paciente.",
     voiceGuidePatientId: "Diga el ID o código del paciente.",
     voiceGuideAge: "Diga la edad del paciente en años.",
     voiceGuideSex: "Diga el sexo del paciente: masculino, femenino u otro.",
@@ -1927,8 +1904,7 @@ export const translations = {
     disclaimerItem1:
       "Todas las evaluaciones son preliminares y deben verificarse con juicio clínico.",
     disclaimerItem2: "Trij no reemplaza la evaluación médica profesional.",
-    disclaimerItem3:
-      "Derive siempre a los pacientes en caso de duda o cuando se indique urgencia.",
+    disclaimerItem3: "Derive siempre a los pacientes en caso de duda o cuando se indique urgencia.",
     disclaimerItem4:
       "Los datos del paciente se almacenan en el dispositivo y se sincronizan con su backend cifrado.",
     disclaimerItem5:
@@ -1996,8 +1972,10 @@ export const translations = {
     readAloud: "Leer en voz alta",
     differential: "Diagnóstico diferencial",
     keyFeatures: "Características clave",
-    closeDifferentialWarning: "Diagnóstico diferencial cercano — considere derivación para evaluación completa",
-    limitedDifferentialNote: "Diagnóstico diferencial limitado — puede necesitar evaluación más amplia",
+    closeDifferentialWarning:
+      "Diagnóstico diferencial cercano — considere derivación para evaluación completa",
+    limitedDifferentialNote:
+      "Diagnóstico diferencial limitado — puede necesitar evaluación más amplia",
     lowProbability: "Baja probabilidad",
     whyThisDiagnosis: "¿Por qué este diagnóstico?",
     sources: "Fuentes",
@@ -2026,8 +2004,7 @@ export const translations = {
     uploadFromGallery: "Subir desde galería",
     stepByStep: "Paso a paso",
     whoIsPatient: "¿Quién es el paciente?",
-    patientCodeDesc:
-      "Introduzca el código de la aldea o el número de identificación del paciente.",
+    patientCodeDesc: "Introduzca el código de la aldea o el número de identificación del paciente.",
     patientIdentifier: "ID / código del paciente",
     ageYears: "Edad (años)",
     sex: "Sexo",
@@ -2090,10 +2067,10 @@ export const translations = {
     restartApp: "Reinicie esta aplicación o haga clic en Probar conexión",
     viewSetupScript: "Ver script de configuración",
     ollamaModel: "Modelo Ollama",
-    modelNotFound: "Modelo \"{model}\" no encontrado",
+    modelNotFound: 'Modelo "{model}" no encontrado',
     pullFromTerminal: "Púlselo desde la terminal o use el botón de abajo.",
     pullInstructions: "Instrucciones de instalación",
-    modelAvailable: "El modelo \"{model}\" está disponible",
+    modelAvailable: 'El modelo "{model}" está disponible',
     availableModels: "Modelos disponibles ({count})",
     webgpuAvailable: "WebGPU disponible",
     webgpuNotAvailable: "WebGPU no disponible",

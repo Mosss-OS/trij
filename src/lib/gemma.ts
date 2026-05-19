@@ -13,11 +13,10 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { retrieve, getCompactKbContext } from "./rag";
 
 type MultimodalContent = Array<
-  | { type: "image_url"; image_url: { url: string } }
-  | { type: "text"; text: string }
+  { type: "image_url"; image_url: { url: string } } | { type: "text"; text: string }
 >;
 
-function multimodal(content: MultimodalContent): unknown {
+function multimodal(content: MultimodalContent): MultimodalContent {
   return content;
 }
 
@@ -250,21 +249,23 @@ async function loadModel(
     initProgressCallback: (report: InitProgressReport) => onProgress?.(report),
   };
 
-  const enginePromise = modelId === GEMMA4_E2B_MODEL_ID
-    ? CreateMLCEngine(modelId, {
-        ...baseConfig,
-        appConfig: {
-          model_list: [
-            {
-              model: "https://huggingface.co/welcoma/gemma-4-E2B-it-q4f16_1-MLC",
-              model_id: GEMMA4_E2B_MODEL_ID,
-              model_lib: "https://huggingface.co/welcoma/gemma-4-E2B-it-q4f16_1-MLC/resolve/main/libs/gemma-4-E2B-it-q4f16_1-MLC-webgpu.wasm",
-              required_features: ["shader-f16"],
-            },
-          ],
-        },
-      })
-    : CreateMLCEngine(modelId, baseConfig);
+  const enginePromise =
+    modelId === GEMMA4_E2B_MODEL_ID
+      ? CreateMLCEngine(modelId, {
+          ...baseConfig,
+          appConfig: {
+            model_list: [
+              {
+                model: "https://huggingface.co/welcoma/gemma-4-E2B-it-q4f16_1-MLC",
+                model_id: GEMMA4_E2B_MODEL_ID,
+                model_lib:
+                  "https://huggingface.co/welcoma/gemma-4-E2B-it-q4f16_1-MLC/resolve/main/libs/gemma-4-E2B-it-q4f16_1-MLC-webgpu.wasm",
+                required_features: ["shader-f16"],
+              },
+            ],
+          },
+        })
+      : CreateMLCEngine(modelId, baseConfig);
 
   webllmLoading = enginePromise
     .then((e) => {
@@ -511,9 +512,7 @@ async function cloudInference(
     throw new Error("Daily cloud inference quota exceeded");
   }
 
-  const functionUrl = supabaseUrl
-    ? `${supabaseUrl}/functions/v1/infer-gemma4`
-    : DEFAULT_CLOUD_URL;
+  const functionUrl = supabaseUrl ? `${supabaseUrl}/functions/v1/infer-gemma4` : DEFAULT_CLOUD_URL;
 
   const session = useSettingsStore.getState();
   const token = useSessionStore.getState().session?.access_token;
@@ -609,7 +608,8 @@ export async function triageImage(
         ollamaUrl ?? "http://localhost:11434",
         [TRIAGE_TOOL],
       );
-      result = parseToolCall<TriageResult>(response.message, null) ||
+      result =
+        parseToolCall<TriageResult>(response.message, null) ||
         triesJson<TriageResult>(response.message.content ?? "", FALLBACK_TRIAGE);
       result = attachRagSources(result);
       return result;
@@ -632,7 +632,10 @@ export async function triageImage(
 
     const reply = await e.chat.completions.create({
       messages: [
-        { role: "system", content: getTriageSystemPrompt(language, settings.thinkingMode, kbContext) },
+        {
+          role: "system",
+          content: getTriageSystemPrompt(language, settings.thinkingMode, kbContext),
+        },
         {
           role: "user",
           content: multimodal([
@@ -655,7 +658,8 @@ export async function triageImage(
       result.rag_sources = undefined;
       return result;
     }
-    result = parseToolCall<TriageResult>(message, null) ||
+    result =
+      parseToolCall<TriageResult>(message, null) ||
       triesJson<TriageResult>(message.content ?? "", FALLBACK_TRIAGE);
     result = attachRagSources(result);
     return result;
@@ -891,7 +895,7 @@ export async function nextVoiceTurn(
         content: "Start the interview. Ask the first follow-up question.",
       });
     }
-    
+
     const askedCount = updated.filter((m) => m.role === "assistant").length;
     const testPool = [
       "How long has the condition been present?",

@@ -92,7 +92,13 @@ interface Props {
   assessmentCounts?: Record<string, number>;
 }
 
-function ClusterGroup({ locations, counts }: { locations: LocationData[]; counts: Record<string, number> }) {
+function ClusterGroup({
+  locations,
+  counts,
+}: {
+  locations: LocationData[];
+  counts: Record<string, number>;
+}) {
   const map = useMap();
 
   useEffect(() => {
@@ -123,7 +129,9 @@ function ClusterGroup({ locations, counts }: { locations: LocationData[]; counts
     });
 
     map.addLayer(mcg);
-    return () => { map.removeLayer(mcg); };
+    return () => {
+      map.removeLayer(mcg);
+    };
   }, [map, locations, counts]);
 
   return null;
@@ -131,7 +139,9 @@ function ClusterGroup({ locations, counts }: { locations: LocationData[]; counts
 
 export default function CHWMap({ locations, assessmentCounts = {} }: Props) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!mounted) return null;
 

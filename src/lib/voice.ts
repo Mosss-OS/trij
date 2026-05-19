@@ -64,7 +64,18 @@ export class VoiceAssistant {
     try {
       const answer = await this.listen();
       const trimmed = answer.toLowerCase().trim();
-      const yesWords = ["yes", "yeah", "yep", "sure", "okay", "ok", "correct", "right", "confirm", "y"];
+      const yesWords = [
+        "yes",
+        "yeah",
+        "yep",
+        "sure",
+        "okay",
+        "ok",
+        "correct",
+        "right",
+        "confirm",
+        "y",
+      ];
       const noWords = ["no", "nope", "nah", "not", "negative", "n"];
       if (yesWords.some((w) => trimmed.startsWith(w) || trimmed.includes(w))) return true;
       if (noWords.some((w) => trimmed.startsWith(w) || trimmed.includes(w))) return false;

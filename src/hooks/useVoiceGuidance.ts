@@ -41,22 +41,19 @@ export function useVoiceGuidance() {
     [active],
   );
 
-  const listen = useCallback(
-    async (): Promise<string> => {
-      if (!active || !voiceRef.current) {
-        throw new Error("Voice not available");
-      }
-      setState((s) => ({ ...s, listening: true }));
-      try {
-        const transcript = await voiceRef.current.listen();
-        setState((s) => ({ ...s, lastTranscript: transcript }));
-        return transcript;
-      } finally {
-        setState((s) => ({ ...s, listening: false }));
-      }
-    },
-    [active],
-  );
+  const listen = useCallback(async (): Promise<string> => {
+    if (!active || !voiceRef.current) {
+      throw new Error("Voice not available");
+    }
+    setState((s) => ({ ...s, listening: true }));
+    try {
+      const transcript = await voiceRef.current.listen();
+      setState((s) => ({ ...s, lastTranscript: transcript }));
+      return transcript;
+    } finally {
+      setState((s) => ({ ...s, listening: false }));
+    }
+  }, [active]);
 
   const listenWithTimeout = useCallback(
     async (timeoutMs = 8000): Promise<string> => {
@@ -123,5 +120,5 @@ export function useVoiceGuidance() {
     setState({ speaking: false, listening: false, lastTranscript: "" });
   }, []);
 
-  return { ...state, active, narrate, listen, listenWithTimeout, confirm, ask, stop };
+  return { ...state, active, language, narrate, listen, listenWithTimeout, confirm, ask, stop };
 }

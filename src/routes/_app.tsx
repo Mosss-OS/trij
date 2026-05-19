@@ -16,13 +16,28 @@ export const Route = createFileRoute("/_app")({
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[oklch(0.98_0.008_85)] to-[oklch(0.95_0.015_200)] px-4">
         <div className="max-w-md text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#dc2626"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
           </div>
           <h1 className="font-serif text-2xl font-medium tracking-tight text-foreground">
             Something went wrong
           </h1>
           <p className="mt-3 font-sans text-sm leading-relaxed text-foreground/60">
-            An unexpected error occurred. Please try again. If the problem persists, try refreshing the page or contact your supervisor.
+            An unexpected error occurred. Please try again. If the problem persists, try refreshing
+            the page or contact your supervisor.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <button
