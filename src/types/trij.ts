@@ -60,9 +60,23 @@ export interface Assessment {
   version: number;
 }
 
+export interface FollowUp {
+  id: string;
+  patientId: string;
+  assessmentId?: string;
+  chwUserId: string;
+  scheduledFor: string;     /* ISO date string */
+  status: "pending" | "completed" | "cancelled";
+  notes?: string;
+  completedAt?: string;
+  createdAt: string;
+  syncedAt?: string;
+  version: number;
+}
+
 export interface SyncQueueItem {
   id?: number;
-  table: "patients" | "assessments";
+  table: "patients" | "assessments" | "follow_ups";
   action: "insert" | "update" | "delete";
   recordId: string;
   payload: unknown;

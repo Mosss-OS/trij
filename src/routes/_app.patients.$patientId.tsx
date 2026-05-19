@@ -2,9 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { getDB } from "@/lib/db";
-import type { Patient, Assessment } from "@/types/trij";
+import type { Patient, Assessment, FollowUp } from "@/types/trij";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -12,10 +15,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Camera, FileDown, Share2, UserRound, RefreshCw } from "lucide-react";
-import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Calendar, Camera, FileDown, Share2, UserRound, RefreshCw, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { format, isPast, isToday } from "date-fns";
 import { downloadReferralPdf, shareReferralPdf } from "@/lib/referral";
-import { updateReferralStatus } from "@/lib/sync";
+import { updateReferralStatus, queueFollowUp, updateFollowUpStatus } from "@/lib/sync";
+import { useSessionStore } from "@/stores/sessionStore";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/patients/$patientId")({
@@ -76,31 +88,82 @@ function ReferralStatusBadge({ status }: { status: string }) {
 
 function PatientDetail() {
   const { patientId } = Route.useParams();
+  const { t } = useI18n();
+  const user = useSessionStore((s) => s.user);
   const [patient, setPatient] = useState<Patient | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [followUps, setFollowUps] = useState<FollowUp[]>([]);
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleNotes, setScheduleNotes] = useState("");
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const db = getDB();
+      const p = await db.patients.get(patientId);
+      const a = await db.assessments
+        .where("patientId")
+        .equals(patientId)
+        .reverse()
+        .sortBy("createdAt");
+      const f = await db.followUps
+        .where("patientId")
+        .equals(patientId)
+        .reverse()
+        .sortBy("scheduledFor");
+      setPatient(p ?? null);
+      setAssessments(a);
+      setFollowUps(f);
+    } catch {
+      /* */
+    }
+  };
 
   useEffect(() => {
     let alive = true;
-    (async () => {
-      try {
-        const db = getDB();
-        const p = await db.patients.get(patientId);
-        const a = await db.assessments
-          .where("patientId")
-          .equals(patientId)
-          .reverse()
-          .sortBy("createdAt");
-        if (!alive) return;
-        setPatient(p ?? null);
-        setAssessments(a);
-      } catch {
-        /* */
-      }
-    })();
+    loadData().then(() => { /* */ });
     return () => {
       alive = false;
     };
   }, [patientId]);
+
+  const handleSchedule = async () => {
+    if (!user || !scheduleDate) return;
+    const followUp: FollowUp = {
+      id: crypto.randomUUID(),
+      patientId,
+      assessmentId: assessments[0]?.id,
+      chwUserId: user.id,
+      scheduledFor: scheduleDate,
+      status: "pending",
+      notes: scheduleNotes || undefined,
+      createdAt: new Date().toISOString(),
+      version: 0,
+    };
+    await queueFollowUp(followUp);
+    setFollowUps((prev) => [followUp, ...prev]);
+    setScheduleOpen(false);
+    setScheduleDate("");
+    setScheduleNotes("");
+    toast.success(t("savedOffline"));
+  };
+
+  const handleComplete = async (id: string) => {
+    await updateFollowUpStatus(id, "completed", new Date().toISOString());
+    setFollowUps((prev) =>
+      prev.map((f) =>
+        f.id === id ? { ...f, status: "completed", completedAt: new Date().toISOString() } : f,
+      ),
+    );
+    toast.success(t("followUp") + " completed");
+  };
+
+  const handleCancel = async (id: string) => {
+    await updateFollowUpStatus(id, "cancelled");
+    setFollowUps((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, status: "cancelled" } : f)),
+    );
+  };
 
   if (!patient) {
     return (
@@ -261,6 +324,120 @@ function PatientDetail() {
                 )}
               </li>
             ))}
+          </ul>
+        )}
+
+        {/* Follow-ups section */}
+        <div className="mt-8 flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold">{t("followUps")}</h2>
+          <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline" className="gap-1.5">
+                <Calendar className="h-4 w-4" /> {t("scheduleFollowUp")}
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{t("scheduleFollowUp")}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="followup-date">{t("scheduleFor")}</Label>
+                  <Input
+                    id="followup-date"
+                    type="datetime-local"
+                    value={scheduleDate}
+                    onChange={(e) => setScheduleDate(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="followup-notes">{t("followUpNotes")}</Label>
+                  <Textarea
+                    id="followup-notes"
+                    value={scheduleNotes}
+                    onChange={(e) => setScheduleNotes(e.target.value)}
+                    placeholder={t("followUpNotesPlaceholder")}
+                    rows={3}
+                  />
+                </div>
+                <Button onClick={handleSchedule} disabled={!scheduleDate} className="w-full gap-2">
+                  <Calendar className="h-4 w-4" /> {t("scheduleFollowUp")}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+        {followUps.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">{t("noFollowUps")}</p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {followUps.map((f) => {
+              const dueDate = new Date(f.scheduledFor);
+              const past = isPast(dueDate) && f.status === "pending";
+              const today = isToday(dueDate);
+              return (
+                <li
+                  key={f.id}
+                  className={`rounded-2xl border p-4 ${
+                    past ? "border-red-200 bg-red-50" : "bg-card"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {format(dueDate, "PPp")}
+                        </span>
+                        {f.status === "completed" && (
+                          <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                            <CheckCircle2 className="h-3 w-3" /> Done
+                          </span>
+                        )}
+                        {f.status === "cancelled" && (
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                            <XCircle className="h-3 w-3" /> Cancelled
+                          </span>
+                        )}
+                        {past && f.status === "pending" && (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600">
+                            <Clock className="h-3 w-3" /> {t("overdue")}
+                          </span>
+                        )}
+                        {today && f.status === "pending" && (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600">
+                            <Clock className="h-3 w-3" /> {t("dueToday")}
+                          </span>
+                        )}
+                      </div>
+                      {f.notes && (
+                        <p className="mt-1 text-sm text-muted-foreground">{f.notes}</p>
+                      )}
+                    </div>
+                    {f.status === "pending" && (
+                      <div className="flex shrink-0 gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 gap-1 text-xs"
+                          onClick={() => handleComplete(f.id)}
+                        >
+                          <CheckCircle2 className="h-3 w-3" /> {t("markCompleted")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 gap-1 text-xs"
+                          onClick={() => handleCancel(f.id)}
+                        >
+                          <XCircle className="h-3 w-3" /> {t("cancelFollowUp")}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
