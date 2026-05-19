@@ -1,6 +1,6 @@
 import { getDB } from "./db";
 import { supabase } from "@/integrations/supabase/client";
-import type { Patient, Assessment, SyncQueueItem, SyncConflict } from "@/types/trij";
+import type { Patient, Assessment, FollowUp, SyncQueueItem, SyncConflict } from "@/types/trij";
 import { registerBackgroundSync } from "./sw-register";
 
 export const MAX_RETRIES = 3;
@@ -182,6 +182,22 @@ export async function processSyncQueue(
         } as never);
         if (error) throw error;
         await db.patients.update(p.id, { syncedAt: new Date().toISOString() });
+      } else if (item.table === "follow_ups") {
+        const f = item.payload as FollowUp;
+        const { error } = await supabase.from("follow_ups" as never).upsert({
+          id: f.id,
+          patient_id: f.patientId,
+          assessment_id: f.assessmentId ?? null,
+          chw_user_id: f.chwUserId,
+          scheduled_for: f.scheduledFor,
+          status: f.status,
+          notes: f.notes ?? null,
+          completed_at: f.completedAt ?? null,
+          created_at: f.createdAt,
+          version: f.version,
+        } as never);
+        if (error) throw error;
+        await db.followUps.update(f.id, { syncedAt: new Date().toISOString() });
       } else if (item.table === "assessments") {
         const a = item.payload as Assessment;
         const serverRec = await fetchServerRecord("assessments", a.id);
@@ -330,4 +346,46 @@ export async function retryFailedSyncItems(): Promise<number> {
 
   if (retried > 0) registerBackgroundSync().catch(() => {});
   return retried;
+}
+
+export async function queueFollowUp(followUp: FollowUp) {
+  const db = getDB();
+  const existing = await db.followUps.get(followUp.id);
+  const updated = { ...followUp, version: nextVersion(existing?.version) };
+  await db.followUps.put(updated);
+  await db.syncQueue.add({
+    table: "follow_ups",
+    action: "insert",
+    recordId: followUp.id,
+    payload: updated,
+    createdAt: new Date().toISOString(),
+    attempts: 0,
+  });
+  registerBackgroundSync().catch(() => {});
+}
+
+export async function updateFollowUpStatus(
+  id: string,
+  status: FollowUp["status"],
+  completedAt?: string,
+) {
+  const db = getDB();
+  const existing = await db.followUps.get(id);
+  if (!existing) return;
+  const updated = {
+    ...existing,
+    status,
+    completedAt: completedAt ?? existing.completedAt,
+    version: nextVersion(existing.version),
+  };
+  await db.followUps.put(updated);
+  await db.syncQueue.add({
+    table: "follow_ups",
+    action: "update",
+    recordId: id,
+    payload: updated,
+    createdAt: new Date().toISOString(),
+    attempts: 0,
+  });
+  registerBackgroundSync().catch(() => {});
 }
