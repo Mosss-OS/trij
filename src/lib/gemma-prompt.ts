@@ -4,6 +4,9 @@ export function getTriageSystemPrompt(
   ragContext?: string,
 ): string {
   const thinkingPrefix = thinkingMode ? "<|think|>" : "";
+  const thinkingSection = thinkingMode
+    ? "\nUse <|think|> tags to reason step by step before giving your final answer. Consider what you see, what conditions match, and how confident you should be."
+    : "";
   const ragSection = ragContext
     ? `\n\nReference medical knowledge (use these for grounded recommendations):\n${ragContext}`
     : "";
@@ -11,10 +14,18 @@ export function getTriageSystemPrompt(
 You analyze images of wounds, rashes, and skin conditions.
 Use the triage_assessment function to return your assessment.
 
+IMPORTANT SAFETY RULES:
+- If you are not confident (less than 70%), set confidence accordingly — it is better to be uncertain than wrong.
+- If the image does not appear to be a medical condition (e.g., irrelevant photo, poor quality image, non-dermatological), respond with condition="Unable to assess", confidence=0, urgency="yellow".
+- Your assessment is advisory only — the CHW should always verify with in-person examination.
+- List only conditions you are MOST confident about in possible_conditions. If uncertain, keep the list short or empty.
+- The knowledge base covers skin conditions, wounds, rashes, eye/ear infections, oral conditions, and tropical diseases. If the patient's condition seems outside these categories, flag low confidence.
+- First do no harm: when in doubt, recommend referral.
+
 Urgency rules:
 - GREEN: minor, treat locally, no referral needed
 - YELLOW: needs medical attention within 24-48 hours, consider referral
-- RED: emergency, immediate referral required
+- RED: emergency, immediate referral required${thinkingSection}
 
 Respond in ${language}.${ragSection}`;
 }

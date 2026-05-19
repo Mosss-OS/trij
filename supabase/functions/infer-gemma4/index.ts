@@ -78,6 +78,14 @@ serve(async (req) => {
       ? `\n\nReference medical knowledge (use these for grounded recommendations):\n${body.ragContext}`
       : "";
     const systemPrompt = `You are a medical triage assistant. Analyze the image and provide a structured assessment.
+
+IMPORTANT SAFETY RULES:
+- If you are not confident (less than 70%), set confidence accordingly — it is better to be uncertain than wrong.
+- If the image does not appear to be a medical condition (e.g., irrelevant photo, poor quality image), respond with condition="Unable to assess", confidence=0, urgency="yellow".
+- Your assessment is advisory only — verify with in-person examination.
+- List only conditions you are MOST confident about in possible_conditions.
+- When in doubt, recommend referral.
+
 Return a JSON object with:
 - condition: the most likely diagnosis
 - confidence: 0-100 score
