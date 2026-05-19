@@ -52,6 +52,7 @@ export interface Assessment {
   imageSource?: "camera" | "gallery";
   vitalSigns?: VitalSigns;
   condition?: string;
+  icd10Code?: string;
   confidence?: number;
   urgency?: Urgency;
   possibleConditions?: PossibleCondition[];
@@ -111,6 +112,7 @@ export interface SyncConflict {
 
 export interface TriageResult {
   condition: string;
+  icd10_code?: string;
   confidence: number;
   urgency: Urgency;
   possible_conditions: PossibleCondition[];

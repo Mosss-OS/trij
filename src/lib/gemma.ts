@@ -11,6 +11,7 @@ import { TRIAGE_TOOL, DOCUMENT_TOOL, FOLLOW_UP_TOOL, parseToolCall, triesJson } 
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSessionStore } from "@/stores/sessionStore";
 import { retrieve, getCompactKbContext } from "./rag";
+import { getIcd10Code } from "./icd10";
 
 type MultimodalContent = Array<
   { type: "image_url"; image_url: { url: string } } | { type: "text"; text: string }
@@ -699,11 +700,15 @@ export async function triageImage(
 
 function attachRagSources(r: TriageResult): TriageResult {
   const features = r.key_visual_features || [];
-  if (features.length === 0) return r;
+  let result = { ...r };
+  /* Attach ICD-10 code if AI provided one or we can look it up */
+  const icd10 = getIcd10Code(r);
+  if (icd10) result.icd10_code = icd10;
+  if (features.length === 0) return result;
   const { sources } = retrieve(features, 3);
-  if (sources.length === 0) return r;
+  if (sources.length === 0) return result;
   return {
-    ...r,
+    ...result,
     rag_sources: sources.map((s) => ({
       condition: s.condition,
       treatment: s.treatment,

@@ -240,6 +240,11 @@ function PatientDetail() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-medium">{a.condition ?? "Assessment"}</p>
+                    {a.icd10Code && (
+                      <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+                        ICD-10: {a.icd10Code}
+                      </p>
+                    )}
                     <p className="mt-0.5 text-xs text-muted-foreground">
                       {format(new Date(a.createdAt), "PPp")} · conf {Math.round(a.confidence ?? 0)}%
                     </p>

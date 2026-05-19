@@ -68,6 +68,10 @@ export async function generateReferralPdfBlob(patient: Patient, a: Assessment): 
   const cond = `${a.condition ?? "—"}  (${Math.round(a.confidence ?? 0)}%)`;
   doc.text(cond, 40, y);
   y += 14;
+  if (a.icd10Code) {
+    doc.text(`ICD-10: ${a.icd10Code}`, 40, y);
+    y += 14;
+  }
   doc.text(`Urgency: ${a.urgency?.toUpperCase() ?? "—"}`, 40, y);
   y += 20;
 

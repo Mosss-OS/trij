@@ -253,6 +253,11 @@ export function AssessmentResult({
               {t("likelyCondition")}
             </p>
             <h2 className="mt-1 font-display text-2xl font-bold">{result.condition}</h2>
+            {result.icd10_code && (
+              <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+                ICD-10: {result.icd10_code}
+              </p>
+            )}
           </div>
           <UrgencyPill urgency={result.urgency} />
         </div>
