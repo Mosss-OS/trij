@@ -256,14 +256,30 @@ function Supervisor() {
   }, [items]);
 
   const exportAllCsv = () => {
-    const headers = ["Patient", "Condition", "Urgency", "Referral Status", "Created"];
-    const rows = items.map((a) => [
-      a.patients?.identifier ?? "",
-      a.condition ?? "",
-      a.urgency ?? "",
-      a.referral_status ?? "",
-      format(new Date(a.created_at), "yyyy-MM-dd HH:mm"),
-    ]);
+    const headers: string[] = [
+      "Patient", "Condition", "Urgency", "Referral Status",
+      "BP Systolic", "BP Diastolic", "HR", "RR", "Temp", "SpO2", "MUAC", "Weight", "Pain",
+      "Created",
+    ];
+    const rows: string[][] = items.map((a) => {
+      const v = (a as unknown as Record<string, unknown>).vitals as Record<string, unknown> | null;
+      return [
+        a.patients?.identifier ?? "",
+        a.condition ?? "",
+        a.urgency ?? "",
+        a.referral_status ?? "",
+        String(v?.systolicBP ?? ""),
+        String(v?.diastolicBP ?? ""),
+        String(v?.heartRate ?? ""),
+        String(v?.respiratoryRate ?? ""),
+        String(v?.temperature ?? ""),
+        String(v?.oxygenSaturation ?? ""),
+        String(v?.muac ?? ""),
+        String(v?.weight ?? ""),
+        String(v?.painScale ?? ""),
+        format(new Date(a.created_at), "yyyy-MM-dd HH:mm"),
+      ];
+    });
     csvDownload(`trij-assessments-${format(new Date(), "yyyy-MM-dd")}.csv`, headers, rows);
   };
 

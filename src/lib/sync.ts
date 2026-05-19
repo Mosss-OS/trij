@@ -102,6 +102,7 @@ function isMedicalField(key: string): boolean {
     "recommendation",
     "followUpQuestions",
     "referralAdvised",
+    "vitalSigns",
   ].includes(key);
 }
 
@@ -210,6 +211,7 @@ export async function processSyncQueue(
           patient_id: a.patientId,
           chw_user_id: a.chwUserId,
           images: a.images,
+          vitals: (a.vitalSigns ?? null) as never,
           condition: a.condition ?? null,
           confidence: a.confidence ?? null,
           urgency: a.urgency ?? null,
