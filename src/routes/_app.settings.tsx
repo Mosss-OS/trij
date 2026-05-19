@@ -208,7 +208,7 @@ function SettingsPage() {
   };
 
   const engineOptions: { value: EngineKind | "auto"; label: string; desc: string }[] = [
-    { value: "auto", label: "Auto-detect", desc: "WebGPU → Ollama → Demo" },
+    { value: "auto", label: "Auto-detect", desc: "Cloud (mobile) / WebGPU → Ollama → Demo (desktop)" },
     { value: "webllm", label: "WebLLM (WebGPU)", desc: "In-browser Gemma via WebGPU" },
     { value: "ollama", label: "Ollama (local)", desc: "Local Ollama server" },
     { value: "cloud", label: "Cloud inference", desc: "Remote Gemma 4 26B via Supabase" },
