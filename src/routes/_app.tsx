@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Outlet, Navigate, Link } from "@tanstack/react-router";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useSessionStore } from "@/stores/sessionStore";
@@ -5,7 +6,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { BottomNav } from "@/components/BottomNav";
 import { DisclaimerDialog } from "@/components/DisclaimerDialog";
 import { SyncStatusIndicator } from "@/components/SyncStatusIndicator";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldAlert, X } from "lucide-react";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -43,6 +44,26 @@ export const Route = createFileRoute("/_app")({
   },
 });
 
+function DisclaimerBanner() {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+  return (
+    <div className="flex items-start gap-2 border-b bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
+      <ShieldAlert className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-urgency-yellow" />
+      <p className="flex-1">
+        AI-assisted triage — always consult a qualified clinician before making treatment decisions.
+      </p>
+      <button
+        onClick={() => setDismissed(true)}
+        className="flex-shrink-0 rounded p-0.5 transition-colors hover:bg-muted-foreground/10"
+        aria-label="Dismiss disclaimer"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
+
 function AppLayout() {
   useAuthSession();
   const { session, offlineUser, loading } = useSessionStore();
@@ -66,6 +87,7 @@ function AppLayout() {
       >
         Skip to main content
       </a>
+      <DisclaimerBanner />
       <main id="main-content" role="main">
         <Outlet />
       </main>
