@@ -152,6 +152,11 @@ export const translations = {
     sources: "Sources",
     aiDisclaimer:
       "This is a preliminary AI-assisted assessment and does not constitute a clinical diagnosis. Always verify with clinical judgment and refer when in doubt.",
+    lowConfidenceWarning: "Low confidence assessment — verify with in-person examination and consider referral",
+    veryLowConfidenceWarning: "Very low confidence — seek immediate clinical supervision",
+    confidenceGood: "Good",
+    confidenceModerate: "Moderate",
+    confidenceLow: "Low",
     scanningDoc: "Scan document",
     labPrescriptionReferral: "Lab, prescription, referral",
     readingDocument: "Reading document...",

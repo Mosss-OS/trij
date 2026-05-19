@@ -209,11 +209,36 @@ function WhyThisDiagnosis({ features }: { features: string[] }) {
 export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 70, engineKind }: Props) {
   const { t } = useI18n();
   const belowThreshold = result.confidence < minConfidenceForLocalCare;
-  const effectiveReferral = belowThreshold || result.referral_advised;
+  const veryLowConfidence = result.confidence < 30;
+  const lowConfidence = result.confidence < 50 && !veryLowConfidence;
+  const effectiveReferral = belowThreshold || result.referral_advised || veryLowConfidence;
+
+  const borderClass = veryLowConfidence
+    ? "border-urgency-red/40"
+    : lowConfidence
+      ? "border-urgency-yellow/40"
+      : "";
+
+  const confidenceLabel =
+    result.confidence >= 70 ? t("confidenceGood") :
+    result.confidence >= 50 ? t("confidenceModerate") :
+    t("confidenceLow");
 
   return (
     <div className="space-y-5">
-      <div className="rounded-3xl border bg-card p-6 shadow-sm">
+      <div className={`rounded-3xl border bg-card p-6 shadow-sm ${borderClass}`}>
+        {veryLowConfidence && (
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-urgency-red/30 bg-urgency-red/10 px-3 py-2 text-xs font-medium text-urgency-red">
+            <ShieldAlert className="h-4 w-4" />
+            {t("veryLowConfidenceWarning")}
+          </div>
+        )}
+        {lowConfidence && !veryLowConfidence && (
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-urgency-yellow/30 bg-urgency-yellow/10 px-3 py-2 text-xs font-medium text-urgency-yellow">
+            <AlertTriangle className="h-4 w-4" />
+            {t("lowConfidenceWarning")}
+          </div>
+        )}
         {engineKind === "demo" && (
           <div className="mb-4 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-300">
             <Beaker className="h-4 w-4" />
@@ -233,9 +258,23 @@ export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 
         <div className="mt-5">
           <div className="mb-1.5 flex justify-between text-xs">
             <span className="text-muted-foreground">{t("confidence")}</span>
-            <span className="font-mono font-semibold">{Math.round(result.confidence)}%</span>
+            <span className="flex items-center gap-2">
+              <span className={`text-xs font-medium ${
+                veryLowConfidence ? "text-urgency-red" :
+                lowConfidence ? "text-urgency-yellow" :
+                "text-emerald-600"
+              }`}>{confidenceLabel}</span>
+              <span className="font-mono font-semibold">{Math.round(result.confidence)}%</span>
+            </span>
           </div>
-          <Progress value={result.confidence} className="h-2" />
+          <Progress
+            value={result.confidence}
+            className={`h-2 ${
+              veryLowConfidence ? "[&>div]:bg-urgency-red" :
+              lowConfidence ? "[&>div]:bg-urgency-yellow" :
+              "[&>div]:bg-emerald-500"
+            }`}
+          />
           {belowThreshold && (
             <p className="mt-1.5 flex items-center gap-1 text-xs text-urgency-red">
               <AlertTriangle className="h-3 w-3" />
