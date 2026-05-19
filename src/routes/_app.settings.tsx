@@ -47,6 +47,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -111,6 +112,21 @@ function SettingsPage() {
   >([]);
   const [genBusy, setGenBusy] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [demoWarningOpen, setDemoWarningOpen] = useState(false);
+
+  const handleEngineChange = (v: string) => {
+    if (v === "demo") {
+      setDemoWarningOpen(true);
+    } else {
+      s.setEngineKind(v as EngineKind | "auto");
+    }
+  };
+
+  const confirmDemo = () => {
+    s.setEngineKind("demo");
+    setDemoWarningOpen(false);
+    console.warn("[Trij] Demo mode activated — results are simulated, not for patient care");
+  };
 
   useEffect(() => {
     if (offlineUser) {
@@ -268,7 +284,7 @@ function SettingsPage() {
             <Label>{t("inferenceEngine")}</Label>
             <Select
               value={s.engineKind}
-              onValueChange={(v) => s.setEngineKind(v as EngineKind | "auto")}
+              onValueChange={handleEngineChange}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -577,6 +593,36 @@ function SettingsPage() {
               {pinBusy ? "Saving..." : "Save PIN"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={demoWarningOpen} onOpenChange={setDemoWarningOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-urgency-red">
+              <AlertTriangle className="h-5 w-5" />
+              Demo Mode — Not for Medical Use
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Demo mode returns <strong>simulated results</strong> for testing only. Do <strong>not</strong> use for actual patient assessment.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-xl border bg-amber-50 p-4 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+            <p className="font-medium">If you select demo mode:</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>All assessments will contain fake, plausible-sounding results</li>
+              <li>A persistent red banner will appear on every screen</li>
+              <li>Switch to WebLLM, Ollama, or Cloud to return to real assessments</li>
+            </ul>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDemoWarningOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDemo}>
+              Enter Demo Mode
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
