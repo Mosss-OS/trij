@@ -134,15 +134,6 @@ function LoginPage() {
     })();
   }, [loading, online, session, offlineUser]);
 
-  if (loading || checkingPin) {
-    return (
-      <div className="grid min-h-screen place-items-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </div>
-    );
-  }
-  if (session || offlineUser) return <Navigate to="/dashboard" />;
-
   useEffect(() => {
     if (mode !== "signup" || supervisorCode.length < 4) {
       setCodeValid(null);
@@ -158,6 +149,15 @@ function LoginPage() {
     }, 500);
     return () => clearTimeout(timer);
   }, [supervisorCode, mode]);
+
+  if (loading || checkingPin) {
+    return (
+      <div className="grid min-h-screen place-items-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+  if (session || offlineUser) return <Navigate to="/dashboard" />;
 
   const handleOnlineSubmit = async (e: FormEvent) => {
     e.preventDefault();
