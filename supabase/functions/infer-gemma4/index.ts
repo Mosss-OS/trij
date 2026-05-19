@@ -5,6 +5,7 @@ interface InferenceBody {
   image: string;
   prompt: string;
   language: string;
+  ragContext?: string;
 }
 
 interface TriageResult {
@@ -73,6 +74,9 @@ serve(async (req) => {
       });
     }
 
+    const ragSection = body.ragContext
+      ? `\n\nReference medical knowledge (use these for grounded recommendations):\n${body.ragContext}`
+      : "";
     const systemPrompt = `You are a medical triage assistant. Analyze the image and provide a structured assessment.
 Return a JSON object with:
 - condition: the most likely diagnosis
@@ -83,7 +87,7 @@ Return a JSON object with:
 - recommendation: clear treatment/referral instruction
 - referral_advised: boolean
 - follow_up_questions: array of strings
-Language: ${body.language}`;
+Language: ${body.language}${ragSection}`;
 
     const hfResponse = await fetch(HF_API_URL, {
       method: "POST",
