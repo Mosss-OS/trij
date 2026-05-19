@@ -214,6 +214,8 @@ function LoginPage() {
           }
         } else {
           toast.info(t("checkEmailConfirm"));
+          setAwaitingVerification(email);
+          setResendCooldown(30);
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
