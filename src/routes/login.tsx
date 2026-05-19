@@ -98,6 +98,35 @@ function LoginPage() {
   const [setupPinConfirm, setSetupPinConfirm] = useState("");
   const [setupPinError, setSetupPinError] = useState("");
 
+  const [awaitingVerification, setAwaitingVerification] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  const handleResendVerification = async () => {
+    if (!awaitingVerification || resending || resendCooldown > 0) return;
+    setResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: awaitingVerification,
+        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      });
+      if (error) throw error;
+      toast.success("Verification email sent. Check your inbox.");
+      setResendCooldown(30);
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setResending(false);
+    }
+  };
+
   useEffect(() => {
     if (loading) return;
     if (session || offlineUser) return;
