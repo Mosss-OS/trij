@@ -158,10 +158,23 @@ export async function checkWebGPUCompatibility(): Promise<WebGPUCompatibility> {
   };
 }
 
+/* ─── Mobile detection ─────────────────────────────────────── */
+
+/** Detects mobile devices via user agent to select appropriate inference engine.
+ *  Mobile devices cannot download large (~2-5GB) models, so cloud inference is preferred. */
+export function isMobileDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Mobi|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent,
+  );
+}
+
 /* ─── Engine auto-detection ──────────────────────────────── */
 
 export async function detectEngine(prefer: EngineKind | "auto" = "auto"): Promise<EngineKind> {
   if (prefer !== "auto") return prefer;
+  /* Mobile devices use cloud inference by default — downloading multi-GB models is impractical. */
+  if (isMobileDevice()) return "cloud";
   if (await supportsWebGPU()) return "webllm";
   if (await detectOllama()) return "ollama";
   return "demo";
@@ -582,9 +595,19 @@ export async function triageImage(
   let result: TriageResult;
 
   if (kind === "cloud") {
-    result = await cloudInference(imageDataUrl, language, kbContext);
-    result = attachRagSources(result);
-    return result;
+    /* Attempt cloud inference; fall back to demo if offline or unauthenticated.
+     * This ensures mobile users always get a result even without connectivity. */
+    try {
+      result = await cloudInference(imageDataUrl, language, kbContext);
+      result = attachRagSources(result);
+      return result;
+    } catch (err) {
+      console.warn("Cloud inference failed, falling back to demo mode:", err);
+      await sleep(2000 + Math.random() * 1500);
+      result = demoAssessment();
+      result = attachRagSources(result);
+      return result;
+    }
   }
 
   if (kind === "demo") {
