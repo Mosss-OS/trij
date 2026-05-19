@@ -258,6 +258,16 @@ export function AssessmentResult({
                 ICD-10: {result.icd10_code}
               </p>
             )}
+            {result.presentation_type && result.presentation_type !== "dermatology" && (
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {t("presentationType")}: {result.presentation_type}
+              </p>
+            )}
+            {result.description && (
+              <p className="mt-0.5 text-xs italic text-muted-foreground">
+                "{result.description}"
+              </p>
+            )}
           </div>
           <UrgencyPill urgency={result.urgency} />
         </div>

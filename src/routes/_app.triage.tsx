@@ -18,6 +18,7 @@ import {
   Mic,
   MicOff,
   MessageSquare,
+  Stethoscope,
 } from "lucide-react";
 import {
   triageImage,
@@ -51,35 +52,30 @@ export const Route = createFileRoute("/_app/triage")({
   head: () => ({
     meta: [
       {
-        title: "New Triage — AI Wound & Rash Assessment | Trij Free Medical Triage",
+        title: "New Triage — AI Medical Triage Assessment | Trij Free Medical Triage",
       },
       {
         name: "description",
         content:
-          "Perform a free AI-assisted medical triage assessment. Capture a photo of a wound, rash, or skin condition and get instant urgency classification (Green/Yellow/Red) with confidence scoring — all on-device, no internet required.",
-      },
-      {
-        name: "keywords",
-        content:
-          "wound assessment AI, rash analysis app, skin condition triage, free medical assessment, on-device triage, community health assessment, wound care app, dermatology AI",
+          "Perform a free AI-assisted medical triage assessment. Assess wounds, rashes, respiratory symptoms, fever, and more. Get instant urgency classification (Green/Yellow/Red) with confidence scoring — all on-device, no internet required.",
       },
       {
         property: "og:title",
-        content: "New Triage — AI Wound & Rash Assessment | Trij",
+        content: "New Triage — AI Medical Triage Assessment | Trij",
       },
       {
         property: "og:description",
         content:
-          "Free AI-powered wound and rash assessment. Snap a photo, get instant urgency level and treatment recommendation — all offline.",
+          "Free AI-powered medical triage assessment. Describe symptoms or snap a photo for instant urgency level and treatment recommendation — all offline.",
       },
       {
         name: "twitter:title",
-        content: "New Triage — AI Wound & Rash Assessment | Trij",
+        content: "New Triage — AI Medical Triage Assessment | Trij",
       },
       {
         name: "twitter:description",
         content:
-          "Free AI-powered wound and rash assessment. Snap a photo, get instant urgency level and treatment recommendation — all offline.",
+          "Free AI-powered medical triage assessment. Describe symptoms or snap a photo for instant urgency level and treatment recommendation — all offline.",
       },
     ],
   }),
@@ -90,7 +86,7 @@ export const Route = createFileRoute("/_app/triage")({
   ),
 });
 
-type Step = "patient" | "vitals" | "capture" | "analyzing" | "result" | "voice";
+type Step = "patient" | "presentation" | "vitals" | "capture" | "analyzing" | "result" | "voice";
 
 function TriagePage() {
   const { t } = useI18n();
@@ -108,6 +104,9 @@ function TriagePage() {
   const [identifier, setIdentifier] = useState("");
   const [age, setAge] = useState("");
   const [sex, setSex] = useState<"M" | "F" | "other">("F");
+  /* Presentation type — selected after patient info, before vitals */
+  const [presentationType, setPresentationType] = useState<string>("dermatology");
+  const [symptomDescription, setSymptomDescription] = useState("");
   /* Vital signs state — collected after patient info, before photo capture */
   const [vitalSigns, setVitalSigns] = useState<{
     systolicBP: string;
@@ -159,6 +158,9 @@ function TriagePage() {
         voice.narrate(
           `${t("voiceGuideWhoIsPatient")} ${t("voiceGuidePatientId")} ${t("voiceGuideAge")} ${t("voiceGuideSex")} ${t("voiceGuideConsent")}`,
         );
+        break;
+      case "presentation":
+        voice.narrate(t("presentationTypeTitle") + ". " + t("presentationTypeDesc"));
         break;
       case "vitals":
         voice.narrate(t("captureVitals") + ". " + t("vitalsDesc"));
@@ -263,7 +265,7 @@ function TriagePage() {
     };
     await queuePatient(p);
     setPatient(p);
-    setStep("vitals");
+    setStep("presentation");
   };
 
   const onVitalsComplete = () => {
@@ -308,7 +310,40 @@ function TriagePage() {
 
       setProgressText(t("analyzing") + "...");
       setProgress(100);
-      const r = await triageImage(dataUrl, language, kind, ollamaUrl);
+      const r = await triageImage(dataUrl, language, kind, ollamaUrl, presentationType, symptomDescription);
+      setResult(r);
+      setStep("result");
+    } catch (err) {
+      toast.error(t("inferenceFailed") + ": " + (err as Error).message);
+      setStep("capture");
+    }
+  };
+
+  const onTextOnlyAnalyze = async () => {
+    /* For non-dermatology assessments, use a placeholder image and pass the symptom description */
+    setStep("analyzing");
+    try {
+      let kind = engineKind === "auto" ? await detectEngine() : engineKind;
+      kindRef.current = kind;
+
+      if (kind === "webllm" && !isLoaded(kind)) {
+        try {
+          await loadEngine(kind, (r) => {
+            setProgress(Math.round((r.progress || 0) * 100));
+            setProgressText(r.text || t("preparing") + "...");
+          });
+        } catch (err) {
+          console.error("WebLLM load failed, falling back to demo", err);
+          toast.error(t("inferenceFailed") + ": WebGPU issues. Using demo mode.");
+          kind = "demo";
+          kindRef.current = "demo";
+        }
+      }
+
+      setProgressText(t("analyzing") + "...");
+      setProgress(100);
+      /* Pass an empty placeholder image — the model will rely on symptom description */
+      const r = await triageImage("", language, kind, ollamaUrl, presentationType, symptomDescription);
       setResult(r);
       setStep("result");
     } catch (err) {
@@ -335,15 +370,18 @@ function TriagePage() {
   };
 
   const save = async () => {
-    if (!user || !patient || !result || !image) return;
+    if (!user || !patient || !result) return;
+    const hasImage = !!image;
     voice.narrate(t("voiceGuideSaving"));
     const a: Assessment = {
       id: crypto.randomUUID(),
       patientId: patient.id,
       chwUserId: user.id,
-      images: [image],
+      images: hasImage ? [image!] : [],
       vitalSigns: buildVitalSigns(),
       condition: result.condition,
+      presentationType: presentationType !== "dermatology" ? (presentationType as import("@/types/trij").PresentationType) : undefined,
+      description: symptomDescription || undefined,
       icd10Code: result.icd10_code,
       confidence: result.confidence,
       urgency: result.urgency,
@@ -671,6 +709,62 @@ function TriagePage() {
           </div>
         )}
 
+        {step === "presentation" && (
+          <div className="mt-7 space-y-5">
+            <div>
+              <h2 className="font-display text-xl font-semibold">{t("presentationTypeTitle")}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{t("presentationTypeDesc")}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {([
+                ["dermatology", t("dermatologyIcon") || "Skin"],
+                ["respiratory", t("respiratoryIcon") || "Lungs"],
+                ["fever", t("feverIcon") || "Fever"],
+                ["gastrointestinal", t("giIcon") || "Stomach"],
+                ["neurological", t("neuroIcon") || "Brain"],
+                ["malnutrition", t("malnutritionIcon") || "Nutrition"],
+                ["eye_ear", t("eyeEarIcon") || "Eye/Ear"],
+                ["musculoskeletal", t("mskIcon") || "Joint"],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setPresentationType(value)}
+                  className={`rounded-xl border-2 p-3 text-center text-sm font-medium transition-all ${
+                    presentationType === value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:border-primary/50 hover:bg-muted"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {presentationType !== "dermatology" && (
+              <div className="space-y-2">
+                <Label>{t("symptomDescription")}</Label>
+                <textarea
+                  value={symptomDescription}
+                  onChange={(e) => setSymptomDescription(e.target.value)}
+                  placeholder={t("symptomDescriptionPlaceholder")}
+                  className="w-full rounded-xl border bg-card p-3 text-sm outline-none focus:border-primary"
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">{t("symptomDescriptionHint")}</p>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setStep("vitals")}
+                size="lg"
+                className="flex-1 gap-2"
+                disabled={presentationType !== "dermatology" && !symptomDescription.trim()}
+              >
+                {t("continue")} <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         {step === "vitals" && (
           <div className="mt-7 space-y-5">
             <div>
@@ -796,6 +890,22 @@ function TriagePage() {
 
         {step === "capture" && (
           <div className="mt-6 space-y-4">
+            {presentationType !== "dermatology" && symptomDescription.trim() && (
+              <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+                <MessageSquare className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
+                <div className="text-sm">
+                  <p className="font-medium">{t("textOnlyMode")}</p>
+                  <p className="mt-1 text-muted-foreground">{t("textOnlyDesc")}</p>
+                  <Button
+                    onClick={onTextOnlyAnalyze}
+                    size="sm"
+                    className="mt-3 gap-2"
+                  >
+                    {t("analyzeSymptoms")} <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
             <div className="flex items-start gap-3 rounded-2xl border bg-card p-4">
               <ScanLine className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
               <div className="text-sm">
@@ -807,7 +917,7 @@ function TriagePage() {
             <CameraCapture
               onCapture={onCapture}
               onSource={(s) => setImageSource(s)}
-              onCancel={() => setStep("patient")}
+              onCancel={() => setStep("presentation")}
             />
           </div>
         )}
@@ -952,6 +1062,7 @@ function TriagePage() {
                 } else {
                   const txt = {
                     patient: `${t("voiceGuideWhoIsPatient")} ${t("voiceGuidePatientId")} ${t("voiceGuideAge")} ${t("voiceGuideSex")} ${t("voiceGuideConsent")}`,
+                    presentation: `${t("presentationTypeTitle")}. ${t("presentationTypeDesc")}.`,
                     vitals: `${t("captureVitals")}. ${t("vitalsDesc")}.`,
                     capture: t("voiceGuideCapture"),
                     analyzing: t("analyzing") + "...",
@@ -975,7 +1086,7 @@ function TriagePage() {
 }
 
 function Stepper({ step }: { step: Step }) {
-  const stages: Step[] = ["patient", "vitals", "capture", "analyzing", "result", "voice"];
+  const stages: Step[] = ["patient", "presentation", "vitals", "capture", "analyzing", "result", "voice"];
   const idx = stages.indexOf(step);
   return (
     <div className="flex items-center gap-1.5">

@@ -14,7 +14,7 @@ export const TRIAGE_TOOL: ToolDefinition = {
   function: {
     name: "triage_assessment",
     description:
-      "Analyze a wound, rash, or skin condition image and return a structured triage assessment with urgency, differential diagnoses, and recommendation.",
+      "Analyze a patient's condition (skin image and/or symptom description) and return a structured triage assessment with urgency, differential diagnoses, and recommendation.",
     parameters: {
       type: "object",
       properties: {
@@ -32,6 +32,15 @@ export const TRIAGE_TOOL: ToolDefinition = {
           type: "string",
           enum: ["green", "yellow", "red"],
           description: "Urgency level of the condition",
+        },
+        presentation_type: {
+          type: "string",
+          enum: ["dermatology", "respiratory", "fever", "gastrointestinal", "neurological", "malnutrition", "eye_ear", "musculoskeletal"],
+          description: "Body system / presentation type being assessed",
+        },
+        description: {
+          type: "string",
+          description: "Free-text symptom description provided by the CHW (for non-dermatology presentations)",
         },
         possible_conditions: {
           type: "array",
@@ -52,7 +61,7 @@ export const TRIAGE_TOOL: ToolDefinition = {
         },
         key_visual_features: {
           type: "array",
-          description: "Key visual features that drove the assessment",
+          description: "Key visual features that drove the assessment (empty array for text-only assessments)",
           items: { type: "string" },
         },
         recommendation: {

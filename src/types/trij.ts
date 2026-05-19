@@ -1,4 +1,14 @@
 export type Urgency = "green" | "yellow" | "red";
+
+export type PresentationType =
+  | "dermatology"
+  | "respiratory"
+  | "fever"
+  | "gastrointestinal"
+  | "neurological"
+  | "malnutrition"
+  | "eye_ear"
+  | "musculoskeletal";
 export type Sex = "M" | "F" | "other";
 
 export interface VitalSigns {
@@ -48,8 +58,10 @@ export interface Assessment {
   id: string;
   patientId: string;
   chwUserId: string;
-  images: string[]; /* data URLs (offline-first) */
+  images: string[]; /* data URLs (offline-first); empty array for text-only assessments */
   imageSource?: "camera" | "gallery";
+  presentationType?: PresentationType; /* body system assessed; undefined = dermatology (backwards-compat) */
+  description?: string; /* free-text symptom description for non-dermatology presentations */
   vitalSigns?: VitalSigns;
   condition?: string;
   icd10Code?: string;
@@ -113,6 +125,8 @@ export interface SyncConflict {
 export interface TriageResult {
   condition: string;
   icd10_code?: string;
+  presentation_type?: PresentationType;
+  description?: string; /* free-text symptom description for non-dermatology presentations */
   confidence: number;
   urgency: Urgency;
   possible_conditions: PossibleCondition[];
