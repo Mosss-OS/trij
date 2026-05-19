@@ -2,7 +2,14 @@
   {
     "id": "imp",
     "condition": "Impetigo (non-bullous)",
-    "keywords": ["honey-coloured crusts", "perioral", "crust", "yellow crust", "sores", "contagious"],
+    "keywords": [
+      "honey-coloured crusts",
+      "perioral",
+      "crust",
+      "yellow crust",
+      "sores",
+      "contagious"
+    ],
     "cause": "Staphylococcus aureus or Streptococcus pyogenes",
     "epidemiology": "Common in children in tropical and temperate regions, especially in low-resource settings with poor hygiene.",
     "treatment": "Clean with antiseptic. Topical mupirocin 2% TID for 5-7 days. If extensive, oral cephalexin 25 mg/kg BID for 7 days.",
@@ -13,7 +20,15 @@
   {
     "id": "cellu",
     "condition": "Cellulitis",
-    "keywords": ["diffuse swelling", "warm to touch", "ill-defined margin", "red streaking", "fever", "swollen", "hot"],
+    "keywords": [
+      "diffuse swelling",
+      "warm to touch",
+      "ill-defined margin",
+      "red streaking",
+      "fever",
+      "swollen",
+      "hot"
+    ],
     "cause": "Streptococcus pyogenes (group A strep), Staphylococcus aureus",
     "epidemiology": "Occurs worldwide, risk increases with breaks in skin (wounds, ulcers, fungal infections). Common in diabetic patients.",
     "treatment": "Oral antibiotics: cephalexin 500 mg QID or cloxacillin 500 mg QID for 7-10 days. Severe cases require IV antibiotics (ceftriaxone).",
@@ -24,7 +39,14 @@
   {
     "id": "tinea",
     "condition": "Tinea corporis (ringworm)",
-    "keywords": ["annular plaque", "raised border", "central clearing", "scaly", "ring-shaped", "circular rash"],
+    "keywords": [
+      "annular plaque",
+      "raised border",
+      "central clearing",
+      "scaly",
+      "ring-shaped",
+      "circular rash"
+    ],
     "cause": "Dermatophyte fungi (Trichophyton rubrum, Microsporum canis)",
     "epidemiology": "Common in warm, humid tropical climates. Affects all ages. Spread by direct contact or fomites.",
     "treatment": "Topical terbinafine 1% once daily for 2 weeks OR clotrimazole 1% BID for 4 weeks. Widespread cases: oral terbinafine 250 mg daily for 2-4 weeks.",
@@ -35,7 +57,14 @@
   {
     "id": "herpes",
     "condition": "Herpes zoster (shingles)",
-    "keywords": ["vesicular rash", "dermatomal distribution", "grouped vesicles", "unilateral", "painful blisters", "burning pain"],
+    "keywords": [
+      "vesicular rash",
+      "dermatomal distribution",
+      "grouped vesicles",
+      "unilateral",
+      "painful blisters",
+      "burning pain"
+    ],
     "cause": "Varicella-zoster virus reactivation",
     "epidemiology": "Risk increases with age (>50 years) and immunosuppression. More common in tropics where childhood varicella is universal.",
     "treatment": "Oral acyclovir 800 mg 5x daily for 7 days (start within 72 hours). Pain management: paracetamol, NSAIDs, or gabapentin for post-herpetic neuralgia.",
@@ -46,7 +75,15 @@
   {
     "id": "leish",
     "condition": "Cutaneous leishmaniasis",
-    "keywords": ["ulcer with raised border", "painless ulcer", "nodule", "plaque", "crusted lesion", "satellite lesions", "chronic ulcer"],
+    "keywords": [
+      "ulcer with raised border",
+      "painless ulcer",
+      "nodule",
+      "plaque",
+      "crusted lesion",
+      "satellite lesions",
+      "chronic ulcer"
+    ],
     "cause": "Leishmania tropica, L. major, L. braziliensis (protozoan parasite transmitted by sandflies)",
     "epidemiology": "Endemic in tropical and subtropical regions: Africa, Middle East, Central/South America, Indian subcontinent. Rural areas.",
     "treatment": "Intralesional sodium stibogluconate or topical paromomycin 15%/gentamicin 0.5% BID for 20 days. Systemic therapy for complex cases.",
@@ -57,7 +94,14 @@
   {
     "id": "yaws",
     "condition": "Yaws (frambesia)",
-    "keywords": ["raspberry-like papilloma", "mother yaw", "ulcer", "papilloma", "skin nodule", "framboesiform"],
+    "keywords": [
+      "raspberry-like papilloma",
+      "mother yaw",
+      "ulcer",
+      "papilloma",
+      "skin nodule",
+      "framboesiform"
+    ],
     "cause": "Treponema pallidum pertenue (spirochete)",
     "epidemiology": "Endemic in tropical Africa, Southeast Asia, and Pacific Islands. Affects children 2-15 years in poor rural communities.",
     "treatment": "Single dose azithromycin 30 mg/kg oral (max 2 g) or benzathine penicillin 1.2 million units IM.",
@@ -68,9 +112,17 @@
   {
     "id": "buruli",
     "condition": "Buruli ulcer (Mycobacterium ulcerans)",
-    "keywords": ["painless nodule", "large ulcer", "undermined edge", "necrosis", "edematous", "plaque", "painless swelling"],
+    "keywords": [
+      "painless nodule",
+      "large ulcer",
+      "undermined edge",
+      "necrosis",
+      "edematous",
+      "plaque",
+      "painless swelling"
+    ],
     "cause": "Mycobacterium ulcerans (produces mycolactone toxin)",
-    "epidemiology": "West Africa (especially Côte d'Ivoire, Ghana, Benin), also parts of Asia and Australia. Slow-growing, painless ulcer.",
+    "epidemiology": "West Africa (especially C\u00f4te d'Ivoire, Ghana, Benin), also parts of Asia and Australia. Slow-growing, painless ulcer.",
     "treatment": "Rifampicin 10 mg/kg daily + clarithromycin 7.5 mg/kg BID or moxifloxacin 400 mg daily for 8 weeks.",
     "referral_criteria": "All confirmed cases should be referred for treatment. WHO recommends referral to specialized Buruli ulcer treatment centers.",
     "prevention": "Wear protective clothing in endemic areas, avoid contact with contaminated water sources.",
@@ -79,7 +131,15 @@
   {
     "id": "scabies",
     "condition": "Scabies (sarcoptic mange)",
-    "keywords": ["intense itching", "burrows", "papules", "vesicles", "interdigital", "nocturnal itching", "worse at night"],
+    "keywords": [
+      "intense itching",
+      "burrows",
+      "papules",
+      "vesicles",
+      "interdigital",
+      "nocturnal itching",
+      "worse at night"
+    ],
     "cause": "Sarcoptes scabiei var. hominis (mite)",
     "epidemiology": "Common in overcrowded conditions worldwide, especially tropical regions. High prevalence in children and institutional settings.",
     "treatment": "Permethrin 5% cream applied head-to-toe overnight, repeated after 7 days. Oral ivermectin 200 mcg/kg single dose (repeat after 7 days).",
@@ -90,9 +150,16 @@
   {
     "id": "mycetoma",
     "condition": "Mycetoma (Madura foot)",
-    "keywords": ["swollen foot", "sinus tracts", "grains", "painless swelling", "draining sinuses", "chronic swelling"],
+    "keywords": [
+      "swollen foot",
+      "sinus tracts",
+      "grains",
+      "painless swelling",
+      "draining sinuses",
+      "chronic swelling"
+    ],
     "cause": "Fungal (eumycetoma) or bacterial (actinomycetoma) organisms",
-    "epidemiology": "Endemic in tropical Africa, India, and Central America. 'Transplantation belt' between 15°S and 30°N. Most common in barefoot agricultural workers.",
+    "epidemiology": "Endemic in tropical Africa, India, and Central America. Between 15\u00b0S and 30\u00b0N. Most common in barefoot agricultural workers.",
     "treatment": "Eumycetoma: Itraconazole 400 mg daily for 12+ months + surgery. Actinomycetoma: Streptomycin 14 mg/kg IM daily + dapsone 1.5 mg/kg BID for months.",
     "referral_criteria": "All suspected mycetoma should be referred. Requires specialized care for prolonged treatment.",
     "prevention": "Wear shoes/protective footwear when working outdoors in endemic areas.",
@@ -101,7 +168,15 @@
   {
     "id": "melioidosis",
     "condition": "Melioidosis (glanders-like)",
-    "keywords": ["abscess", "skin ulcer", "pneumonia", "fever", "sepsis", "nodular lesion", "cutaneous abscess"],
+    "keywords": [
+      "abscess",
+      "skin ulcer",
+      "pneumonia",
+      "fever",
+      "sepsis",
+      "nodular lesion",
+      "cutaneous abscess"
+    ],
     "cause": "Burkholderia pseudomallei (gram-negative bacillus)",
     "epidemiology": "Endemic in Southeast Asia (especially Thailand, Vietnam) and northern Australia. Associated with rice paddies and wet soil.",
     "treatment": "Intensive phase: IV ceftazidime 50 mg/kg QID or meropenem 25 mg/kg TID for 14+ days. Eradication: TMP-SMX 8/40 mg/kg BID for 12-20 weeks.",
@@ -112,7 +187,14 @@
   {
     "id": "leprosy",
     "condition": "Leprosy (Hansen disease)",
-    "keywords": ["hypopigmented patch", "anesthetic skin", "thickened nerve", "hypopigmented macule", "loss of sensation", "nerve enlargement"],
+    "keywords": [
+      "hypopigmented patch",
+      "anesthetic skin",
+      "thickened nerve",
+      "hypopigmented macule",
+      "loss of sensation",
+      "nerve enlargement"
+    ],
     "cause": "Mycobacterium leprae / M. lepromatosis",
     "epidemiology": "Endemic in India, Brazil, Indonesia, and parts of Africa. Transmission via respiratory droplets. Long incubation period (2-10 years).",
     "treatment": "Paucibacillary: Rifampicin 600 mg monthly + dapsone 100 mg daily for 6 months. Multibacillary: Add clofazimine 300 mg monthly, 50 mg daily for 12 months.",
@@ -123,7 +205,15 @@
   {
     "id": "dengue",
     "condition": "Dengue fever with rash",
-    "keywords": ["maculopapular rash", "fever", "petechiae", "flushed skin", "muscle pain", "retro-orbital pain", "conjunctival injection"],
+    "keywords": [
+      "maculopapular rash",
+      "fever",
+      "petechiae",
+      "flushed skin",
+      "muscle pain",
+      "retro-orbital pain",
+      "conjunctival injection"
+    ],
     "cause": "Dengue virus (DENV-1-4, flavivirus transmitted by Aedes mosquitoes)",
     "epidemiology": "Endemic in >100 tropical countries. Major cause of fever with rash in Southeast Asia, Latin America, and Africa.",
     "treatment": "Supportive care: paracetamol for fever (avoid NSAIDs/aspirin due to bleeding risk). Monitor for warning signs (abdominal pain, vomiting, mucosal bleeding).",
@@ -134,7 +224,14 @@
   {
     "id": "chikungunya",
     "condition": "Chikungunya fever with rash",
-    "keywords": ["maculopapular rash", "joint pain", "fever", "arthritis", "arthralgia", "skin rash"],
+    "keywords": [
+      "maculopapular rash",
+      "joint pain",
+      "fever",
+      "arthritis",
+      "arthralgia",
+      "skin rash"
+    ],
     "cause": "Chikungunya virus (alphavirus, transmitted by Aedes mosquitoes)",
     "epidemiology": "Epidemics in Africa, Asia, Indian subcontinent, and the Americas. Often co-circulates with dengue.",
     "treatment": "Supportive care: paracetamol, NSAIDs for joint pain (after excluding dengue). Rest and physical therapy for chronic joint symptoms.",
@@ -145,7 +242,15 @@
   {
     "id": "measles",
     "condition": "Measles (rubeola) with rash",
-    "keywords": ["maculopapular rash", "fever", "cough", "conjunctivitis", "coryza", "koplik spots", "descending rash"],
+    "keywords": [
+      "maculopapular rash",
+      "fever",
+      "cough",
+      "conjunctivitis",
+      "coryza",
+      "koplik spots",
+      "descending rash"
+    ],
     "cause": "Measles virus (paramyxovirus)",
     "epidemiology": "Outbreaks in unvaccinated populations worldwide. High mortality in malnourished children in developing countries.",
     "treatment": "Supportive care: vitamin A 200,000 IU daily for 2 days (reduces mortality). Treat secondary infections with appropriate antibiotics.",
@@ -156,7 +261,15 @@
   {
     "id": "eczema",
     "condition": "Atopic dermatitis (eczema)",
-    "keywords": ["dry skin", "itchy", "flexural involvement", "chronic", "scaly", "lichenified", "red patches"],
+    "keywords": [
+      "dry skin",
+      "itchy",
+      "flexural involvement",
+      "chronic",
+      "scaly",
+      "lichenified",
+      "red patches"
+    ],
     "cause": "Multifactorial: genetic (filaggrin mutation), environmental, immune dysregulation",
     "epidemiology": "Common worldwide, increasing in developing countries. Onset usually in early childhood.",
     "treatment": "Emollients regularly. Topical hydrocortisone 1% for mild, topical tacrolimus for face. Treat secondary infection with antibiotics.",
@@ -167,7 +280,14 @@
   {
     "id": "psoriasis",
     "condition": "Psoriasis (plaque type)",
-    "keywords": ["well-defined plaques", "silver scale", "scaly plaque", "thick plaque", "extensor surfaces", "scalp involvement"],
+    "keywords": [
+      "well-defined plaques",
+      "silver scale",
+      "scaly plaque",
+      "thick plaque",
+      "extensor surfaces",
+      "scalp involvement"
+    ],
     "cause": "Autoimmune (T-cell mediated), genetic predisposition (HLA-Cw6), triggered by infections, stress, medications",
     "epidemiology": "Prevalence 0.5-3% worldwide, lower in tropical regions. Peaks at ages 20-30 and 50-60.",
     "treatment": "Topical: vitamin D analogs, corticosteroids, coal tar. Systemic for severe: methotrexate, phototherapy, biologics.",
@@ -178,7 +298,14 @@
   {
     "id": "urticaria",
     "condition": "Urticaria (hives)",
-    "keywords": ["wheals", "raised welts", "transient", "itchy red bumps", "hives", "angioedema"],
+    "keywords": [
+      "wheals",
+      "raised welts",
+      "transient",
+      "itchy red bumps",
+      "hives",
+      "angioedema"
+    ],
     "cause": "Mast cell degranulation from allergens, infections, medications, physical triggers (heat, cold, pressure)",
     "epidemiology": "Affects 15-25% of population at least once. Acute (<6 weeks) vs chronic (>6 weeks).",
     "treatment": "Antihistamines (cetirizine 10 mg, loratadine 10 mg). Severe: short course oral prednisolone 30-40 mg daily for 3-5 days.",
@@ -189,7 +316,14 @@
   {
     "id": "fungal",
     "condition": "Fungal skin infection (dermatophytosis)",
-    "keywords": ["ring-shaped", "scaly patch", "itching", "red ring", "spreading edge", "central clearing"],
+    "keywords": [
+      "ring-shaped",
+      "scaly patch",
+      "itching",
+      "red ring",
+      "spreading edge",
+      "central clearing"
+    ],
     "cause": "Dermatophytes: Trichophyton, Microsporum, Epidermophyton",
     "epidemiology": "Very common in tropical climates due to heat and humidity. Affects all ages.",
     "treatment": "Topical terbinafine 1% or clotrimazole 1% BID for 2-4 weeks. Oral terbinafine for scalp/nail involvement.",
@@ -200,7 +334,14 @@
   {
     "id": "contact",
     "condition": "Contact dermatitis",
-    "keywords": ["well-demarcated", "itchy papules", "linear distribution", "blister", "rash at contact site", "burning"],
+    "keywords": [
+      "well-demarcated",
+      "itchy papules",
+      "linear distribution",
+      "blister",
+      "rash at contact site",
+      "burning"
+    ],
     "cause": "Irritant (chemical, soap) or allergic (nickel, poison ivy, latex) reaction",
     "epidemiology": "Common worldwide, accounts for 4-7% of dermatology visits. Occupational dermatitis common in tropical agriculture.",
     "treatment": "Remove offending agent. Topical corticosteroids (hydrocortisone 1% for mild, betamethasone for severe). Antihistamines for itching.",
@@ -211,7 +352,14 @@
   {
     "id": "chickenpox",
     "condition": "Chickenpox (varicella)",
-    "keywords": ["vesicles", "dewdrop on rose petal", "centripetal distribution", "fever", "spots in different stages", "itchy blisters"],
+    "keywords": [
+      "vesicles",
+      "dewdrop on rose petal",
+      "centripetal distribution",
+      "fever",
+      "spots in different stages",
+      "itchy blisters"
+    ],
     "cause": "Varicella-zoster virus (primary infection)",
     "epidemiology": "Universal childhood infection in unvaccinated populations. More severe in adults and immunocompromised.",
     "treatment": "Supportive care: calamine lotion, antihistamines, paracetamol for fever. Acyclovir for severe cases or at-risk patients.",
@@ -222,7 +370,14 @@
   {
     "id": "scarlet",
     "condition": "Scarlet fever",
-    "keywords": ["sandpaper rash", "strawberry tongue", "fever", "sore throat", "diffuse erythema", "desquamation"],
+    "keywords": [
+      "sandpaper rash",
+      "strawberry tongue",
+      "fever",
+      "sore throat",
+      "diffuse erythema",
+      "desquamation"
+    ],
     "cause": "Streptococcus pyogenes (group A strep) producing erythrogenic toxin",
     "epidemiology": "Primarily affects children 5-15 years. Outbreaks in schools and communities worldwide.",
     "treatment": "Penicillin V 250 mg BID for 10 days or amoxicillin 50 mg/kg daily for 10 days. Treat household contacts if symptomatic.",
@@ -233,7 +388,13 @@
   {
     "id": "molluscum",
     "condition": "Molluscum contagiosum",
-    "keywords": ["dome-shaped papules", "umbilicated", "flesh-colored bumps", "central dimple", "pearly papules"],
+    "keywords": [
+      "dome-shaped papules",
+      "umbilicated",
+      "flesh-colored bumps",
+      "central dimple",
+      "pearly papules"
+    ],
     "cause": "Molluscum contagiosum virus (MCV, poxvirus)",
     "epidemiology": "Common in children worldwide. Spread by direct contact and fomites. More prevalent in tropical climates.",
     "treatment": "Usually self-resolving in 6-12 months. Options: cryotherapy, curettage, cantharidin, topical imiquimod.",
@@ -244,12 +405,546 @@
   {
     "id": "lymphatic",
     "condition": "Lymphatic filariasis (elephantiasis)",
-    "keywords": ["lymphedema", "swollen limb", "elephantiasis", "thickened skin", "hydrocele", "lymphangitis"],
+    "keywords": [
+      "lymphedema",
+      "swollen limb",
+      "elephantiasis",
+      "thickened skin",
+      "hydrocele",
+      "lymphangitis"
+    ],
     "cause": "Wuchereria bancrofti, Brugia malayi (filarial nematodes transmitted by mosquitoes)",
     "epidemiology": "Endemic in tropical Africa, Asia, Western Pacific, and parts of Latin America. Leading cause of permanent disability worldwide.",
     "treatment": "Annual mass drug administration: ivermectin + albendazole (plus DEC in non-onchocerciasis areas). Acute attacks: antibiotics for secondary infection.",
     "referral_criteria": "Acute adenolymphangitis, secondary cellulitis, hydrocele requiring surgery.",
     "prevention": "Mosquito control, insecticide-treated bed nets, annual MDA in endemic areas.",
     "who_guideline": "WHO Global Programme to Eliminate Lymphatic Filariasis uses annual MDA as primary strategy."
+  },
+  {
+    "id": "conj",
+    "condition": "Conjunctivitis (bacterial or viral)",
+    "keywords": [
+      "red eye",
+      "eye discharge",
+      "watery eye",
+      "pink eye",
+      "swollen eyelid",
+      "crusty eyelashes",
+      "itchy eye"
+    ],
+    "cause": "Bacterial (Staphylococcus aureus, Haemophilus influenzae) or viral (adenovirus)",
+    "epidemiology": "Extremely common worldwide. Highly contagious. Outbreaks in schools and communities. Leading cause of eye clinic visits in LMICs.",
+    "treatment": "Bacterial: topical antibiotic drops (chloramphenicol 0.5% QID for 7 days or tetracycline 1% ointment). Viral: supportive care, cold compresses, artificial tears.",
+    "referral_criteria": "No improvement after 48 hours of antibiotic treatment, severe pain, photophobia, vision changes, neonatal conjunctivitis.",
+    "prevention": "Hand hygiene, avoid touching/rubbing eyes, do not share towels or eye drops.",
+    "who_guideline": "WHO recommends chloramphenicol or tetracycline eye drops/ointment for bacterial conjunctivitis."
+  },
+  {
+    "id": "trachoma",
+    "condition": "Trachoma (active follicular)",
+    "keywords": [
+      "follicles on conjunctiva",
+      "red eye",
+      "eyelash scratching cornea",
+      "swollen eyelid",
+      "eye discharge",
+      "roughened eyelid"
+    ],
+    "cause": "Chlamydia trachomatis (obligate intracellular bacterium)",
+    "epidemiology": "Leading infectious cause of blindness worldwide. Endemic in >40 countries, especially sub-Saharan Africa, Middle East, Asia. Affects poorest communities with limited water/sanitation.",
+    "treatment": "WHO SAFE strategy: Surgery for trichiasis, Azithromycin 20 mg/kg single dose (or tetracycline 1% BID for 6 weeks), Facial cleanliness, Environmental improvement.",
+    "referral_criteria": "Trichiasis (eyelashes rubbing cornea), corneal opacity, visual impairment. All active cases should be referred to trachoma control program.",
+    "prevention": "Facial cleanliness, improved sanitation, fly control, mass drug administration with azithromycin in endemic areas.",
+    "who_guideline": "WHO Alliance for Global Elimination of Trachoma by 2020 (GET2020) uses SAFE strategy."
+  },
+  {
+    "id": "oral_thrush",
+    "condition": "Oral thrush (oral candidiasis)",
+    "keywords": [
+      "white plaques",
+      "white coating on tongue",
+      "creamy white lesions",
+      "red sore mouth",
+      "cottony feeling",
+      "difficulty swallowing"
+    ],
+    "cause": "Candida albicans (fungus)",
+    "epidemiology": "Common in infants, elderly, HIV/AIDS patients, after antibiotic use, and in diabetics. Marker of immunosuppression in adults.",
+    "treatment": "Topical: nystatin suspension 100,000 units QID for 7-14 days, or clotrimazole troches 5x daily. Systemic: fluconazole 200 mg oral once then 100 mg daily for 2 weeks.",
+    "referral_criteria": "HIV suspected (test and refer), immunocompromised patient, failure of topical therapy, difficulty swallowing (suspect esophageal candidiasis).",
+    "prevention": "Good oral hygiene, rinse mouth after steroid inhaler use, treat underlying immunosuppression.",
+    "who_guideline": "WHO recommends fluconazole as first-line treatment for oral candidiasis in HIV patients."
+  },
+  {
+    "id": "wound_inf",
+    "condition": "Infected wound",
+    "keywords": [
+      "purulent discharge",
+      "redness around wound",
+      "swollen wound",
+      "warm wound",
+      "fever",
+      "pus",
+      "wound drainage"
+    ],
+    "cause": "Mixed bacteria: Staphylococcus aureus, Streptococcus pyogenes, gram-negatives",
+    "epidemiology": "Common in all settings, especially agricultural work in tropics where wounds are exposed to soil. High risk in diabetics and immunocompromised.",
+    "treatment": "Clean with sterile saline, remove necrotic tissue, topical antiseptic. Oral antibiotics: cephalexin 500 mg QID or co-amoxiclav 625 mg TID for 7 days.",
+    "referral_criteria": "Signs of systemic infection (fever, chills), rapidly spreading redness, necrotizing fasciitis suspected, immunocompromised patient, foreign body.",
+    "prevention": "Clean wounds promptly, keep covered, sterile dressing technique, tetanus vaccination.",
+    "who_guideline": "WHO surgical site infection guidelines recommend antibiotic prophylaxis for contaminated wounds."
+  },
+  {
+    "id": "burn",
+    "condition": "Burn (thermal injury)",
+    "keywords": [
+      "blister",
+      "red skin",
+      "charred skin",
+      "peeling skin",
+      "swelling",
+      "painful skin",
+      "burn wound"
+    ],
+    "cause": "Thermal: flame, hot liquid (scald), hot object, electricity, chemicals",
+    "epidemiology": "Major cause of morbidity in LMICs. Children most affected. Cooking accidents, kerosene lamps, and open fires common causes.",
+    "treatment": "Superficial (1st degree): cool water, aloe vera, pain relief. Partial-thickness (2nd): clean, topical silver sulfadiazine 1%, sterile dressing. Full-thickness (3rd): surgical management.",
+    "referral_criteria": "Full-thickness burn, >10% body surface area, facial/airway burn, circumferential burn of chest/limb, child or elderly, electrical/chemical burn.",
+    "prevention": "Keep children away from cooking fires, use safe stoves, install smoke detectors, first aid education.",
+    "who_guideline": "WHO Emergency Triage Assessment and Treatment (ETAT) guidelines recommend immediate referral for severe burns."
+  },
+  {
+    "id": "snakebite",
+    "condition": "Snake bite envenomation",
+    "keywords": [
+      "fang marks",
+      "swelling",
+      "bleeding",
+      "necrosis",
+      "blister",
+      "pain",
+      "ecchymosis"
+    ],
+    "cause": "Venomous snake bite (viper, elapid, sea snake)",
+    "epidemiology": "Major public health problem in tropical Africa, Asia, and Latin America. 5 million bites annually, 100,000 deaths. Agricultural workers and children at highest risk.",
+    "treatment": "Pressure immobilization bandage, keep patient calm and still. Antivenom (specific to regional snakes) IV as soon as indicated. Tetanus prophylaxis. Avoid tourniquets, cutting, or suction.",
+    "referral_criteria": "ALL snake bites with signs of envenomation require immediate referral. Signs: local swelling beyond bite site, bleeding, ptosis, respiratory difficulty, neurotoxicity.",
+    "prevention": "Wear boots and long pants in snake-prone areas, use a light at night, do not disturb snakes, clear vegetation around homes.",
+    "who_guideline": "WHO categorizes snakebite as a neglected tropical disease. Recommends region-specific antivenom."
+  },
+  {
+    "id": "dogbite",
+    "condition": "Dog bite (rabies risk)",
+    "keywords": [
+      "puncture wound",
+      "laceration",
+      "teeth marks",
+      "crush injury",
+      "bleeding",
+      "rabies risk",
+      "animal bite"
+    ],
+    "cause": "Dog bite (mechanical trauma + potential rabies virus transmission)",
+    "epidemiology": "Worldwide, >99% of rabies deaths from dog bites. Highest burden in Africa and Asia. Children 5-14 years most affected.",
+    "treatment": "Wound cleaning with soap and water for 15 min. Rabies post-exposure prophylaxis (PEP): rabies vaccine 4 doses (days 0, 3, 7, 14). Rabies immunoglobulin for Category III bites. Tetanus prophylaxis. Antibiotics for infected bites.",
+    "referral_criteria": "ALL bites with potential rabies exposure require immediate referral for PEP. Signs of infection, suspected rabid animal, bites on head/neck/hands.",
+    "prevention": "Dog vaccination programs, stray dog control, avoid approaching unfamiliar dogs, educate children on dog safety.",
+    "who_guideline": "WHO rabies guidelines: immediate wound care + PEP for all Category II and III bites. Rabies vaccines and immunoglobulin recommended."
+  },
+  {
+    "id": "anthrax",
+    "condition": "Cutaneous anthrax",
+    "keywords": [
+      "painless ulcer",
+      "black eschar",
+      "malignant pustule",
+      "vesicle",
+      "surrounding edema",
+      "eschar",
+      "painless sore"
+    ],
+    "cause": "Bacillus anthracis (gram-positive, spore-forming rod)",
+    "epidemiology": "Endemic in agricultural regions of Africa, Asia, and Central America. Acquired from contact with infected animals or animal products (hides, wool, bone meal).",
+    "treatment": "Ciprofloxacin 500 mg BID or doxycycline 100 mg BID for 7-10 days. Severe cases require IV antibiotics (ciprofloxacin + clindamycin).",
+    "referral_criteria": "All suspected cases require immediate referral. Signs of systemic disease: fever, sepsis, respiratory involvement, meningeal signs.",
+    "prevention": "Vaccinate livestock in endemic areas. Avoid contact with sick/dead animals. Safe disposal of animal carcasses. Occupational hygiene for leather/wool workers.",
+    "who_guideline": "WHO classifies anthrax as a zoonotic disease requiring immediate notification. Antibiotic treatment plus possible antitoxin."
+  },
+  {
+    "id": "oncho",
+    "condition": "Onchocerciasis (river blindness) - skin involvement",
+    "keywords": [
+      "intense itching",
+      "nodules under skin",
+      "depigmentation",
+      "lizard skin",
+      "thickened skin",
+      "leopard skin",
+      "rash"
+    ],
+    "cause": "Onchocerca volvulus (filarial nematode transmitted by black flies Simulium)",
+    "epidemiology": "Endemic in sub-Saharan Africa (99%), also Yemen and Americas. Near fast-flowing rivers where black flies breed. Leading infectious cause of blindness after trachoma.",
+    "treatment": "Ivermectin 150-200 mcg/kg single dose every 6-12 months. Annual mass drug administration in endemic areas. Treat for 10-15 years of adult worm lifespan.",
+    "referral_criteria": "Suspected onchocerciasis, severe skin disease, visual impairment, nodules in head/neck region (higher risk of eye involvement).",
+    "prevention": "Mass drug administration with ivermectin (Mectizan donation program). Vector control with larviciding. Personal protection with repellents.",
+    "who_guideline": "WHO NTD roadmap targets elimination of onchocerciasis through MDA with ivermectin."
+  },
+  {
+    "id": "loiasis",
+    "condition": "Loiasis (Calabar swelling)",
+    "keywords": [
+      "eyeworm",
+      "transient swelling",
+      "calabar swelling",
+      "migration under skin",
+      "subcutaneous worm",
+      "edema",
+      "pruritus"
+    ],
+    "cause": "Loa loa (filarial nematode transmitted by Chrysops deer flies)",
+    "epidemiology": "Endemic in Central and West Africa (Cameroon, DRC, Congo, Nigeria, Gabon). Risk to travelers and expatriates. Highest burden in rainforest areas.",
+    "treatment": "Diethylcarbamazine (DEC) 6 mg/kg daily for 21 days (start low, escalate dose). Antihistamines for allergic reactions. Surgical removal of adult worm from eye.",
+    "referral_criteria": "High microfilarial load (risk of encephalopathy with DEC), eye worm, neurological symptoms, renal involvement.",
+    "prevention": "Personal protection (repellents, protective clothing), vector control. No effective preventive chemotherapy exists.",
+    "who_guideline": "WHO notes Loa loa endemicity affects MDA strategy for onchocerciasis and lymphatic filariasis due to risk of severe adverse events."
+  },
+  {
+    "id": "tungiasis",
+    "condition": "Tungiasis (sand flea infestation)",
+    "keywords": [
+      "jigger",
+      "skin lesion on foot",
+      "black dot",
+      "swollen toe",
+      "paronychia",
+      "walking difficulty",
+      "burrowing flea"
+    ],
+    "cause": "Tunga penetrans (sand flea, jigger flea) - female flea burrows into skin",
+    "epidemiology": "Endemic in sub-Saharan Africa, Latin America, and Caribbean. Affects poorest communities with sandy soil. Children 5-14 years and elderly most affected.",
+    "treatment": "Surgical extraction of intact flea using sterile needle/curette. Topical: dimethicone 4% lotion, or ivermectin 200 mcg/kg single dose. Tetanus prophylaxis. Manage secondary infection.",
+    "referral_criteria": "Multiple lesions (>20), severe secondary infection with cellulitis, gangrene, tetanus risk, immobility.",
+    "prevention": "Wear closed shoes, avoid walking barefoot in sandy areas, insect repellent, treat floors with insecticide in infested homes.",
+    "who_guideline": "WHO recognizes tungiasis as a neglected tropical disease. Prevention through footwear and environmental hygiene."
+  },
+  {
+    "id": "larva_migrans",
+    "condition": "Cutaneous larva migrans",
+    "keywords": [
+      "serpiginous tract",
+      "creeping eruption",
+      "intense itching",
+      "red winding line",
+      "linear track",
+      "burrow",
+      "pruritic track"
+    ],
+    "cause": "Ancylostoma braziliense, A. caninum (hookworms of dogs/cats) - larvae migrate in skin",
+    "epidemiology": "Common in tropical and subtropical regions. Associated with beaches, playgrounds, and areas contaminated with dog/cat feces. Affects travelers and locals.",
+    "treatment": "Oral albendazole 400 mg daily for 3-7 days OR ivermectin 200 mcg/kg single dose (often curative). Topical: thiabendazole 10% cream for localized lesions.",
+    "referral_criteria": "Extensive or bullous lesions, secondary infection, treatment failure, immunocompromised patient.",
+    "prevention": "Avoid walking barefoot on beaches/soil in endemic areas, deworm pets, fence playgrounds from animal feces.",
+    "who_guideline": "WHO recommends albendazole or ivermectin for treatment of cutaneous larva migrans."
+  },
+  {
+    "id": "pityriasis",
+    "condition": "Pityriasis versicolor",
+    "keywords": [
+      "discolored patches",
+      "white spots on skin",
+      "scaly macules",
+      "hypopigmented",
+      "chest rash",
+      "back rash",
+      "fine scale"
+    ],
+    "cause": "Malassezia globosa, M. furfur (lipophilic yeast)",
+    "epidemiology": "Common worldwide, more prevalent in tropical climates due to heat and humidity. Affects adolescents and young adults most frequently.",
+    "treatment": "Topical: ketoconazole 2% shampoo (apply 5 min, rinse) or clotrimazole 1% BID for 2-4 weeks. Resistant: oral itraconazole 200 mg daily for 7 days.",
+    "referral_criteria": "Extensive involvement unresponsive to treatment, uncertain diagnosis, immunocompromised patient.",
+    "prevention": "Keep skin dry, avoid excessive sweating, use antifungal shampoo periodically if recurrent.",
+    "who_guideline": "WHO essential medicines list includes ketoconazole and itraconazole for fungal infections."
+  },
+  {
+    "id": "seb_derm",
+    "condition": "Seborrheic dermatitis",
+    "keywords": [
+      "scaly red patches",
+      "dandruff",
+      "scalp redness",
+      "eyebrow scaling",
+      "nasolabial redness",
+      "flaky skin",
+      "greasy scales"
+    ],
+    "cause": "Malassezia furfur, immune response, genetic factors, exacerbated by stress and cold weather",
+    "epidemiology": "Affects 3-5% of adults worldwide. Bimodal: peaks in infancy (cradle cap) and adults 30-60 years. Common in HIV patients (often severe).",
+    "treatment": "Scalp: ketoconazole 2% shampoo or zinc pyrithione shampoo twice weekly. Face: topical hydrocortisone 1% short term, ketoconazole cream. Severe: oral itraconazole.",
+    "referral_criteria": "Severe refractory disease, HIV suspected, widespread involvement, secondary infection.",
+    "prevention": "Regular use of medicated shampoos, avoid triggers (stress, cold), manage underlying HIV if present.",
+    "who_guideline": "WHO essential medicines: topical corticosteroids and antifungals for seborrheic dermatitis."
+  },
+  {
+    "id": "tinea_capitis",
+    "condition": "Tinea capitis (scalp ringworm)",
+    "keywords": [
+      "scaly patch on scalp",
+      "hair loss",
+      "broken hairs",
+      "black dots",
+      "scalp itching",
+      "swollen lymph nodes",
+      "kerion"
+    ],
+    "cause": "Dermatophytes: Microsporum canis, Trichophyton tonsurans, T. violaceum",
+    "epidemiology": "Common in children worldwide. High prevalence in Africa and Asia. Spread via shared combs, hats, and pillows. More common in crowded conditions.",
+    "treatment": "Oral terbinafine: children <20 kg: 62.5 mg daily, 20-40 kg: 125 mg daily, >40 kg: 250 mg daily for 4-6 weeks. Topical alone is insufficient. Add ketoconazole shampoo to reduce transmission.",
+    "referral_criteria": "Kerion (inflamed, boggy mass), secondary bacterial infection, treatment failure after 8 weeks, uncertain diagnosis.",
+    "prevention": "Avoid sharing combs/brushes/hats, treat infected family members, treat pets if source.",
+    "who_guideline": "WHO essential medicines list includes terbinafine for dermatophyte infections."
+  },
+  {
+    "id": "acne",
+    "condition": "Acne vulgaris",
+    "keywords": [
+      "pimples",
+      "blackheads",
+      "whiteheads",
+      "cystic lesions",
+      "papules",
+      "pustules",
+      "oily skin"
+    ],
+    "cause": "Multifactorial: sebum overproduction, follicular hyperkeratinization, Cutibacterium acnes, inflammation, hormonal factors",
+    "epidemiology": "Affects 85% of adolescents and young adults worldwide. Can persist into adulthood. Prevalence increasing in LMICs with Western diet.",
+    "treatment": "Mild: topical benzoyl peroxide 2.5-5% or adapalene 0.1% gel. Moderate: add topical clindamycin 1% or oral doxycycline 100 mg BID for 8-12 weeks. Severe: oral isotretinoin (requires specialist).",
+    "referral_criteria": "Severe nodulocystic acne, scarring, treatment failure, psychological distress, isotretinoin consideration (requires monitoring).",
+    "prevention": "Gentle cleansing, avoid picking/popting lesions, non-comedogenic products, avoid triggers (stress, dairy in some).",
+    "who_guideline": "WHO essential medicines list includes benzoyl peroxide, topical antibiotics, and oral tetracyclines for acne."
+  },
+  {
+    "id": "bullous_imp",
+    "condition": "Impetigo (bullous)",
+    "keywords": [
+      "large blisters",
+      "fluid-filled bullae",
+      "flaccid blisters",
+      "clear to yellow fluid",
+      "ruptured blisters",
+      "collarette of scale"
+    ],
+    "cause": "Staphylococcus aureus (producing exfoliative toxins A/B)",
+    "epidemiology": "More common in neonates and young children. Outbreaks in nurseries, daycares. Can be confused with burns or scalds.",
+    "treatment": "Gentle cleansing, topical mupirocin 2% TID. Extensive: oral cephalexin 25 mg/kg BID or cloxacillin 12.5 mg/kg QID for 7 days.",
+    "referral_criteria": "Widespread bullae, neonate, signs of staphylococcal scalded skin syndrome (SSSS), immunocompromised.",
+    "prevention": "Good hygiene, avoid sharing towels/bedding, keep lesions covered, hand washing.",
+    "who_guideline": "WHO recommends topical antibiotics for localized impetigo and systemic antibiotics for extensive cases."
+  },
+  {
+    "id": "erysipelas",
+    "condition": "Erysipelas",
+    "keywords": [
+      "raised red patch",
+      "well-demarcated border",
+      "shiny red plaque",
+      "fever",
+      "chills",
+      "hot skin",
+      "facial redness"
+    ],
+    "cause": "Streptococcus pyogenes (group A strep) \u2014 distinct from cellulitis by well-demarcated border",
+    "epidemiology": "Common in all regions. Predisposing factors: breaks in skin, fungal infections (tinea pedis), lymphedema, venous insufficiency. Facial erysipelas more common in elderly.",
+    "treatment": "Oral penicillin V 500 mg QID or amoxicillin 500 mg TID for 7-10 days. Severe: IV benzylpenicillin or ceftriaxone.",
+    "referral_criteria": "Systemic toxicity, rapid progression, eyelid involvement (risk of cavernous sinus thrombosis), immunocompromised, treatment failure.",
+    "prevention": "Treat predisposing tinea pedis, good skin hygiene, moisturize dry skin to prevent cracking.",
+    "who_guideline": "WHO guidelines: penicillin or amoxicillin as first-line treatment for erysipelas."
+  },
+  {
+    "id": "warts",
+    "condition": "Viral warts (verruca vulgaris)",
+    "keywords": [
+      "rough raised bump",
+      "cauliflower-like",
+      "flesh-colored papule",
+      "black dots",
+      "hand warts",
+      "plantar wart",
+      "verruca"
+    ],
+    "cause": "Human papillomavirus (HPV) types 1, 2, 4, 27, 57",
+    "epidemiology": "Common worldwide. Peak in children and adolescents. Spread by direct contact and autoinoculation. Higher prevalence in immunocompromised.",
+    "treatment": "Topical: salicylic acid 40% daily, or cryotherapy with liquid nitrogen every 2-4 weeks. Persistent: imiquimod 5% or intralesional candida antigen.",
+    "referral_criteria": "Extensive or resistant warts, immunocompromised patient, genital warts (refer for STI screening), atypical appearance.",
+    "prevention": "Avoid picking warts, don't share towels/nail files, use flip-flops in public showers, HPV vaccine prevents some types.",
+    "who_guideline": "WHO recommends cryotherapy or salicylic acid for common and plantar warts."
+  },
+  {
+    "id": "hfmd",
+    "condition": "Hand-foot-and-mouth disease",
+    "keywords": [
+      "vesicles on hands",
+      "vesicles on feet",
+      "mouth sores",
+      "fever",
+      "painful swallowing",
+      "papules",
+      "blisters"
+    ],
+    "cause": "Coxsackievirus A16, Enterovirus 71, other enteroviruses",
+    "epidemiology": "Common in children <10 years. Outbreaks in daycares/schools. Peak in tropical regions: rainy season. Enterovirus 71 strains can cause neurological complications.",
+    "treatment": "Supportive care: paracetamol for fever, cool foods/liquids, mouth rinses. No specific antiviral. Monitor for neurological signs.",
+    "referral_criteria": "High fever >3 days, lethargy, neck stiffness, seizures, rapid breathing, dehydration from poor intake.",
+    "prevention": "Hand hygiene, disinfect contaminated surfaces, avoid close contact with infected children. No vaccine widely available.",
+    "who_guideline": "WHO recommends supportive treatment and monitoring for complications, especially with EV71 strains."
+  },
+  {
+    "id": "genital_ulcer",
+    "condition": "Genital ulcer disease",
+    "keywords": [
+      "genital sore",
+      "painless ulcer",
+      "painful ulcer",
+      "groin swelling",
+      "inguinal lymph node",
+      "discharge",
+      "chancre"
+    ],
+    "cause": "Multiple STIs: syphilis (Treponema pallidum), herpes (HSV-2), chancroid (H. ducreyi), LGV (C. trachomatis L1-L3)",
+    "epidemiology": "Major public health problem in sub-Saharan Africa, Southeast Asia. Increases HIV transmission risk 2-5x. Common in sex workers and their clients.",
+    "treatment": "Syphilis: benzathine penicillin 2.4 million units IM single dose. Herpes: acyclovir 400 mg TID for 7-10 days. Chancroid: azithromycin 1 g single dose. LGV: doxycycline 100 mg BID for 21 days.",
+    "referral_criteria": "All genital ulcers should be referred for STI screening, HIV testing, and syndromic management. Treatment failure, suspected syphilis in pregnancy.",
+    "prevention": "Condom use, partner notification and treatment, HIV testing, circumcision reduces HIV/STI risk.",
+    "who_guideline": "WHO syndromic management approach for genital ulcer disease. All patients should have HIV testing."
+  },
+  {
+    "id": "omphalitis",
+    "condition": "Neonatal omphalitis (umbilical infection)",
+    "keywords": [
+      "red around umbilical stump",
+      "umbilical discharge",
+      "pus",
+      "foul smell",
+      "swollen belly button",
+      "fever",
+      "neonatal"
+    ],
+    "cause": "Staphylococcus aureus, E. coli, Group B Streptococcus, other bacteria colonizing umbilical stump",
+    "epidemiology": "Common in home births in LMICs with poor cord care. Risk factor for neonatal sepsis. Leading cause of neonatal mortality in some regions.",
+    "treatment": "Mild: topical antiseptic (chlorhexidine 4%) TID. Moderate to severe: oral or IV antibiotics (cloxacillin + gentamicin). Tetanus prophylaxis if not vaccinated.",
+    "referral_criteria": "ALL neonatal omphalitis beyond mild redness requires immediate referral. Signs of sepsis: fever, poor feeding, lethargy, rapid breathing.",
+    "prevention": "Clean cord care: chlorhexidine 4% applied to cord stump daily, dry cord care, clean delivery practices, hand washing.",
+    "who_guideline": "WHO recommends chlorhexidine 4% for umbilical cord care in settings with high neonatal mortality."
+  },
+  {
+    "id": "ophth_neon",
+    "condition": "Neonatal conjunctivitis (ophthalmia neonatorum)",
+    "keywords": [
+      "newborn eye discharge",
+      "swollen eyelids",
+      "red eye in newborn",
+      "pus from eye",
+      "chemical conjunctivitis",
+      "neonatal"
+    ],
+    "cause": "Chemical (silver nitrate prophylaxis), bacterial (Chlamydia trachomatis, Neisseria gonorrhoeae), or viral",
+    "epidemiology": "Prevalent in regions with high maternal STI rates. Neisseria gonorrhoeae can cause rapid corneal perforation and blindness. Chlamydia causes chronic infection.",
+    "treatment": "Gentle saline irrigation. Gonococcal: IV/IM ceftriaxone 50 mg/kg single dose + frequent saline washes. Chlamydial: oral erythromycin 12.5 mg/kg QID for 14 days. Topical antibiotics alone insufficient.",
+    "referral_criteria": "ALL neonatal conjunctivitis requires immediate referral. Corneal involvement, purulent discharge with eyelid swelling (presumed gonococcal) is an emergency.",
+    "prevention": "Screening/treatment of maternal STIs. Silver nitrate 1% or tetracycline 1% ointment at birth. Clean delivery.",
+    "who_guideline": "WHO recommends Universal eye care at birth with 1% tetracycline ointment or silver nitrate solution."
+  },
+  {
+    "id": "nec_fasciitis",
+    "condition": "Necrotizing fasciitis",
+    "keywords": [
+      "severe pain",
+      "rapid spreading",
+      "blister",
+      "gas in tissue",
+      "skin discoloration",
+      "systemic toxicity",
+      "crepitus"
+    ],
+    "cause": "Polymicrobial (Type I): anaerobes + aerobes. Group A strep (Type II). Rapidly progressive soft tissue infection.",
+    "epidemiology": "Rare but life-threatening. Risk factors: diabetes, immunosuppression, peripheral vascular disease, recent surgery or trauma. Higher incidence in tropical regions.",
+    "treatment": "Surgical emergency: immediate aggressive debridement. Broad-spectrum IV antibiotics (piperacillin-tazobactam + clindamycin). ICU support. Early recognition is critical.",
+    "referral_criteria": "SUSPECTED NECROTIZING FASCIITIS REQUIRES IMMEDIATE SURGICAL REFERRAL. Signs: severe pain out of proportion, rapid progression, crepitus, systemic toxicity.",
+    "prevention": "Prompt treatment of wounds and skin infections, glycemic control in diabetics, careful surgical technique.",
+    "who_guideline": "WHO recognizes necrotizing fasciitis as a surgical emergency requiring immediate debridement and broad-spectrum antibiotics."
+  },
+  {
+    "id": "angular_stom",
+    "condition": "Angular stomatitis (perl\u00e8che)",
+    "keywords": [
+      "cracked mouth corners",
+      "red mouth corners",
+      "painful mouth corners",
+      "sores at lip edges",
+      "crusty mouth corners",
+      "cheilitis"
+    ],
+    "cause": "Fungal (Candida albicans), bacterial (Staphylococcus aureus), nutritional deficiencies (riboflavin, iron, zinc), or mechanical (ill-fitting dentures)",
+    "epidemiology": "Common in malnutrition, HIV/AIDS, elderly with dentures, and children. High prevalence in food-insecure populations.",
+    "treatment": "Topical: clotrimazole 1% + hydrocortisone 1% combination cream BID for 7-14 days. Treat underlying nutritional deficiencies. Consider oral vitamin B complex and iron.",
+    "referral_criteria": "Persistent despite treatment, HIV suspected, severe malnutrition, suspected oral cancer in older adults (if unilateral and non-healing).",
+    "prevention": "Good nutrition (B vitamins, iron, zinc), treat underlying HIV, proper denture fit, maintain skin moisture at mouth corners.",
+    "who_guideline": "WHO suggests topical antifungal-steroid combination for angular stomatitis in HIV care guidelines."
+  },
+  {
+    "id": "neonatal_jaundice",
+    "condition": "Neonatal jaundice (hyperbilirubinemia)",
+    "keywords": [
+      "yellow skin",
+      "yellow eyes",
+      "newborn jaundice",
+      "pale stool",
+      "dark urine",
+      "lethargy",
+      "poor feeding"
+    ],
+    "cause": "Physiological (immature liver), pathological (ABO/Rh incompatibility, G6PD deficiency, sepsis, biliary atresia)",
+    "epidemiology": "Very common in newborns worldwide. 60% of term and 80% of preterm infants develop jaundice. Severe cases can cause kernicterus (brain damage). Highest risk in sub-Saharan Africa and Asia.",
+    "treatment": "Physiological: frequent feeding, sunlight exposure (controlled). Phototherapy for moderate levels. Exchange transfusion for severe cases. Phenobarbital for prolonged jaundice.",
+    "referral_criteria": "Jaundice appearing <24 hours of age, rapidly rising levels, preterm infant, signs of kernicterus (lethargy, poor feeding, high-pitched cry, arching), pale stool (suggests biliary atresia).",
+    "prevention": "Ensure adequate feeding, monitor for jaundice, early detection using transcutaneous bilirubinometer in high-prevalence settings.",
+    "who_guideline": "WHO recommends all newborns be monitored for jaundice. Phototherapy is the mainstay of treatment."
+  },
+  {
+    "id": "measles_koplik",
+    "condition": "Measles (prodromal, Koplik spots before rash)",
+    "keywords": [
+      "white spots inside cheek",
+      "koplik spots",
+      "fever",
+      "cough",
+      "red eyes",
+      "runny nose",
+      "before rash appears"
+    ],
+    "cause": "Measles virus (paramyxovirus) \u2014 prodromal phase before skin rash develops",
+    "epidemiology": "Outbreaks in unvaccinated populations. Highly contagious (90% attack rate in susceptible contacts). Aerosol transmission.",
+    "treatment": "Supportive: paracetamol, cough relief, vitamin A 200,000 IU daily for 2 days. Isolate patient. Vaccinate contacts within 72 hours for post-exposure prophylaxis.",
+    "referral_criteria": "Severe cough/difficulty breathing, inability to drink, convulsions, lethargy, severe malnutrition. All suspected measles should be reported to health authorities.",
+    "prevention": "MMR vaccine (two doses, first at 9-12 months). >95% coverage needed for herd immunity. Post-exposure vaccination within 72 hours.",
+    "who_guideline": "WHO measles position paper: vitamin A reduces mortality by 50% in measles-endemic areas."
+  },
+  {
+    "id": "dengue_severe",
+    "condition": "Dengue hemorrhagic fever / severe dengue",
+    "keywords": [
+      "bleeding gums",
+      "nosebleed",
+      "purpura",
+      "ecchymosis",
+      "bruising",
+      "plasma leakage",
+      "abdominal pain"
+    ],
+    "cause": "Dengue virus (secondary infection with different serotype increases risk)",
+    "epidemiology": "Leading cause of hospitalization in children in Asia and Latin America. Second dengue infection is the main risk factor for severe disease.",
+    "treatment": "Close monitoring: vital signs, hematocrit, platelet count. IV fluid resuscitation (crystalloids) for plasma leakage. Blood transfusion for severe bleeding. Avoid NSAIDs/aspirin.",
+    "referral_criteria": "ALL SIGNS OF SEVERE DENGUE REQUIRE IMMEDIATE REFERRAL. Warning signs: severe abdominal pain, persistent vomiting, mucosal bleeding, lethargy, hepatomegaly, rising hematocrit with rapid platelet drop.",
+    "prevention": "Same as dengue: mosquito control, insect repellent, bed nets. CYD-TDV vaccine for seropositive individuals only.",
+    "who_guideline": "WHO classified severe dengue by plasma leakage, severe bleeding, or severe organ involvement."
   }
 ]
