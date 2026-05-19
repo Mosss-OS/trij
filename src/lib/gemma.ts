@@ -518,6 +518,8 @@ async function cloudInference(
   imageDataUrl: string,
   language: string,
   ragContext?: string,
+  presentationType?: string,
+  description?: string,
   supabaseUrl?: string,
   supabaseAnonKey?: string,
 ): Promise<TriageResult> {
@@ -531,6 +533,10 @@ async function cloudInference(
   const session = useSettingsStore.getState();
   const token = useSessionStore.getState().session?.access_token;
 
+  const prompt = description
+    ? `Patient presentation type: ${presentationType ?? "dermatology"}. Symptom description: "${description}". Analyze and return the triage assessment.`
+    : "Analyze this medical image and return the triage assessment.";
+
   const res = await fetch(functionUrl, {
     method: "POST",
     headers: {
@@ -539,9 +545,11 @@ async function cloudInference(
     },
     body: JSON.stringify({
       image: imageDataUrl,
-      prompt: "Analyze this medical image and return the triage assessment.",
+      prompt,
       language,
       ragContext,
+      presentationType,
+      description,
     }),
   });
 
@@ -590,16 +598,22 @@ export async function triageImage(
   language: string,
   kind: EngineKind,
   ollamaUrl?: string,
+  presentationType?: string,
+  description?: string,
 ): Promise<TriageResult> {
   const settings = useSettingsStore.getState();
   const kbContext = getCompactKbContext();
   let result: TriageResult;
 
+  const userMessage = description
+    ? `Presentation type: ${presentationType ?? "dermatology"}. Symptom description: "${description}". Analyze and return the triage assessment.`
+    : "Analyze this medical image and return the triage assessment.";
+
   if (kind === "cloud") {
     /* Attempt cloud inference; fall back to demo if offline or unauthenticated.
      * This ensures mobile users always get a result even without connectivity. */
     try {
-      result = await cloudInference(imageDataUrl, language, kbContext);
+      result = await cloudInference(imageDataUrl, language, kbContext, presentationType, description);
       result = attachRagSources(result);
       return result;
     } catch (err) {
@@ -622,10 +636,10 @@ export async function triageImage(
     try {
       const response = await ollamaChat(
         [
-          { role: "system", content: getTriageSystemPrompt(language, false, kbContext) },
+          { role: "system", content: getTriageSystemPrompt(language, false, kbContext, presentationType, description) },
           {
             role: "user",
-            content: "Analyze this medical image and return the triage assessment.",
+            content: userMessage,
             images: [imageDataUrl],
           },
         ],
@@ -640,7 +654,7 @@ export async function triageImage(
     } catch (err) {
       if (settings.cloudFallbackConsent) {
         console.warn("Ollama failed, falling back to cloud:", err);
-        result = await cloudInference(imageDataUrl, language, kbContext);
+        result = await cloudInference(imageDataUrl, language, kbContext, presentationType, description);
         result = attachRagSources(result);
         return result;
       }
@@ -654,18 +668,22 @@ export async function triageImage(
       : loadModel(PHI_VISION_MODEL_ID));
     const temperature = settings.thinkingMode ? 0.7 : 0.1;
 
+    const contentItems: MultimodalContent = description
+      ? [{ type: "text" as const, text: userMessage }]
+      : [
+          { type: "image_url" as const, image_url: { url: imageDataUrl } },
+          { type: "text" as const, text: userMessage },
+        ];
+
     const reply = await e.chat.completions.create({
       messages: [
         {
           role: "system",
-          content: getTriageSystemPrompt(language, settings.thinkingMode, kbContext),
+          content: getTriageSystemPrompt(language, settings.thinkingMode, kbContext, presentationType, description),
         },
         {
           role: "user",
-          content: multimodal([
-            { type: "image_url", image_url: { url: imageDataUrl } },
-            { type: "text", text: "Analyze this medical image and return the triage assessment." },
-          ]),
+          content: multimodal(contentItems),
         },
       ],
       tools: [TRIAGE_TOOL],
@@ -690,7 +708,7 @@ export async function triageImage(
   } catch (err) {
     if (settings.cloudFallbackConsent) {
       console.warn("WebLLM failed, falling back to cloud:", err);
-      result = await cloudInference(imageDataUrl, language, kbContext);
+      result = await cloudInference(imageDataUrl, language, kbContext, presentationType, description);
       result = attachRagSources(result);
       return result;
     }
