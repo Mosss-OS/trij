@@ -16,34 +16,53 @@ import { useI18n } from "@/lib/i18n";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[oklch(0.98_0.008_85)] to-[oklch(0.95_0.015_200)] px-4">
       <div className="max-w-md text-center">
-        <h1 className="font-display text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 font-display text-xl font-semibold">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist.
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[oklch(0.78_0.13_185)]/20">
+          <span className="font-serif text-5xl font-bold text-[oklch(0.45_0.08_220)]">404</span>
+        </div>
+        <h1 className="font-serif text-3xl font-medium leading-tight tracking-tight text-foreground">
+          Page not found
+        </h1>
+        <p className="mt-3 font-sans text-sm leading-relaxed text-foreground/60">
+          The page you're looking for doesn't exist or has been moved. If you need help, contact your supervisor.
         </p>
-        <Link
-          to="/"
-          className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          Go home
-        </Link>
+        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 font-sans text-sm font-medium text-background shadow-lg shadow-black/10 transition-all hover:shadow-xl hover:shadow-black/20"
+          >
+            Go home
+          </Link>
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 rounded-full border border-foreground/15 bg-white/40 px-6 py-3 font-sans text-sm font-medium text-foreground/80 backdrop-blur-xl transition-colors hover:bg-white/60"
+          >
+            Sign in
+          </Link>
+        </div>
       </div>
     </div>
   );
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
+  console.error("[Trij Error]", error);
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[oklch(0.98_0.008_85)] to-[oklch(0.95_0.015_200)] px-4">
       <div className="max-w-md text-center">
-        <h1 className="font-display text-xl font-semibold">Something went wrong</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h1 className="font-serif text-2xl font-medium tracking-tight text-foreground">
+          Something went wrong
+        </h1>
+        <p className="mt-3 font-sans text-sm leading-relaxed text-foreground/60">
+          An unexpected error occurred. Please try again. If the problem persists, try refreshing the page or contact your supervisor.
+        </p>
         <button
           onClick={reset}
-          className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="mt-8 inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 font-sans text-sm font-medium text-background shadow-lg shadow-black/10 transition-all hover:shadow-xl hover:shadow-black/20"
         >
           Try again
         </button>

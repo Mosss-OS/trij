@@ -1,5 +1,5 @@
-import type { MLCEngine } from "@mlc-ai/web-llm";
-export type { InitProgressReport } from "@mlc-ai/web-llm";
+import type { MLCEngine, InitProgressReport } from "@mlc-ai/web-llm";
+export type { InitProgressReport };
 import {
   getTriageSystemPrompt,
   getDocumentSystemPrompt,
@@ -29,7 +29,14 @@ export type EngineKind = "webllm" | "ollama" | "demo" | "cloud";
 
 let webllmEngine: MLCEngine | null = null;
 let webllmLoading: Promise<MLCEngine> | null = null;
-let WEBLLM_MODEL_ID = "Phi-3.5-vision-instruct-q4f16_1-MLC";
+export const GEMMA4_E2B_MODEL_ID = "gemma-4-E2B-it-q4f16_1-MLC";
+export const PHI_VISION_MODEL_ID = "Phi-3.5-vision-instruct-q4f16_1-MLC";
+
+export function isModelVLM(modelId: string): boolean {
+  return modelId === PHI_VISION_MODEL_ID;
+}
+
+let WEBLLM_MODEL_ID = PHI_VISION_MODEL_ID;
 
 export function setModelId(id: string) {
   WEBLLM_MODEL_ID = id;
@@ -226,13 +233,40 @@ function formatBytes(bytes: number): string {
 
 /* ─── WebLLM engine ──────────────────────────────────────── */
 
-async function loadWebLLM(onProgress?: (p: InitProgressReport) => void): Promise<MLCEngine> {
-  if (webllmEngine) return webllmEngine;
+async function loadModel(
+  modelId: string,
+  onProgress?: (p: InitProgressReport) => void,
+): Promise<MLCEngine> {
+  if (webllmEngine && WEBLLM_MODEL_ID === modelId) return webllmEngine;
   if (webllmLoading) return webllmLoading;
+
   const { CreateMLCEngine } = await import("@mlc-ai/web-llm");
-  webllmLoading = CreateMLCEngine(WEBLLM_MODEL_ID, {
-    initProgressCallback: (report) => onProgress?.(report),
-  })
+
+  WEBLLM_MODEL_ID = modelId;
+  webllmEngine = null;
+  webllmLoading = null;
+
+  const baseConfig = {
+    initProgressCallback: (report: InitProgressReport) => onProgress?.(report),
+  };
+
+  const enginePromise = modelId === GEMMA4_E2B_MODEL_ID
+    ? CreateMLCEngine(modelId, {
+        ...baseConfig,
+        appConfig: {
+          model_list: [
+            {
+              model: "https://huggingface.co/welcoma/gemma-4-E2B-it-q4f16_1-MLC",
+              model_id: GEMMA4_E2B_MODEL_ID,
+              model_lib: "https://huggingface.co/welcoma/gemma-4-E2B-it-q4f16_1-MLC/resolve/main/libs/gemma-4-E2B-it-q4f16_1-MLC-webgpu.wasm",
+              required_features: ["shader-f16"],
+            },
+          ],
+        },
+      })
+    : CreateMLCEngine(modelId, baseConfig);
+
+  webllmLoading = enginePromise
     .then((e) => {
       webllmEngine = e;
       return e;
@@ -241,6 +275,10 @@ async function loadWebLLM(onProgress?: (p: InitProgressReport) => void): Promise
       webllmLoading = null;
     });
   return webllmLoading;
+}
+
+async function loadWebLLM(onProgress?: (p: InitProgressReport) => void): Promise<MLCEngine> {
+  return loadModel(useSettingsStore.getState().modelId, onProgress);
 }
 
 export function isWebLLMLoaded() {
@@ -584,7 +622,9 @@ export async function triageImage(
   }
 
   try {
-    const e = await loadWebLLM();
+    const e = await (isModelVLM(useSettingsStore.getState().modelId)
+      ? loadWebLLM()
+      : loadModel(PHI_VISION_MODEL_ID));
     const temperature = settings.thinkingMode ? 0.7 : 0.1;
 
     const reply = await e.chat.completions.create({
@@ -682,8 +722,11 @@ export async function analyzeDocument(
     return triesJson<DocumentResult>(response.message.content ?? "", FALLBACK_DOC);
   }
 
-  const e = await loadWebLLM();
   const settings = useSettingsStore.getState();
+
+  const e = await (isModelVLM(useSettingsStore.getState().modelId)
+    ? loadWebLLM()
+    : loadModel(PHI_VISION_MODEL_ID));
   const temperature = settings.thinkingMode ? 0.7 : 0.1;
 
   const reply = await e.chat.completions.create({
