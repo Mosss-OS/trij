@@ -467,6 +467,72 @@ function LoginPage() {
     );
   }
 
+  if (awaitingVerification) {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-background">
+        <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl" />
+        <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-2.5">
+              <img
+                src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
+                alt="Trij logo"
+                className="h-10 w-10 rounded-2xl object-contain shadow-lg shadow-primary/30"
+              />
+              <span className="font-display text-xl font-bold">Trij</span>
+            </Link>
+            <OfflineIndicator />
+          </div>
+
+          <div className="mt-12 flex items-center gap-3">
+            <MailCheck className="h-8 w-8 text-primary" />
+            <h1 className="font-display text-2xl font-bold leading-tight tracking-tight">
+              Verify your email
+            </h1>
+          </div>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            We sent a verification link to{" "}
+            <span className="font-medium text-foreground">{awaitingVerification}</span>. Click the
+            link in the email to activate your account, then sign in.
+          </p>
+
+          <div className="mt-10 space-y-3 rounded-3xl border bg-card p-6 shadow-sm">
+            <Button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={resending || resendCooldown > 0}
+              className="w-full"
+              size="lg"
+            >
+              {resending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {resendCooldown > 0
+                ? `Resend verification email (${resendCooldown}s)`
+                : "Resend verification email"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setAwaitingVerification(null);
+                setMode("signin");
+              }}
+              className="w-full"
+              size="lg"
+            >
+              Back to sign in
+            </Button>
+          </div>
+
+          <p className="mt-auto pt-10 text-center text-xs text-muted-foreground">
+            <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
+            {t("patientDataNeverLeaves")}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
       <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
