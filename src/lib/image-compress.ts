@@ -2,7 +2,12 @@ const MAX_WIDTH = 1024;
 const MAX_HEIGHT = 1024;
 const JPEG_QUALITY = 0.7;
 
-export async function compressImage(dataUrl: string, maxWidth = MAX_WIDTH, maxHeight = MAX_HEIGHT, quality = JPEG_QUALITY): Promise<string> {
+export async function compressImage(
+  dataUrl: string,
+  maxWidth = MAX_WIDTH,
+  maxHeight = MAX_HEIGHT,
+  quality = JPEG_QUALITY,
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -26,7 +31,10 @@ export async function compressImage(dataUrl: string, maxWidth = MAX_WIDTH, maxHe
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d");
-      if (!ctx) { resolve(dataUrl); return; }
+      if (!ctx) {
+        resolve(dataUrl);
+        return;
+      }
       ctx.drawImage(img, 0, 0, width, height);
       resolve(canvas.toDataURL("image/jpeg", quality));
     };

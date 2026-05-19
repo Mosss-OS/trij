@@ -43,10 +43,7 @@ function StackedBar({
   primaryPct: number;
   differentials: PossibleCondition[];
 }) {
-  const all = [
-    { name: primary, probability: primaryPct },
-    ...differentials,
-  ];
+  const all = [{ name: primary, probability: primaryPct }, ...differentials];
   const total = all.reduce((s, c) => s + c.probability, 0);
   if (total === 0) return null;
 
@@ -108,16 +105,12 @@ function DifferentialList({
       {closeDifferential && (
         <div className="flex items-start gap-2 rounded-xl border border-urgency-yellow/30 bg-urgency-yellow/5 px-3 py-2">
           <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-yellow" />
-          <p className="text-xs text-urgency-yellow">
-            {t("closeDifferentialWarning")}
-          </p>
+          <p className="text-xs text-urgency-yellow">{t("closeDifferentialWarning")}</p>
         </div>
       )}
 
       {limitedDifferential && (
-        <p className="text-xs italic text-muted-foreground">
-          {t("limitedDifferentialNote")}
-        </p>
+        <p className="text-xs italic text-muted-foreground">{t("limitedDifferentialNote")}</p>
       )}
 
       <ul className="space-y-2">
@@ -154,9 +147,7 @@ function DifferentialList({
               {low.map((c) => (
                 <li key={c.name} className="flex items-center gap-3 opacity-60">
                   <span className="flex-1 truncate text-sm">{c.name}</span>
-                  <span className="text-xs font-mono text-muted-foreground">
-                    &lt;10%
-                  </span>
+                  <span className="text-xs font-mono text-muted-foreground">&lt;10%</span>
                   <div className="h-1 w-16 overflow-hidden rounded-full bg-muted">
                     <div
                       className="h-full bg-muted-foreground/20"
@@ -185,7 +176,11 @@ function WhyThisDiagnosis({ features }: { features: string[] }) {
         aria-expanded={open}
       >
         <span>{t("whyThisDiagnosis")}</span>
-        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+        {open ? (
+          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        )}
       </button>
       {open && (
         <div className="border-t px-4 py-3">
@@ -206,7 +201,12 @@ function WhyThisDiagnosis({ features }: { features: string[] }) {
   );
 }
 
-export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 70, engineKind }: Props) {
+export function AssessmentResult({
+  result,
+  onSpeak,
+  minConfidenceForLocalCare = 70,
+  engineKind,
+}: Props) {
   const { t } = useI18n();
   const belowThreshold = result.confidence < minConfidenceForLocalCare;
   const veryLowConfidence = result.confidence < 30;
@@ -220,9 +220,11 @@ export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 
       : "";
 
   const confidenceLabel =
-    result.confidence >= 70 ? t("confidenceGood") :
-    result.confidence >= 50 ? t("confidenceModerate") :
-    t("confidenceLow");
+    result.confidence >= 70
+      ? t("confidenceGood")
+      : result.confidence >= 50
+        ? t("confidenceModerate")
+        : t("confidenceLow");
 
   return (
     <div className="space-y-5">
@@ -259,20 +261,28 @@ export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 
           <div className="mb-1.5 flex justify-between text-xs">
             <span className="text-muted-foreground">{t("confidence")}</span>
             <span className="flex items-center gap-2">
-              <span className={`text-xs font-medium ${
-                veryLowConfidence ? "text-urgency-red" :
-                lowConfidence ? "text-urgency-yellow" :
-                "text-emerald-600"
-              }`}>{confidenceLabel}</span>
+              <span
+                className={`text-xs font-medium ${
+                  veryLowConfidence
+                    ? "text-urgency-red"
+                    : lowConfidence
+                      ? "text-urgency-yellow"
+                      : "text-emerald-600"
+                }`}
+              >
+                {confidenceLabel}
+              </span>
               <span className="font-mono font-semibold">{Math.round(result.confidence)}%</span>
             </span>
           </div>
           <Progress
             value={result.confidence}
             className={`h-2 ${
-              veryLowConfidence ? "[&>div]:bg-urgency-red" :
-              lowConfidence ? "[&>div]:bg-urgency-yellow" :
-              "[&>div]:bg-emerald-500"
+              veryLowConfidence
+                ? "[&>div]:bg-urgency-red"
+                : lowConfidence
+                  ? "[&>div]:bg-urgency-yellow"
+                  : "[&>div]:bg-emerald-500"
             }`}
           />
           {belowThreshold && (
@@ -349,9 +359,7 @@ export function AssessmentResult({ result, onSpeak, minConfidenceForLocalCare = 
             {result.rag_sources.slice(0, 4).map((s, i) => (
               <li key={i} className="rounded-xl bg-secondary/20 p-3">
                 <p className="text-sm font-medium">{s.condition}</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  {s.treatment}
-                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{s.treatment}</p>
                 {s.who_guideline && (
                   <p className="mt-1 text-[11px] italic text-muted-foreground/70">
                     {s.who_guideline}

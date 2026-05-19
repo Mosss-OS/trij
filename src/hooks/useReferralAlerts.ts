@@ -29,9 +29,7 @@ export function useReferralAlerts() {
   const refresh = useCallback(async () => {
     try {
       const db = getDB();
-      const all = await db.assessments
-        .filter((a) => a.referralAdvised === true)
-        .toArray();
+      const all = await db.assessments.filter((a) => a.referralAdvised === true).toArray();
       const seen = getSeenIds();
       const newAlerts: ReferralAlert[] = [];
       for (const a of all) {
@@ -40,7 +38,10 @@ export function useReferralAlerts() {
           newAlerts.push({ assessment: a, patient: patient ?? undefined });
         }
       }
-      newAlerts.sort((a, b) => new Date(b.assessment.createdAt).getTime() - new Date(a.assessment.createdAt).getTime());
+      newAlerts.sort(
+        (a, b) =>
+          new Date(b.assessment.createdAt).getTime() - new Date(a.assessment.createdAt).getTime(),
+      );
       setUnseen(newAlerts);
     } catch {
       /* */

@@ -60,7 +60,11 @@ export async function updateReferralStatus(
   const db = getDB();
   const existing = await db.assessments.get(assessmentId);
   const version = nextVersion(existing?.version);
-  await db.assessments.update(assessmentId, { referralStatus: status, referralStatusUpdatedAt: now, version });
+  await db.assessments.update(assessmentId, {
+    referralStatus: status,
+    referralStatusUpdatedAt: now,
+    version,
+  });
   const a = await db.assessments.get(assessmentId);
   if (!a) return;
   await db.syncQueue.add({
@@ -88,11 +92,23 @@ async function fetchServerRecord(
 }
 
 function isMedicalField(key: string): boolean {
-  return ["condition", "confidence", "urgency", "images", "possibleConditions",
-    "keyVisualFeatures", "recommendation", "followUpQuestions", "referralAdvised"].includes(key);
+  return [
+    "condition",
+    "confidence",
+    "urgency",
+    "images",
+    "possibleConditions",
+    "keyVisualFeatures",
+    "recommendation",
+    "followUpQuestions",
+    "referralAdvised",
+  ].includes(key);
 }
 
-function threeWayMerge(local: Record<string, unknown>, server: Record<string, unknown>): Record<string, unknown> {
+function threeWayMerge(
+  local: Record<string, unknown>,
+  server: Record<string, unknown>,
+): Record<string, unknown> {
   const merged = { ...server };
   for (const key of Object.keys(local)) {
     if (isMedicalField(key)) continue;
@@ -141,7 +157,10 @@ export async function processSyncQueue(
             createdAt: new Date().toISOString(),
           };
           await db.syncConflicts.add(conflict);
-          const merged = threeWayMerge(p as unknown as Record<string, unknown>, serverRec.data as Record<string, unknown>);
+          const merged = threeWayMerge(
+            p as unknown as Record<string, unknown>,
+            serverRec.data as Record<string, unknown>,
+          );
           await db.patients.put({ ...p, ...merged, version: serverRec.version } as Patient);
           await db.syncQueue.delete(item.id!);
           ok++;
@@ -176,7 +195,10 @@ export async function processSyncQueue(
             createdAt: new Date().toISOString(),
           };
           await db.syncConflicts.add(conflict);
-          const merged = threeWayMerge(a as unknown as Record<string, unknown>, serverRec.data as Record<string, unknown>);
+          const merged = threeWayMerge(
+            a as unknown as Record<string, unknown>,
+            serverRec.data as Record<string, unknown>,
+          );
           await db.assessments.put({ ...a, ...merged, version: serverRec.version } as Assessment);
           await db.syncQueue.delete(item.id!);
           ok++;
@@ -217,7 +239,10 @@ export async function processSyncQueue(
         lastError: (err as Error).message,
       });
       if (attempts >= MAX_RETRIES) {
-        console.warn(`Sync failed after ${attempts} attempts for ${item.table}/${item.recordId}:`, (err as Error).message);
+        console.warn(
+          `Sync failed after ${attempts} attempts for ${item.table}/${item.recordId}:`,
+          (err as Error).message,
+        );
       }
       onProgress?.({ ...progress, status: "failed", error: (err as Error).message });
     }
@@ -265,7 +290,10 @@ export async function resolveConflict(
     if (conflict.table === "patients") {
       await db.patients.put({ ...manualData, version: conflict.serverVersion + 1 } as Patient);
     } else {
-      await db.assessments.put({ ...manualData, version: conflict.serverVersion + 1 } as Assessment);
+      await db.assessments.put({
+        ...manualData,
+        version: conflict.serverVersion + 1,
+      } as Assessment);
     }
   }
 
@@ -278,10 +306,7 @@ export async function resolveConflict(
 
 export async function retryFailedSyncItems(): Promise<number> {
   const db = getDB();
-  const failed = await db.syncQueue
-    .where("attempts")
-    .between(1, MAX_RETRIES)
-    .toArray();
+  const failed = await db.syncQueue.where("attempts").between(1, MAX_RETRIES).toArray();
 
   const now = Date.now();
   let retried = 0;

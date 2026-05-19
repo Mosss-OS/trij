@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, RotateCw, X, Loader2, Sun, Moon, AlertTriangle, ImageUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { compressImage, analyzeVideoFrame, readFileAsDataURL, validateImageType, type FrameAnalysis } from "@/lib/camera";
+import {
+  compressImage,
+  analyzeVideoFrame,
+  readFileAsDataURL,
+  validateImageType,
+  type FrameAnalysis,
+} from "@/lib/camera";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
@@ -25,11 +31,14 @@ export function CameraCapture({ onCapture, onCancel, onSource }: Props) {
   const analysisRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    navigator.mediaDevices?.enumerateDevices().then((devices) => {
-      setCameraAvailable(devices.some((d) => d.kind === "videoinput"));
-    }).catch(() => {
-      setCameraAvailable(false);
-    });
+    navigator.mediaDevices
+      ?.enumerateDevices()
+      .then((devices) => {
+        setCameraAvailable(devices.some((d) => d.kind === "videoinput"));
+      })
+      .catch(() => {
+        setCameraAvailable(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -119,7 +128,9 @@ export function CameraCapture({ onCapture, onCancel, onSource }: Props) {
         <div className="rounded-2xl border border-dashed p-8 text-center">
           <ImageUp className="mx-auto h-10 w-10 text-muted-foreground" />
           <p className="mt-3 text-sm font-medium">
-            {cameraAvailable === false ? t("uploadFromGallery") : `${t("cameraUnavailable")}: ${error}`}
+            {cameraAvailable === false
+              ? t("uploadFromGallery")
+              : `${t("cameraUnavailable")}: ${error}`}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">{t("uploadPhoto")}</p>
           <input
@@ -145,7 +156,9 @@ export function CameraCapture({ onCapture, onCancel, onSource }: Props) {
         </div>
         {error && (
           <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-center">
-            <p className="text-xs text-muted-foreground">{t("cameraUnavailable")}: {error}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("cameraUnavailable")}: {error}
+            </p>
           </div>
         )}
       </div>

@@ -623,7 +623,13 @@ function Supervisor() {
                 }
               >
                 {showMap && (
-                  <CHWMap locations={chwLocations} assessmentCounts={chwAssessmentCounts} />
+                  <CHWMap
+                    locations={chwLocations.filter(
+                      (l): l is ChwLocation & { location_lat: number; location_lng: number } =>
+                        l.location_lat != null && l.location_lng != null,
+                    )}
+                    assessmentCounts={chwAssessmentCounts}
+                  />
                 )}
               </Suspense>
             )}
