@@ -1,6 +1,6 @@
 import { getDB } from "./db";
 import { supabase } from "@/integrations/supabase/client";
-import type { Patient, Assessment, FollowUp, SyncQueueItem, SyncConflict } from "@/types/trij";
+import type { Patient, Assessment, FollowUp, ReferralFeedback, SyncQueueItem, SyncConflict } from "@/types/trij";
 import { registerBackgroundSync } from "./sw-register";
 
 export const MAX_RETRIES = 3;
@@ -54,7 +54,7 @@ export async function queueAssessment(a: Assessment) {
 
 export async function updateReferralStatus(
   assessmentId: string,
-  status: "none" | "pending" | "active" | "resolved",
+  status: "none" | "pending" | "active" | "awaiting_feedback" | "feedback_received" | "resolved",
 ): Promise<void> {
   const now = new Date().toISOString();
   const db = getDB();
@@ -238,6 +238,7 @@ export async function processSyncQueue(
           language: a.language,
           referral_status: a.referralStatus,
           referral_advised: a.referralAdvised ?? false,
+          referral_feedback: (a.referralFeedback ?? null) as never,
           follow_up_questions: (a.followUpQuestions ?? null) as never,
           created_at: a.createdAt,
           synced_at: new Date().toISOString(),
@@ -385,6 +386,33 @@ export async function updateFollowUpStatus(
     recordId: id,
     payload: updated,
     createdAt: new Date().toISOString(),
+    attempts: 0,
+  });
+  registerBackgroundSync().catch(() => {});
+}
+
+export async function saveReferralFeedback(
+  assessmentId: string,
+  feedback: ReferralFeedback,
+): Promise<void> {
+  const now = new Date().toISOString();
+  const db = getDB();
+  const existing = await db.assessments.get(assessmentId);
+  const version = nextVersion(existing?.version);
+  await db.assessments.update(assessmentId, {
+    referralFeedback: feedback,
+    referralStatus: "feedback_received",
+    referralStatusUpdatedAt: now,
+    version,
+  });
+  const a = await db.assessments.get(assessmentId);
+  if (!a) return;
+  await db.syncQueue.add({
+    table: "assessments",
+    action: "update",
+    recordId: assessmentId,
+    payload: { ...a, referralFeedback: feedback, referralStatus: "feedback_received", version },
+    createdAt: now,
     attempts: 0,
   });
   registerBackgroundSync().catch(() => {});

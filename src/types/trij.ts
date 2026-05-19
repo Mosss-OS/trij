@@ -34,6 +34,16 @@ export interface PossibleCondition {
   probability: number;
 }
 
+export interface ReferralFeedback {
+  diagnosis?: string;
+  treatment?: string;
+  outcome?: "treated" | "referred_elsewhere" | "admitted" | "discharged" | "unknown";
+  notes?: string;
+  facilityName?: string;
+  facilityContact?: string;
+  providedAt: string;
+}
+
 export interface Assessment {
   id: string;
   patientId: string;
@@ -49,9 +59,10 @@ export interface Assessment {
   recommendation?: string;
   voiceLog?: string;
   language: string;
-  referralStatus: "none" | "pending" | "active" | "resolved";
+  referralStatus: "none" | "pending" | "active" | "awaiting_feedback" | "feedback_received" | "resolved";
   referralStatusUpdatedAt?: string;
   referralAdvised?: boolean;
+  referralFeedback?: ReferralFeedback;
   followUpQuestions?: string[];
   patientConsent?: boolean;
   consentTimestamp?: string;
