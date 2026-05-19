@@ -1,6 +1,18 @@
 export type Urgency = "green" | "yellow" | "red";
 export type Sex = "M" | "F" | "other";
 
+export interface VitalSigns {
+  systolicBP?: number;       /* mmHg */
+  diastolicBP?: number;      /* mmHg */
+  heartRate?: number;        /* bpm */
+  respiratoryRate?: number;  /* breaths/min */
+  temperature?: number;      /* °C */
+  oxygenSaturation?: number; /* SpO2 % */
+  muac?: number;             /* mid-upper arm circumference cm */
+  weight?: number;           /* kg */
+  painScale?: number;        /* 0-10 */
+}
+
 export interface Patient {
   id: string;
   chwUserId: string;
@@ -26,8 +38,9 @@ export interface Assessment {
   id: string;
   patientId: string;
   chwUserId: string;
-  images: string[]; // data URLs (offline-first)
+  images: string[]; /* data URLs (offline-first) */
   imageSource?: "camera" | "gallery";
+  vitalSigns?: VitalSigns;
   condition?: string;
   confidence?: number;
   urgency?: Urgency;
@@ -81,6 +94,7 @@ export interface TriageResult {
   referral_advised: boolean;
   follow_up_questions: string[];
   rag_sources?: Array<{ condition: string; treatment: string; who_guideline: string }>;
+  vital_signs_interpretation?: string; /* AI interpretation of vitals if provided */
 }
 
 export interface DocumentResult {

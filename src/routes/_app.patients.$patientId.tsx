@@ -160,6 +160,60 @@ function PatientDetail() {
                     {a.recommendation}
                   </p>
                 )}
+                {a.vitalSigns && (
+                  <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl border bg-muted/20 p-3 text-xs">
+                    {a.vitalSigns.systolicBP && (
+                      <div>
+                        <span className="text-muted-foreground">BP</span>
+                        <p className="font-medium">
+                          {a.vitalSigns.systolicBP}/{a.vitalSigns.diastolicBP}
+                        </p>
+                      </div>
+                    )}
+                    {a.vitalSigns.heartRate && (
+                      <div>
+                        <span className="text-muted-foreground">HR</span>
+                        <p className="font-medium">{a.vitalSigns.heartRate} bpm</p>
+                      </div>
+                    )}
+                    {a.vitalSigns.temperature && (
+                      <div>
+                        <span className="text-muted-foreground">Temp</span>
+                        <p className="font-medium">{a.vitalSigns.temperature}°C</p>
+                      </div>
+                    )}
+                    {a.vitalSigns.respiratoryRate && (
+                      <div>
+                        <span className="text-muted-foreground">RR</span>
+                        <p className="font-medium">{a.vitalSigns.respiratoryRate} /min</p>
+                      </div>
+                    )}
+                    {a.vitalSigns.oxygenSaturation && (
+                      <div>
+                        <span className="text-muted-foreground">SpO₂</span>
+                        <p className="font-medium">{a.vitalSigns.oxygenSaturation}%</p>
+                      </div>
+                    )}
+                    {a.vitalSigns.muac && (
+                      <div>
+                        <span className="text-muted-foreground">MUAC</span>
+                        <p className="font-medium">{a.vitalSigns.muac} cm</p>
+                      </div>
+                    )}
+                    {a.vitalSigns.weight && (
+                      <div>
+                        <span className="text-muted-foreground">Wt</span>
+                        <p className="font-medium">{a.vitalSigns.weight} kg</p>
+                      </div>
+                    )}
+                    {a.vitalSigns.painScale !== undefined && (
+                      <div>
+                        <span className="text-muted-foreground">Pain</span>
+                        <p className="font-medium">{a.vitalSigns.painScale}/10</p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {a.images?.[0] && (
                   <img
                     src={a.images[0]}

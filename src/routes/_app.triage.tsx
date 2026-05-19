@@ -29,7 +29,7 @@ import {
   type ConvMessage,
 } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
-import type { TriageResult, Patient, Assessment } from "@/types/trij";
+import type { TriageResult, Patient, Assessment, VitalSigns } from "@/types/trij";
 import { getDB } from "@/lib/db";
 import { queuePatient, queueAssessment } from "@/lib/sync";
 import { saveVoiceDraft, getVoiceDraft, clearVoiceDraft, listVoiceDrafts } from "@/lib/voice-draft";
@@ -90,7 +90,7 @@ export const Route = createFileRoute("/_app/triage")({
   ),
 });
 
-type Step = "patient" | "capture" | "analyzing" | "result" | "voice";
+type Step = "patient" | "vitals" | "capture" | "analyzing" | "result" | "voice";
 
 function TriagePage() {
   const { t } = useI18n();
@@ -108,6 +108,28 @@ function TriagePage() {
   const [identifier, setIdentifier] = useState("");
   const [age, setAge] = useState("");
   const [sex, setSex] = useState<"M" | "F" | "other">("F");
+  /* Vital signs state — collected after patient info, before photo capture */
+  const [vitalSigns, setVitalSigns] = useState<{
+    systolicBP: string;
+    diastolicBP: string;
+    heartRate: string;
+    respiratoryRate: string;
+    temperature: string;
+    oxygenSaturation: string;
+    muac: string;
+    weight: string;
+    painScale: string;
+  }>({
+    systolicBP: "",
+    diastolicBP: "",
+    heartRate: "",
+    respiratoryRate: "",
+    temperature: "",
+    oxygenSaturation: "",
+    muac: "",
+    weight: "",
+    painScale: "",
+  });
   const [image, setImage] = useState<string | null>(null);
   const [imageSource, setImageSource] = useState<"camera" | "gallery">("camera");
   const [consent, setConsent] = useState(false);
@@ -137,6 +159,9 @@ function TriagePage() {
         voice.narrate(
           `${t("voiceGuideWhoIsPatient")} ${t("voiceGuidePatientId")} ${t("voiceGuideAge")} ${t("voiceGuideSex")} ${t("voiceGuideConsent")}`,
         );
+        break;
+      case "vitals":
+        voice.narrate(t("captureVitals") + ". " + t("vitalsDesc"));
         break;
       case "capture":
         voice.narrate(t("voiceGuideCapture"));
@@ -238,6 +263,25 @@ function TriagePage() {
     };
     await queuePatient(p);
     setPatient(p);
+    setStep("vitals");
+  };
+
+  const onVitalsComplete = () => {
+    setStep("capture");
+  };
+
+  const skipVitals = () => {
+    setVitalSigns({
+      systolicBP: "",
+      diastolicBP: "",
+      heartRate: "",
+      respiratoryRate: "",
+      temperature: "",
+      oxygenSaturation: "",
+      muac: "",
+      weight: "",
+      painScale: "",
+    });
     setStep("capture");
   };
 
@@ -273,6 +317,23 @@ function TriagePage() {
     }
   };
 
+  const buildVitalSigns = () => {
+    const parsed = {
+      systolicBP: vitalSigns.systolicBP ? Number(vitalSigns.systolicBP) : undefined,
+      diastolicBP: vitalSigns.diastolicBP ? Number(vitalSigns.diastolicBP) : undefined,
+      heartRate: vitalSigns.heartRate ? Number(vitalSigns.heartRate) : undefined,
+      respiratoryRate: vitalSigns.respiratoryRate ? Number(vitalSigns.respiratoryRate) : undefined,
+      temperature: vitalSigns.temperature ? Number(vitalSigns.temperature) : undefined,
+      oxygenSaturation: vitalSigns.oxygenSaturation ? Number(vitalSigns.oxygenSaturation) : undefined,
+      muac: vitalSigns.muac ? Number(vitalSigns.muac) : undefined,
+      weight: vitalSigns.weight ? Number(vitalSigns.weight) : undefined,
+      painScale: vitalSigns.painScale ? Number(vitalSigns.painScale) : undefined,
+    };
+    /* Only include vitals if at least one field has a value */
+    const hasAny = Object.values(parsed).some((v) => v !== undefined);
+    return hasAny ? (parsed as VitalSigns) : undefined;
+  };
+
   const save = async () => {
     if (!user || !patient || !result || !image) return;
     voice.narrate(t("voiceGuideSaving"));
@@ -281,6 +342,7 @@ function TriagePage() {
       patientId: patient.id,
       chwUserId: user.id,
       images: [image],
+      vitalSigns: buildVitalSigns(),
       condition: result.condition,
       confidence: result.confidence,
       urgency: result.urgency,
@@ -608,6 +670,129 @@ function TriagePage() {
           </div>
         )}
 
+        {step === "vitals" && (
+          <div className="mt-7 space-y-5">
+            <div>
+              <h2 className="font-display text-xl font-semibold">{t("captureVitals")}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{t("vitalsDesc")}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="space-y-1.5">
+                <Label>{t("bp")}</Label>
+                <div className="flex gap-1">
+                  <Input
+                    value={vitalSigns.systolicBP}
+                    onChange={(e) => setVitalSigns((v) => ({ ...v, systolicBP: e.target.value }))}
+                    placeholder="120"
+                    type="number"
+                    min={0}
+                    max={300}
+                    className="w-full"
+                  />
+                  <span className="flex items-center text-xs text-muted-foreground">/</span>
+                  <Input
+                    value={vitalSigns.diastolicBP}
+                    onChange={(e) => setVitalSigns((v) => ({ ...v, diastolicBP: e.target.value }))}
+                    placeholder="80"
+                    type="number"
+                    min={0}
+                    max={200}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("heartRate")}</Label>
+                <Input
+                  value={vitalSigns.heartRate}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, heartRate: e.target.value }))}
+                  placeholder={t("hrPlaceholder")}
+                  type="number"
+                  min={0}
+                  max={300}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("respiratoryRate")}</Label>
+                <Input
+                  value={vitalSigns.respiratoryRate}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, respiratoryRate: e.target.value }))}
+                  placeholder={t("rrPlaceholder")}
+                  type="number"
+                  min={0}
+                  max={100}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("temperature")}</Label>
+                <Input
+                  value={vitalSigns.temperature}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, temperature: e.target.value }))}
+                  placeholder={t("tempPlaceholder")}
+                  type="number"
+                  min={30}
+                  max={45}
+                  step={0.1}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("oxygenSaturation")}</Label>
+                <Input
+                  value={vitalSigns.oxygenSaturation}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, oxygenSaturation: e.target.value }))}
+                  placeholder={t("spo2Placeholder")}
+                  type="number"
+                  min={0}
+                  max={100}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("muac")}</Label>
+                <Input
+                  value={vitalSigns.muac}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, muac: e.target.value }))}
+                  placeholder={t("muacPlaceholder")}
+                  type="number"
+                  min={0}
+                  max={60}
+                  step={0.1}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("weight")}</Label>
+                <Input
+                  value={vitalSigns.weight}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, weight: e.target.value }))}
+                  placeholder={t("weightPlaceholder")}
+                  type="number"
+                  min={0}
+                  max={300}
+                  step={0.1}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("painScale")}</Label>
+                <Input
+                  value={vitalSigns.painScale}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, painScale: e.target.value }))}
+                  placeholder="0-10"
+                  type="number"
+                  min={0}
+                  max={10}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button onClick={onVitalsComplete} size="lg" className="flex-1 gap-2">
+                {t("continue")} <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button onClick={skipVitals} size="lg" variant="ghost" className="gap-2">
+                {t("vitalsUnknown")}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {step === "capture" && (
           <div className="mt-6 space-y-4">
             <div className="flex items-start gap-3 rounded-2xl border bg-card p-4">
@@ -766,6 +951,7 @@ function TriagePage() {
                 } else {
                   const txt = {
                     patient: `${t("voiceGuideWhoIsPatient")} ${t("voiceGuidePatientId")} ${t("voiceGuideAge")} ${t("voiceGuideSex")} ${t("voiceGuideConsent")}`,
+                    vitals: `${t("captureVitals")}. ${t("vitalsDesc")}.`,
                     capture: t("voiceGuideCapture"),
                     analyzing: t("analyzing") + "...",
                     result: result
@@ -788,7 +974,7 @@ function TriagePage() {
 }
 
 function Stepper({ step }: { step: Step }) {
-  const stages: Step[] = ["patient", "capture", "analyzing", "result", "voice"];
+  const stages: Step[] = ["patient", "vitals", "capture", "analyzing", "result", "voice"];
   const idx = stages.indexOf(step);
   return (
     <div className="flex items-center gap-1.5">
