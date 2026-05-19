@@ -229,6 +229,7 @@ export async function processSyncQueue(
           images: a.images,
           vitals: (a.vitalSigns ?? null) as never,
           condition: a.condition ?? null,
+          icd10_code: a.icd10Code ?? null,
           confidence: a.confidence ?? null,
           urgency: a.urgency ?? null,
           possible_conditions: (a.possibleConditions ?? null) as never,
