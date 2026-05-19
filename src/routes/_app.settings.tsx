@@ -32,7 +32,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { detectOllama, type EngineKind } from "@/lib/gemma";
+import { detectOllama, type EngineKind, PHI_VISION_MODEL_ID, GEMMA4_E2B_MODEL_ID } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import { OllamaSetup } from "@/components/OllamaSetup";
 import { StorageMonitor } from "@/components/StorageMonitor";
@@ -285,6 +285,30 @@ function SettingsPage() {
               {engineOptions.find((o) => o.value === s.engineKind)?.desc}
             </p>
           </div>
+
+          {s.engineKind === "webllm" && (
+            <div className="space-y-1.5">
+              <Label>WebLLM model</Label>
+              <Select value={s.modelId} onValueChange={s.setModelId}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={PHI_VISION_MODEL_ID}>
+                    Phi-3.5 Vision (4 GB) — Images + Text
+                  </SelectItem>
+                  <SelectItem value={GEMMA4_E2B_MODEL_ID}>
+                    Gemma 4 E2B (1.5 GB) — Text Only
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {s.modelId === GEMMA4_E2B_MODEL_ID
+                  ? "Faster to load, best for follow-up questions and voice. Phi-3.5 Vision is loaded automatically when you triage an image or analyze a document."
+                  : "Vision-capable. Supports image triage, document analysis, follow-up questions, and voice."}
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center justify-between">
             <div>
