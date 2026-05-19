@@ -5,20 +5,22 @@ import { Button } from "@/components/ui/button";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useReferralAlerts } from "@/hooks/useReferralAlerts";
 import { getDB } from "@/lib/db";
-import type { Assessment, Patient } from "@/types/trij";
+import type { Assessment, Patient, FollowUp } from "@/types/trij";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import {
   Camera,
   FileText,
   Stethoscope,
+  Calendar,
   Map as MapIcon,
   ArrowRight,
   HardDrive,
   ExternalLink,
   BellRing,
+  Clock,
 } from "lucide-react";
 import { StorageMonitor } from "@/components/StorageMonitor";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, isPast, isToday, format } from "date-fns";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_app/dashboard")({
@@ -57,6 +59,7 @@ function DashboardPage() {
   const user = useSessionStore((s) => s.user);
   const name = (user?.user_metadata?.name as string) || user?.email?.split("@")[0] || "CHW";
   const [recent, setRecent] = useState<(Assessment & { patient?: Patient })[]>([]);
+  const [upcomingFollowUps, setUpcomingFollowUps] = useState<FollowUp[]>([]);
   const { unseen, count: alertCount, markAllAsSeen } = useReferralAlerts();
 
   useEffect(() => {
@@ -66,8 +69,19 @@ function DashboardPage() {
         const db = getDB();
         const a = await db.assessments.orderBy("createdAt").reverse().limit(5).toArray();
         const patients = await Promise.all(a.map((x) => db.patients.get(x.patientId)));
+        /* Load upcoming pending follow-ups (today and future) */
+        const now = new Date().toISOString();
+        const allFu = await db.followUps
+          .where("status")
+          .equals("pending")
+          .toArray();
+        const upcoming = allFu
+          .filter((f) => f.scheduledFor >= now.slice(0, 10))
+          .sort((a, b) => a.scheduledFor.localeCompare(b.scheduledFor))
+          .slice(0, 5);
         if (!alive) return;
         setRecent(a.map((x, i) => ({ ...x, patient: patients[i] })));
+        setUpcomingFollowUps(upcoming);
       } catch {
         /* db not ready */
       }
@@ -158,6 +172,50 @@ function DashboardPage() {
           <QuickTile to="/referrals" icon={ExternalLink} label={t("referrals")} />
           <QuickTile to="/supervisor" icon={MapIcon} label={t("map")} />
         </section>
+
+        {upcomingFollowUps.length > 0 && (
+          <section className="mt-6">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="font-display text-base font-semibold">{t("upcomingFollowUps")}</h2>
+              <Link to="/patients" className="text-xs font-medium text-primary">
+                {t("viewAll")}
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {upcomingFollowUps.map((f) => {
+                const dueDate = new Date(f.scheduledFor);
+                const past = isPast(dueDate);
+                const today = isToday(dueDate);
+                return (
+                  <Link
+                    key={f.id}
+                    to="/patients/$patientId"
+                    params={{ patientId: f.patientId }}
+                    className={`flex items-start gap-3 rounded-2xl border p-3 transition-colors hover:bg-accent/30 ${
+                      past ? "border-red-200 bg-red-50" : today ? "border-amber-200 bg-amber-50" : "bg-card"
+                    }`}
+                  >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
+                      <Calendar className={`h-4 w-4 ${past ? "text-red-500" : "text-primary"}`} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{t("followUp")}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(dueDate, "MMM d, HH:mm")}
+                        {past && ` · ${t("overdue")}`}
+                        {today && ` · ${t("dueToday")}`}
+                      </p>
+                      {f.notes && (
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">{f.notes}</p>
+                      )}
+                    </div>
+                    <Clock className={`h-4 w-4 shrink-0 ${past ? "text-red-500" : "text-muted-foreground"}`} />
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         <section className="mt-8">
           <div className="flex items-center gap-2 rounded-2xl border bg-card p-4">
