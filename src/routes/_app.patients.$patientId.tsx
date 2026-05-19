@@ -25,7 +25,7 @@ import {
 import { Calendar, Camera, FileDown, Share2, UserRound, RefreshCw, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { format, isPast, isToday } from "date-fns";
 import { downloadReferralPdf, shareReferralPdf } from "@/lib/referral";
-import { updateReferralStatus, queueFollowUp, updateFollowUpStatus } from "@/lib/sync";
+import { updateReferralStatus, saveReferralFeedback, queueFollowUp, updateFollowUpStatus } from "@/lib/sync";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -96,6 +96,13 @@ function PatientDetail() {
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleNotes, setScheduleNotes] = useState("");
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [feedbackAssessmentId, setFeedbackAssessmentId] = useState<string | null>(null);
+  const [feedbackDiagnosis, setFeedbackDiagnosis] = useState("");
+  const [feedbackTreatment, setFeedbackTreatment] = useState("");
+  const [feedbackFacility, setFeedbackFacility] = useState("");
+  const [feedbackOutcome, setFeedbackOutcome] = useState<"treated" | "referred_elsewhere" | "admitted" | "discharged" | "unknown">("unknown");
+  const [feedbackNotes, setFeedbackNotes] = useState("");
 
   const loadData = async () => {
     try {
@@ -163,6 +170,27 @@ function PatientDetail() {
     setFollowUps((prev) =>
       prev.map((f) => (f.id === id ? { ...f, status: "cancelled" } : f)),
     );
+  };
+
+  const handleSaveFeedback = async () => {
+    if (!feedbackAssessmentId) return;
+    const feedback = {
+      diagnosis: feedbackDiagnosis || undefined,
+      treatment: feedbackTreatment || undefined,
+      outcome: feedbackOutcome,
+      facilityName: feedbackFacility || undefined,
+      notes: feedbackNotes || undefined,
+      providedAt: new Date().toISOString(),
+    };
+    await saveReferralFeedback(feedbackAssessmentId, feedback);
+    setFeedbackDialogOpen(false);
+    setFeedbackDiagnosis("");
+    setFeedbackTreatment("");
+    setFeedbackFacility("");
+    setFeedbackOutcome("unknown");
+    setFeedbackNotes("");
+    toast.success("Feedback saved");
+    loadData();
   };
 
   if (!patient) {
@@ -290,7 +318,7 @@ function PatientDetail() {
                     <Select
                       value={a.referralStatus}
                       onValueChange={(v) => {
-                        const s = v as "none" | "pending" | "active" | "resolved";
+                        const s = v as "none" | "pending" | "active" | "awaiting_feedback" | "feedback_received" | "resolved";
                         updateReferralStatus(a.id, s);
                         toast.success(`Referral marked as ${s}`);
                       }}
@@ -301,9 +329,44 @@ function PatientDetail() {
                       <SelectContent>
                         <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="active">In transit</SelectItem>
+                        <SelectItem value="awaiting_feedback">Awaiting feedback</SelectItem>
+                        <SelectItem value="feedback_received">Feedback received</SelectItem>
                         <SelectItem value="resolved">Resolved</SelectItem>
                       </SelectContent>
                     </Select>
+                    {a.referralFeedback && (a.referralStatus === "feedback_received" || a.referralStatus === "resolved") && (
+                      <div className="mt-2 w-full rounded-xl border bg-muted/20 p-3 text-xs">
+                        <p className="font-medium text-foreground">Referral feedback</p>
+                        {a.referralFeedback.facilityName && (
+                          <p className="mt-1 text-muted-foreground">Facility: {a.referralFeedback.facilityName}</p>
+                        )}
+                        {a.referralFeedback.diagnosis && (
+                          <p className="text-muted-foreground">Diagnosis: {a.referralFeedback.diagnosis}</p>
+                        )}
+                        {a.referralFeedback.treatment && (
+                          <p className="text-muted-foreground">Treatment: {a.referralFeedback.treatment}</p>
+                        )}
+                        {a.referralFeedback.notes && (
+                          <p className="mt-1 italic text-muted-foreground">{a.referralFeedback.notes}</p>
+                        )}
+                      </div>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1 text-xs"
+                      onClick={() => {
+                        setFeedbackAssessmentId(a.id);
+                        setFeedbackDiagnosis(a.referralFeedback?.diagnosis ?? "");
+                        setFeedbackTreatment(a.referralFeedback?.treatment ?? "");
+                        setFeedbackFacility(a.referralFeedback?.facilityName ?? "");
+                        setFeedbackOutcome(a.referralFeedback?.outcome ?? "unknown");
+                        setFeedbackNotes(a.referralFeedback?.notes ?? "");
+                        setFeedbackDialogOpen(true);
+                      }}
+                    >
+                      <FileDown className="h-3.5 w-3.5" /> Feedback
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -440,6 +503,69 @@ function PatientDetail() {
             })}
           </ul>
         )}
+
+        {/* Referral feedback dialog */}
+        <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Record referral feedback</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-1.5">
+                <Label>Facility name</Label>
+                <Input
+                  value={feedbackFacility}
+                  onChange={(e) => setFeedbackFacility(e.target.value)}
+                  placeholder="e.g. Bondo Health Centre"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Clinic diagnosis</Label>
+                <Input
+                  value={feedbackDiagnosis}
+                  onChange={(e) => setFeedbackDiagnosis(e.target.value)}
+                  placeholder="e.g. Cellulitis"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Treatment given</Label>
+                <Input
+                  value={feedbackTreatment}
+                  onChange={(e) => setFeedbackTreatment(e.target.value)}
+                  placeholder="e.g. Antibiotics prescribed"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Outcome</Label>
+                <Select value={feedbackOutcome} onValueChange={(v) => setFeedbackOutcome(v as typeof feedbackOutcome)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="treated">Treated and discharged</SelectItem>
+                    <SelectItem value="referred_elsewhere">Referred elsewhere</SelectItem>
+                    <SelectItem value="admitted">Admitted</SelectItem>
+                    <SelectItem value="discharged">Discharged</SelectItem>
+                    <SelectItem value="unknown">Unknown</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Additional notes</Label>
+                <textarea
+                  value={feedbackNotes}
+                  onChange={(e) => setFeedbackNotes(e.target.value)}
+                  className="w-full rounded-lg border border-input bg-background p-2 text-sm"
+                  rows={3}
+                  placeholder="Any other details from the clinic..."
+                />
+              </div>
+              <Button onClick={handleSaveFeedback} className="w-full gap-2">
+                Save feedback
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );

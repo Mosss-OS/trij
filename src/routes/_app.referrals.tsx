@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { getDB } from "@/lib/db";
-import type { Assessment, Patient } from "@/types/trij";
+import type { Assessment, Patient, ReferralFeedback } from "@/types/trij";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,16 +59,20 @@ export const Route = createFileRoute("/_app/referrals")({
 const REFERRAL_STATUS_LABELS: Record<string, string> = {
   pending: "Pending",
   active: "In transit",
+  awaiting_feedback: "Awaiting feedback",
+  feedback_received: "Feedback received",
   resolved: "Resolved",
 };
 
 const REFERRAL_STATUS_COLORS: Record<string, string> = {
   pending: "bg-urgency-yellow-bg text-urgency-yellow border-urgency-yellow/30",
   active: "bg-blue-50 text-blue-700 border-blue-200",
+  awaiting_feedback: "bg-purple-50 text-purple-700 border-purple-200",
+  feedback_received: "bg-teal-50 text-teal-700 border-teal-200",
   resolved: "bg-green-50 text-green-700 border-green-200",
 };
 
-type TabType = "all" | "pending" | "active" | "resolved";
+type TabType = "all" | "pending" | "active" | "awaiting_feedback" | "feedback_received" | "resolved";
 
 type ReferralItem = Assessment & { patient?: Patient };
 
@@ -106,7 +110,7 @@ function ReferralsPage() {
 
   const handleStatusChange = async (
     assessmentId: string,
-    status: "none" | "pending" | "active" | "resolved",
+    status: "none" | "pending" | "active" | "awaiting_feedback" | "feedback_received" | "resolved",
   ) => {
     const seq = (reqSeq.current.get(assessmentId) ?? 0) + 1;
     reqSeq.current.set(assessmentId, seq);
@@ -130,9 +134,10 @@ function ReferralsPage() {
   };
 
   const statusCounts = useMemo(() => {
-    const counts = { all: items.length, pending: 0, active: 0, resolved: 0 };
+    const counts = { all: items.length, pending: 0, active: 0, awaiting_feedback: 0, feedback_received: 0, resolved: 0 };
     for (const a of items) {
-      if (a.referralStatus in counts) counts[a.referralStatus as keyof typeof counts]++;
+      const s = a.referralStatus;
+      if (s in counts) counts[s as keyof typeof counts]++;
     }
     return counts;
   }, [items]);
@@ -141,6 +146,8 @@ function ReferralsPage() {
     { key: "all", label: "All" },
     { key: "pending", label: "Pending" },
     { key: "active", label: "In transit" },
+    { key: "awaiting_feedback", label: "Awaiting feedback" },
+    { key: "feedback_received", label: "Feedback received" },
     { key: "resolved", label: "Resolved" },
   ];
 
@@ -222,7 +229,10 @@ function ReferralsPage() {
                   <Select
                     value={a.referralStatus}
                     onValueChange={(v) =>
-                      handleStatusChange(a.id, v as "none" | "pending" | "active" | "resolved")
+                      handleStatusChange(
+                        a.id,
+                        v as "none" | "pending" | "active" | "awaiting_feedback" | "feedback_received" | "resolved",
+                      )
                     }
                   >
                     <SelectTrigger className="h-8 w-32 text-xs">
@@ -231,11 +241,38 @@ function ReferralsPage() {
                     <SelectContent>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="active">In transit</SelectItem>
+                      <SelectItem value="awaiting_feedback">Awaiting feedback</SelectItem>
+                      <SelectItem value="feedback_received">Feedback received</SelectItem>
                       <SelectItem value="resolved">Resolved</SelectItem>
                     </SelectContent>
                   </Select>
                   {syncingId === a.id && (
                     <RefreshCw className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                  )}
+                  {a.referralFeedback && (a.referralStatus === "feedback_received" || a.referralStatus === "resolved") && (
+                    <div className="mt-2 w-full rounded-xl border bg-muted/20 p-3 text-xs">
+                      <p className="font-medium text-foreground">Referral feedback</p>
+                      {a.referralFeedback.facilityName && (
+                        <p className="mt-1 text-muted-foreground">
+                          Facility: {a.referralFeedback.facilityName}
+                        </p>
+                      )}
+                      {a.referralFeedback.diagnosis && (
+                        <p className="text-muted-foreground">
+                          Diagnosis: {a.referralFeedback.diagnosis}
+                        </p>
+                      )}
+                      {a.referralFeedback.treatment && (
+                        <p className="text-muted-foreground">
+                          Treatment: {a.referralFeedback.treatment}
+                        </p>
+                      )}
+                      {a.referralFeedback.notes && (
+                        <p className="mt-1 italic text-muted-foreground">
+                          {a.referralFeedback.notes}
+                        </p>
+                      )}
+                    </div>
                   )}
                   <Button
                     variant="outline"
