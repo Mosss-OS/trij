@@ -6,7 +6,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { BottomNav } from "@/components/BottomNav";
 import { DisclaimerDialog } from "@/components/DisclaimerDialog";
 import { SyncStatusIndicator } from "@/components/SyncStatusIndicator";
-import { Loader2, ShieldAlert, X } from "lucide-react";
+import { Loader2, ShieldAlert, X, Beaker } from "lucide-react";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -68,6 +68,7 @@ function AppLayout() {
   useAuthSession();
   const { session, offlineUser, loading } = useSessionStore();
   const disclaimerAccepted = useSettingsStore((s) => s.disclaimerAccepted);
+  const engineKind = useSettingsStore((s) => s.engineKind);
   const kioskMode = useSettingsStore((s) => s.kioskMode);
   if (loading) {
     return (
@@ -88,6 +89,12 @@ function AppLayout() {
         Skip to main content
       </a>
       <DisclaimerBanner />
+      {engineKind === "demo" && (
+        <div className="flex items-center gap-2 bg-urgency-red/15 px-4 py-2 text-xs font-medium text-urgency-red">
+          <Beaker className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>🔴 DEMO MODE — Results are simulated, not for patient care</span>
+        </div>
+      )}
       <main id="main-content" role="main">
         <Outlet />
       </main>
