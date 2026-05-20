@@ -88,6 +88,8 @@ function AppLayout() {
   const kioskMode = useSettingsStore((s) => s.kioskMode);
   const tutorialCompleted = useSettingsStore((s) => s.tutorialCompleted);
   const tutorialSkipped = useSettingsStore((s) => s.tutorialSkipped);
+  const sunlightMode = useSettingsStore((s) => s.sunlightMode);
+  const setSunlightMode = useSettingsStore((s) => s.setSunlightMode);
   const [showTutorial, setShowTutorial] = useState(false);
   const isNewUser = !tutorialCompleted && !tutorialSkipped;
   if (loading) {
@@ -103,6 +105,21 @@ function AppLayout() {
   useEffect(() => {
     if (isNewUser) setShowTutorial(true);
   }, [isNewUser]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("sunlight-mode", sunlightMode);
+  }, [sunlightMode]);
+
+  useEffect(() => {
+    if (!("AmbientLightSensor" in window)) return;
+    try {
+      const sensor = new (window as any).AmbientLightSensor();
+      sensor.addEventListener("reading", () => {
+        if (sensor.illuminance > 10000) setSunlightMode(true);
+      });
+      sensor.start();
+    } catch {}
+  }, [setSunlightMode]);
   return (
     <>
       {showTutorial && <TutorialOverlay onComplete={() => setShowTutorial(false)} />}
