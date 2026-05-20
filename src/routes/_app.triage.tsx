@@ -152,6 +152,59 @@ function TriagePage() {
   const [pendingCapture, setPendingCapture] = useState<string | null>(null);
   const pendingTextRef = useRef(false);
 
+  /* Auto-save triage draft every 30 seconds */
+  useEffect(() => {
+    if (step === "result" || step === "analyzing" || step === "voice") return;
+    if (step === "patient" && !patient) return;
+    const interval = setInterval(() => {
+      try {
+        const draft = {
+          step,
+          patient,
+          identifier,
+          age,
+          sex,
+          presentationType,
+          symptomDescription,
+          vitalSigns,
+          image,
+          consent,
+          savedAt: Date.now(),
+        };
+        localStorage.setItem("trij-triage-draft", JSON.stringify(draft));
+      } catch {}
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [step, patient, identifier, age, sex, presentationType, symptomDescription, vitalSigns, image, consent]);
+
+  /* Restore draft on mount */
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("trij-triage-draft");
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (Date.now() - draft.savedAt > 86400000) {
+        localStorage.removeItem("trij-triage-draft");
+        return;
+      }
+      if (draft.patient && draft.step !== "result" && draft.step !== "voice") {
+        setPatient(draft.patient);
+        setIdentifier(draft.identifier || "");
+        setAge(draft.age || "");
+        setSex(draft.sex || "F");
+        setPresentationType(draft.presentationType || "dermatology");
+        setSymptomDescription(draft.symptomDescription || "");
+        if (draft.vitalSigns) setVitalSigns(draft.vitalSigns);
+        if (draft.image) setImage(draft.image);
+        setConsent(draft.consent || false);
+      }
+    } catch {}
+  }, []);
+
+  const clearDraft = () => {
+    try { localStorage.removeItem("trij-triage-draft"); } catch {}
+  };
+
   useEffect(() => {
     if (!voiceRef.current) {
       voiceRef.current = new VoiceAssistant(language);
@@ -419,6 +472,7 @@ function TriagePage() {
     };
     await queueAssessment(a);
     await clearVoiceDraft(patient.id).catch(() => {});
+    clearDraft();
     voice.narrate(t("voiceGuideSaved"));
     toast.success(t("savedOffline"));
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
@@ -1023,6 +1077,13 @@ function TriagePage() {
             />
             <AiFeedbackWidget onFeedback={(fb) => { aiFeedbackRef.current = fb; }} userId={user?.id || ""} />
             <div className="flex flex-wrap gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 gap-2"
+                onClick={() => { if (image && window.confirm(t("retakeConfirm"))) setStep("capture"); }}
+              >
+                <ScanLine className="h-4 w-4" /> {t("retakePhoto")}
+              </Button>
               <Button
                 variant="outline"
                 className="flex-1 gap-2"
