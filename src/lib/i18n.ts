@@ -290,6 +290,8 @@ export const translations = {
     markAsRead: "Mark as read",
     noNotifications: "No notifications",
     open: "Open",
+    retakePhoto: "Retake photo",
+    retakeConfirm: "Retaking the photo will discard the current assessment context. Continue?",
     manualAssessment: "Manual assessment",
     manualAssessmentDesc: "Select the urgency level and likely condition based on your clinical judgment.",
     manualUrgency: "Urgency level",
