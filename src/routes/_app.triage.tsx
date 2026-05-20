@@ -42,6 +42,8 @@ import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { useVoiceGuidance } from "@/hooks/useVoiceGuidance";
 import { CloudInferenceIndicator } from "@/components/CloudInferenceIndicator";
+import { AiFailureOverlay, classifyAiError } from "@/components/AiFailureOverlay";
+import type { AiFailureKind } from "@/components/AiFailureOverlay";
 
 interface QAPair {
   question: string;
@@ -142,6 +144,9 @@ function TriagePage() {
   const voiceRef = useRef<VoiceAssistant | null>(null);
   const kindRef = useRef<string>("demo");
   const convoRef = useRef<ConvMessage[]>([]);
+  const [aiFailureKind, setAiFailureKind] = useState<AiFailureKind | null>(null);
+  const [pendingCapture, setPendingCapture] = useState<string | null>(null);
+  const pendingTextRef = useRef(false);
 
   useEffect(() => {
     if (!voiceRef.current) {
@@ -301,10 +306,11 @@ function TriagePage() {
             setProgressText(r.text || t("preparing") + "...");
           });
         } catch (err) {
-          console.error("WebLLM load failed, falling back to demo", err);
-          toast.error(t("inferenceFailed") + ": WebGPU issues. Using demo mode.");
-          kind = "demo";
-          kindRef.current = "demo";
+          console.error("WebLLM load failed", err);
+          setAiFailureKind("model_not_ready");
+          setPendingCapture(dataUrl);
+          setStep("capture");
+          return;
         }
       }
 
@@ -314,13 +320,15 @@ function TriagePage() {
       setResult(r);
       setStep("result");
     } catch (err) {
-      toast.error(t("inferenceFailed") + ": " + (err as Error).message);
+      setAiFailureKind(classifyAiError(err));
+      setPendingCapture(dataUrl);
       setStep("capture");
     }
   };
 
   const onTextOnlyAnalyze = async () => {
     /* For non-dermatology assessments, use a placeholder image and pass the symptom description */
+    pendingTextRef.current = true;
     setStep("analyzing");
     try {
       let kind = engineKind === "auto" ? await detectEngine() : engineKind;
@@ -333,10 +341,11 @@ function TriagePage() {
             setProgressText(r.text || t("preparing") + "...");
           });
         } catch (err) {
-          console.error("WebLLM load failed, falling back to demo", err);
-          toast.error(t("inferenceFailed") + ": WebGPU issues. Using demo mode.");
-          kind = "demo";
-          kindRef.current = "demo";
+          console.error("WebLLM load failed", err);
+          setAiFailureKind("model_not_ready");
+          setPendingCapture("");
+          setStep("capture");
+          return;
         }
       }
 
@@ -347,7 +356,8 @@ function TriagePage() {
       setResult(r);
       setStep("result");
     } catch (err) {
-      toast.error(t("inferenceFailed") + ": " + (err as Error).message);
+      setAiFailureKind(classifyAiError(err));
+      setPendingCapture("");
       setStep("capture");
     }
   };
@@ -501,6 +511,53 @@ function TriagePage() {
 
   return (
     <>
+      {aiFailureKind && (
+        <AiFailureOverlay
+          kind={aiFailureKind}
+          onRetry={() => {
+            setAiFailureKind(null);
+            if (pendingTextRef.current) {
+              pendingTextRef.current = false;
+              setTimeout(() => onTextOnlyAnalyze(), 100);
+            } else if (pendingCapture !== null) {
+              const data = pendingCapture;
+              setPendingCapture(null);
+              setTimeout(() => onCapture(data), 100);
+            }
+          }}
+          onUseDemo={() => {
+            setAiFailureKind(null);
+            setPendingCapture(null);
+            pendingTextRef.current = false;
+            const data = pendingCapture;
+            setPendingCapture(null);
+            const runDemo = async () => {
+              kindRef.current = "demo";
+              setStep("analyzing");
+              try {
+                const r = await triageImage(data || "", language, "demo", ollamaUrl, presentationType, symptomDescription);
+                setResult(r);
+                setStep("result");
+              } catch {
+                setStep("capture");
+              }
+            };
+            runDemo();
+          }}
+          onManualAssessment={(r) => {
+            setAiFailureKind(null);
+            setPendingCapture(null);
+            pendingTextRef.current = false;
+            setResult(r);
+            setStep("result");
+          }}
+          onDismiss={() => {
+            setAiFailureKind(null);
+            setPendingCapture(null);
+            pendingTextRef.current = false;
+          }}
+        />
+      )}
       <AppHeader title={t("newTriage")} subtitle={t("stepByStep")} />
       <div className="mx-auto max-w-2xl px-5 py-6">
         <Stepper step={step} />
