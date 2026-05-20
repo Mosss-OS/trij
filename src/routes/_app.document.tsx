@@ -93,7 +93,7 @@ function DocumentScan() {
   return (
     <>
       <AppHeader title={t("scanningDoc")} subtitle={t("labPrescriptionReferral")} />
-      <div className="mx-auto max-w-2xl px-5 py-6">
+      <div className="mx-auto max-w-4xl px-5 py-6">
         {step === "capture" && (
           <div className="space-y-4">
             <WebGPUCheck engineKind={engineKind} ollamaUrl={ollamaUrl} compact />

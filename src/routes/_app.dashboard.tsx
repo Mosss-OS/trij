@@ -101,7 +101,7 @@ function DashboardPage() {
   return (
     <>
       <AppHeader title={t("trij")} subtitle={t("onDeviceTriage")} />
-      <div className="mx-auto max-w-2xl px-5 pb-10">
+      <div className="mx-auto max-w-4xl px-5 pb-10">
         <section className="pt-6">
           <p className="text-sm text-muted-foreground">{greeting},</p>
           <h1 className="mt-1 font-display text-3xl font-bold leading-tight">{name}.</h1>

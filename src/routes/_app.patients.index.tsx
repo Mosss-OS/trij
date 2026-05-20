@@ -95,7 +95,7 @@ function PatientsList() {
   return (
     <>
       <AppHeader title={t("patients")} />
-      <div className="mx-auto max-w-2xl px-5 py-6">
+      <div className="mx-auto max-w-4xl px-5 py-6">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input

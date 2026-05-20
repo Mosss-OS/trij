@@ -341,11 +341,11 @@ function LoginPage() {
 
   if (pinMode && !online) {
     return (
-      <div className="relative min-h-screen overflow-hidden bg-background">
+      <div className="relative min-h-screen bg-background">
         <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl" />
 
-        <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
+        <div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-6 py-10 overflow-y-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <img
@@ -489,10 +489,10 @@ function LoginPage() {
 
   if (awaitingVerification) {
     return (
-      <div className="relative min-h-screen overflow-hidden bg-background">
+      <div className="relative min-h-screen bg-background">
         <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl" />
-        <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
+        <div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-6 py-10 overflow-y-auto">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-2.5">
               <img
@@ -554,11 +554,11 @@ function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
+    <div className="relative min-h-screen bg-background">
       <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
+      <div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-6 py-10 overflow-y-auto">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
             <img

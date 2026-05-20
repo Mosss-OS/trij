@@ -43,7 +43,7 @@ function NotificationsPage() {
   return (
     <>
       <AppHeader title={t("notifications")} />
-      <div className="mx-auto max-w-2xl px-5 py-6">
+      <div className="mx-auto max-w-4xl px-5 py-6">
         {unreadCount > 0 && (
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">

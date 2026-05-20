@@ -219,7 +219,7 @@ function SettingsPage() {
   return (
     <>
       <AppHeader title={t("settings")} />
-      <div className="mx-auto max-w-2xl space-y-6 px-5 py-6">
+      <div className="mx-auto max-w-4xl space-y-6 px-5 py-6">
         <Section title="Accessibility">
           <div className="flex items-center justify-between">
             <div>
