@@ -499,6 +499,28 @@ function SettingsPage() {
           </div>
         </Section>
 
+        <Section title={t("security")}>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <Label>{t("autoLock")}</Label>
+                <p className="text-xs text-muted-foreground">{t("autoLockDesc")}</p>
+              </div>
+              <select
+                value={s.lockTimeoutMinutes}
+                onChange={(e) => s.setLockTimeoutMinutes(Number(e.target.value))}
+                className="ml-4 rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value={0}>{t("never")}</option>
+                <option value={1}>1 {t("minute")}</option>
+                <option value={5}>5 {t("minutes")}</option>
+                <option value={10}>10 {t("minutes")}</option>
+                <option value={30}>30 {t("minutes")}</option>
+              </select>
+            </div>
+          </div>
+        </Section>
+
         <div className="rounded-3xl border bg-card p-6">
           <h2 className="font-display text-base font-semibold">{t("engineStatus")}</h2>
           <pre className="mt-3 overflow-x-auto rounded-xl bg-muted p-4 text-xs leading-relaxed">

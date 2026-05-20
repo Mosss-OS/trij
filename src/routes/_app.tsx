@@ -7,6 +7,8 @@ import { BottomNav } from "@/components/BottomNav";
 import { DisclaimerDialog } from "@/components/DisclaimerDialog";
 import { SyncStatusIndicator } from "@/components/SyncStatusIndicator";
 import { TutorialOverlay } from "@/components/TutorialOverlay";
+import { LockScreen } from "@/components/LockScreen";
+import { useInactivityLock } from "@/hooks/useInactivityLock";
 import { Loader2, ShieldAlert, X, Beaker } from "lucide-react";
 
 export const Route = createFileRoute("/_app")({
@@ -82,7 +84,7 @@ function DisclaimerBanner() {
 
 function AppLayout() {
   useAuthSession();
-  const { session, offlineUser, loading } = useSessionStore();
+  const { session, offlineUser, loading, screenLocked } = useSessionStore();
   const disclaimerAccepted = useSettingsStore((s) => s.disclaimerAccepted);
   const engineKind = useSettingsStore((s) => s.engineKind);
   const kioskMode = useSettingsStore((s) => s.kioskMode);
@@ -92,6 +94,7 @@ function AppLayout() {
   const setSunlightMode = useSettingsStore((s) => s.setSunlightMode);
   const [showTutorial, setShowTutorial] = useState(false);
   const isNewUser = !tutorialCompleted && !tutorialSkipped;
+  useInactivityLock();
   if (loading) {
     return (
       <div className="grid min-h-screen place-items-center">
@@ -122,7 +125,8 @@ function AppLayout() {
   }, [setSunlightMode]);
   return (
     <>
-      {showTutorial && <TutorialOverlay onComplete={() => setShowTutorial(false)} />}
+      {screenLocked && <LockScreen />}
+      {showTutorial && !screenLocked && <TutorialOverlay onComplete={() => setShowTutorial(false)} />}
       <div className={`min-h-screen pb-24 ${kioskMode ? "text-lg" : ""}`}>
       <a
         href="#main-content"
