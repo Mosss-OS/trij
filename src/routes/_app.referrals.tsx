@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { getDB } from "@/lib/db";
 import type { Assessment, Patient, ReferralFeedback } from "@/types/trij";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
 import {
@@ -82,6 +83,7 @@ function ReferralsPage() {
   const [tab, setTab] = useState<TabType>("all");
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const reqSeq = useRef<Map<string, number>>(new Map());
+  const { log } = useAuditLog();
 
   useEffect(() => {
     let alive = true;
@@ -92,6 +94,7 @@ function ReferralsPage() {
         const patients = await Promise.all(all.map((a) => db.patients.get(a.patientId)));
         if (!alive) return;
         setItems(all.map((a, i) => ({ ...a, patient: patients[i] ?? undefined })));
+        log("referral:read", { resourceType: "referral", details: `Listed ${all.length} referrals` });
       } catch {
         /* */
       } finally {

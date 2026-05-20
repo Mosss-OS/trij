@@ -170,3 +170,29 @@ export interface DocumentResult {
   abnormal_flags: string[];
   recommendation: string;
 }
+
+export type AuditAction =
+  | "patient:read"
+  | "patient:list"
+  | "patient:create"
+  | "patient:update"
+  | "assessment:read"
+  | "assessment:create"
+  | "assessment:list"
+  | "followup:read"
+  | "referral:read"
+  | "supervisor:read";
+
+export interface AuditEvent {
+  id?: number;
+  action: AuditAction;
+  userId: string;
+  patientId?: string;
+  resourceType: "patient" | "assessment" | "followup" | "referral";
+  resourceId?: string;
+  details?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  timestamp: number;
+  synced: boolean;
+}
