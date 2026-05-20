@@ -45,6 +45,8 @@ import { useVoiceGuidance } from "@/hooks/useVoiceGuidance";
 import { CloudInferenceIndicator } from "@/components/CloudInferenceIndicator";
 import { AiFailureOverlay, classifyAiError } from "@/components/AiFailureOverlay";
 import type { AiFailureKind } from "@/components/AiFailureOverlay";
+import { AiFeedbackWidget } from "@/components/AiFeedbackWidget";
+import type { AiFeedback } from "@/types/trij";
 
 interface QAPair {
   question: string;
@@ -142,6 +144,7 @@ function TriagePage() {
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [voiceBusy, setVoiceBusy] = useState(false);
   const [typedAnswer, setTypedAnswer] = useState("");
+  const aiFeedbackRef = useRef<AiFeedback | undefined>(undefined);
   const voiceRef = useRef<VoiceAssistant | null>(null);
   const kindRef = useRef<string>("demo");
   const convoRef = useRef<ConvMessage[]>([]);
@@ -408,6 +411,7 @@ function TriagePage() {
         voiceHistory.length > 0
           ? voiceHistory.map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`).join("\n")
           : undefined,
+      aiFeedback: aiFeedbackRef.current,
       language,
       imageSource,
       version: 0,
@@ -1017,6 +1021,7 @@ function TriagePage() {
               minConfidenceForLocalCare={minConfidenceForLocalCare}
               engineKind={kindRef.current as "webllm" | "ollama" | "demo" | "cloud" | "auto"}
             />
+            <AiFeedbackWidget onFeedback={(fb) => { aiFeedbackRef.current = fb; }} userId={user?.id || ""} />
             <div className="flex flex-wrap gap-3">
               <Button
                 variant="outline"
