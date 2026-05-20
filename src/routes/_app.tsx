@@ -88,6 +88,7 @@ function AppLayout() {
   const disclaimerAccepted = useSettingsStore((s) => s.disclaimerAccepted);
   const engineKind = useSettingsStore((s) => s.engineKind);
   const kioskMode = useSettingsStore((s) => s.kioskMode);
+  const fieldMode = useSettingsStore((s) => s.fieldMode);
   const tutorialCompleted = useSettingsStore((s) => s.tutorialCompleted);
   const tutorialSkipped = useSettingsStore((s) => s.tutorialSkipped);
   const sunlightMode = useSettingsStore((s) => s.sunlightMode);
@@ -127,7 +128,7 @@ function AppLayout() {
     <>
       {screenLocked && <LockScreen />}
       {showTutorial && !screenLocked && <TutorialOverlay onComplete={() => setShowTutorial(false)} />}
-      <div className={`min-h-screen pb-24 ${kioskMode ? "text-lg" : ""}`}>
+      <div className={`min-h-screen pb-24 ${kioskMode ? "text-lg" : ""} ${fieldMode ? "text-lg [&_button]:min-h-[48px] [&_a]:min-h-[48px] [&_input]:text-base" : ""}`}>
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"

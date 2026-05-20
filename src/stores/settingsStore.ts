@@ -19,6 +19,7 @@ interface SettingsState {
   minConfidenceForLocalCare: number;
   thinkingMode: boolean;
   kioskMode: boolean;
+  fieldMode: boolean;
   lockTimeoutMinutes: number;
   tutorialCompleted: boolean;
   tutorialSkipped: boolean;
@@ -43,6 +44,7 @@ interface SettingsState {
   setMinConfidenceForLocalCare: (v: number) => void;
   setThinkingMode: (enabled: boolean) => void;
   setKioskMode: (enabled: boolean) => void;
+  setFieldMode: (enabled: boolean) => void;
   setLockTimeoutMinutes: (minutes: number) => void;
   setBiometricEnabled: (enabled: boolean) => void;
 }
@@ -66,6 +68,7 @@ export const useSettingsStore = create<SettingsState>()(
       minConfidenceForLocalCare: 70,
       thinkingMode: false,
       kioskMode: false,
+      fieldMode: false,
       lockTimeoutMinutes: 5,
       tutorialCompleted: false,
       tutorialSkipped: false,
@@ -96,6 +99,7 @@ export const useSettingsStore = create<SettingsState>()(
         set({ minConfidenceForLocalCare }),
       setThinkingMode: (enabled: boolean) => set({ thinkingMode: enabled }),
       setKioskMode: (enabled: boolean) => set({ kioskMode: enabled }),
+      setFieldMode: (enabled: boolean) => set({ fieldMode: enabled }),
       setLockTimeoutMinutes: (lockTimeoutMinutes) => set({ lockTimeoutMinutes }),
       setBiometricEnabled: (biometricEnabled) => set({ biometricEnabled }),
     }),
