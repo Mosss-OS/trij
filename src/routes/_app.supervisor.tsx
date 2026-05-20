@@ -324,32 +324,32 @@ function Supervisor() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={markAllAsSeen}
-                      className="whitespace-nowrap rounded-lg bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
+                      className="whitespace-nowrap rounded-lg bg-blue-100 px-4 py-2 text-xs font-medium text-blue-700 hover:bg-blue-200 touch-manipulation"
                     >
                       Dismiss all
                     </button>
                   </div>
                 </div>
-                <ul className="mt-2 space-y-1.5">
+                <ul className="mt-2 space-y-2">
                   {unseen.slice(0, 5).map((a) => (
                     <li key={a.assessment.id} className="flex items-center gap-2">
                       <Link
                         to="/patients/$patientId"
                         params={{ patientId: a.assessment.patientId }}
-                        className="flex items-center gap-1 text-xs font-medium text-blue-700 hover:underline"
+                        className="flex items-center gap-1 text-sm font-medium text-blue-700 hover:underline min-h-[44px] py-1"
                       >
                         {a.patient?.identifier ?? "Unknown"}
-                        <ExternalLink className="h-3 w-3" />
+                        <ExternalLink className="h-3.5 w-3.5" />
                       </Link>
                       <span className="text-xs text-blue-600/70">
                         {a.assessment.condition ?? "Assessment"}
                       </span>
                       <button
                         onClick={() => markAsSeen(a.assessment.id)}
-                        className="ml-auto rounded p-0.5 text-blue-400 hover:text-blue-600"
-                        aria-label="Dismiss"
+                        className="ml-auto rounded-lg bg-blue-100 px-3 py-2 text-xs font-medium text-blue-600 hover:bg-blue-200 touch-manipulation"
+                        aria-label="Acknowledge"
                       >
-                        <X className="h-3.5 w-3.5" />
+                        Acknowledge
                       </button>
                     </li>
                   ))}
@@ -380,7 +380,7 @@ function Supervisor() {
           </div>
         )}
 
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label={t("routine")} value={counts.green} tone="green" />
           <Stat label={t("soon")} value={counts.yellow} tone="yellow" />
           <Stat label={t("urgent")} value={counts.red} tone="red" />
@@ -392,7 +392,7 @@ function Supervisor() {
           </div>
         </div>
 
-        <div className="flex gap-2 border-b">
+        <div className="flex flex-wrap gap-2 border-b pb-2 sm:pb-0 sm:gap-2">
           {(["queue", "analytics", "map"] as const).map((tab) => (
             <button
               key={tab}
@@ -408,7 +408,7 @@ function Supervisor() {
               {tab === "map" && t("map")}
             </button>
           ))}
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-auto flex flex-wrap items-center gap-1">
             {[7, 30, 90].map((d) => (
               <button
                 key={d}
@@ -460,10 +460,12 @@ function Supervisor() {
                 {filteredItems.slice(0, 30).map((a) => (
                   <li
                     key={a.id}
-                    className="flex items-center justify-between gap-3 py-3"
+                    className="flex items-center justify-between gap-3 py-3 px-2 active:bg-muted/50 rounded-xl cursor-pointer touch-manipulation"
                     tabIndex={0}
+                    onClick={() => window.open(`/patients/${a.patient_id}`, "_self")}
+                    onKeyDown={(e) => { if (e.key === "Enter") window.open(`/patients/${a.patient_id}`, "_self"); }}
                   >
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 min-h-[44px] flex flex-col justify-center">
                       <p className="truncate text-sm font-medium">
                         {a.patients?.identifier ?? "—"} · {a.condition ?? t("pending_status")}
                       </p>
@@ -471,7 +473,7 @@ function Supervisor() {
                         {format(new Date(a.created_at), "MMM d, p")}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {a.referral_status && a.referral_status !== "none" && (
                         <span className="inline-flex items-center rounded-full border bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
                           {a.referral_status === "active" ? t("inTransit") : a.referral_status}

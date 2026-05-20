@@ -163,7 +163,7 @@ export default function CHWMap({ locations, assessmentCounts = {} }: Props) {
   ];
 
   return (
-    <MapContainer center={center} zoom={10} className="h-80 w-full rounded-2xl" scrollWheelZoom>
+    <MapContainer center={center} zoom={10} className="h-80 w-full rounded-2xl sm:h-96 lg:h-[500px]" scrollWheelZoom>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
