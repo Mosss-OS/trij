@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { EngineKind } from "@/lib/gemma";
+import { generateSalt } from "@/lib/crypto";
 
 interface SettingsState {
   language: string;
@@ -25,6 +26,8 @@ interface SettingsState {
   tutorialSkipped: boolean;
   sunlightMode: boolean;
   biometricEnabled: boolean;
+  encryptionEnabled: boolean;
+  encryptionSalt: string;
   completeTutorial: () => void;
   skipTutorial: () => void;
   resetTutorial: () => void;
@@ -47,6 +50,7 @@ interface SettingsState {
   setFieldMode: (enabled: boolean) => void;
   setLockTimeoutMinutes: (minutes: number) => void;
   setBiometricEnabled: (enabled: boolean) => void;
+  setEncryptionEnabled: (enabled: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -74,6 +78,8 @@ export const useSettingsStore = create<SettingsState>()(
       tutorialSkipped: false,
       sunlightMode: false,
       biometricEnabled: false,
+      encryptionEnabled: false,
+      encryptionSalt: typeof window !== "undefined" ? generateSalt() : "",
       completeTutorial: () => set({ tutorialCompleted: true }),
       skipTutorial: () => set({ tutorialSkipped: true }),
       resetTutorial: () => set({ tutorialCompleted: false, tutorialSkipped: false }),
@@ -102,6 +108,7 @@ export const useSettingsStore = create<SettingsState>()(
       setFieldMode: (enabled: boolean) => set({ fieldMode: enabled }),
       setLockTimeoutMinutes: (lockTimeoutMinutes) => set({ lockTimeoutMinutes }),
       setBiometricEnabled: (biometricEnabled) => set({ biometricEnabled }),
+      setEncryptionEnabled: (encryptionEnabled) => set({ encryptionEnabled }),
     }),
     {
       name: "trij-settings",

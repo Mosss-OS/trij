@@ -4,6 +4,7 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { verifyPin } from "@/lib/pin-auth";
 import { authenticateBiometric } from "@/lib/webauthn";
+import { deriveKey, cacheKey, clearKey } from "@/lib/crypto";
 import { Lock, Fingerprint, AlertTriangle, Loader2 } from "lucide-react";
 
 export function LockScreen() {
@@ -11,6 +12,7 @@ export function LockScreen() {
   const setScreenLocked = useSessionStore((s) => s.setScreenLocked);
   const user = useSessionStore((s) => s.user);
   const biometricEnabled = useSettingsStore((s) => s.biometricEnabled);
+  const encryptionSalt = useSettingsStore((s) => s.encryptionSalt);
   const [pin, setPin] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [verifying, setVerifying] = useState(false);
@@ -20,6 +22,7 @@ export function LockScreen() {
   const mountedRef = useRef(true);
 
   useEffect(() => {
+    clearKey();
     if (biometricEnabled && bioAttempts < 3) {
       authenticateBiometric().then((ok) => {
         if (ok && mountedRef.current) setScreenLocked(false);
@@ -69,6 +72,8 @@ export function LockScreen() {
     try {
       const valid = await verifyPin(user?.id || "", fullPin);
       if (valid) {
+        const key = await deriveKey(fullPin, encryptionSalt);
+        cacheKey(key);
         setScreenLocked(false);
       } else {
         setError(t("incorrectPin"));

@@ -464,9 +464,22 @@ function SettingsPage() {
                 >
                   {hasPin ? t("change") : t("setup")}
                 </Button>
-              </div>
             </div>
-          </Section>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <Label>{t("encryptData")}</Label>
+                <p className="text-xs text-muted-foreground">{t("encryptDataDesc")}</p>
+              </div>
+              <Switch
+                checked={s.encryptionEnabled}
+                onCheckedChange={(enabled) => {
+                  s.setEncryptionEnabled(enabled);
+                  toast.success(enabled ? t("encryptionEnabled") : t("encryptionDisabled"));
+                }}
+              />
+            </div>
+          </div>
+        </Section>
         )}
 
         <Section title={t("storage")}>
