@@ -11,6 +11,7 @@ export const translations = {
     settings: "Settings",
     help: "Help",
     faq: "FAQ",
+    retakeTutorial: "Retake Tutorial",
     newTriage: "New triage",
     scanDoc: "Scan doc",
     quickAction: "Quick action",
