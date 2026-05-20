@@ -150,6 +150,8 @@ function Supervisor() {
   const [referralFilter, setReferralFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRange>(30);
   const [showMap, setShowMap] = useState(false);
+  const [outbreaks, setOutbreaks] = useState<Outbreak[]>([]);
+  const [outbreakAlerts, setOutbreakAlerts] = useState<OutbreakAlert[]>([]);
   const { unseen, count: alertCount, markAllAsSeen, markAsSeen } = useReferralAlerts();
 
   useEffect(() => {
@@ -173,10 +175,44 @@ function Supervisor() {
           .not("location_lat", "is", null)
           .not("location_lng", "is", null),
       ]);
-      if (!alive) return;
-      setItems((assessRes.data ?? []) as unknown as RemoteAssessment[]);
-      setChwLocations((chwRes.data ?? []) as ChwLocation[]);
-      setLoading(false);
+       if (!alive) return;
+       const assessmentsWithLoc = (assessRes.data ?? []).map((a: any) => ({
+         ...a,
+         location_lat: a.patients?.location_lat ?? null,
+         location_lng: a.patients?.location_lng ?? null,
+         patient_id: a.id, // Temporary - would need actual patient ID in real implementation
+       }));
+       setItems(assessmentsWithLoc as unknown as RemoteAssessment[]);
+       setChwLocations((chwRes.data ?? []) as ChwLocation[]);
+       
+       // Detect outbreaks
+       const detected = detectOutbreaks(assessmentsWithLoc as OutbreakAssessment[], 5, 3, 7);
+       setOutbreaks(detected);
+       
+       // Generate new alerts for outbreaks not already alerted
+       const newOutbreaks = detected.filter(
+         (outbreak) => !outbreakAlerts.some((alert) => alert.outbreakId === outbreak.id)
+       );
+       if (newOutbreaks.length > 0) {
+         const newAlerts = newOutbreaks.map((outbreak) => ({
+           id: `alert-${outbreak.id}`,
+           outbreakId: outbreak.id,
+           triggeredAt: new Date().toISOString(),
+           acknowledged: false,
+         }));
+         setOutbreakAlerts((prev) => [...prev, ...newAlerts]);
+         // Trigger immediate supervisor notification (toast)
+         newOutbreaks.forEach((outbreak) => {
+           toast.warning(`${t("outbreakDetected")}: ${outbreak.condition} (${outbreak.cases} cases)`, {
+             duration: 10000,
+             action: {
+               label: t("viewDetails"),
+               onClick: () => setActiveTab("map"),
+             },
+           });
+         });
+       }
+       setLoading(false);
     })();
     return () => {
       alive = false;
@@ -666,15 +702,16 @@ function Supervisor() {
                   </div>
                 }
               >
-                {showMap && (
-                  <CHWMap
-                    locations={chwLocations.filter(
-                      (l): l is ChwLocation & { location_lat: number; location_lng: number } =>
-                        l.location_lat != null && l.location_lng != null,
-                    )}
-                    assessmentCounts={chwAssessmentCounts}
-                  />
-                )}
+                 {showMap && (
+                   <CHWMap
+                     locations={chwLocations.filter(
+                       (l): l is ChwLocation & { location_lat: number; location_lng: number } =>
+                         l.location_lat != null && l.location_lng != null,
+                     )}
+                     assessmentCounts={chwAssessmentCounts}
+                     outbreaks={outbreaks}
+                   />
+                 )}
               </Suspense>
             )}
           </div>

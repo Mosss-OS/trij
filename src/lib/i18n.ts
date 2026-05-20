@@ -195,8 +195,8 @@ export const translations = {
     lowProbability: "Low probability",
     whyThisDiagnosis: "Why this diagnosis?",
     sources: "Sources",
-    aiDisclaimer:
-      "This is a preliminary AI-assisted assessment and does not constitute a clinical diagnosis. Always verify with clinical judgment and refer when in doubt.",
+    aiDisclaimer: ""This is a preliminary AI-assisted assessment and does not constitute a clinical diagnosis. Always verify with clinical judgment and refer when in doubt.",",
+    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     lowConfidenceWarning:
       "Low confidence assessment — verify with in-person examination and consider referral",
     veryLowConfidenceWarning: "Very low confidence — seek immediate clinical supervision",
@@ -602,8 +602,8 @@ export const translations = {
     lowProbability: "Faible probabilité",
     whyThisDiagnosis: "Pourquoi ce diagnostic ?",
     sources: "Sources",
-    aiDisclaimer:
-      "Ceci est une évaluation préliminaire assistée par l'IA et ne constitue pas un diagnostic clinique. Vérifiez toujours avec un jugement clinique.",
+    aiDisclaimer: ""Ceci est une évaluation préliminaire assistée par l'IA et ne constitue pas un diagnostic clinique. Vérifiez toujours avec un jugement clinique.",",
+    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "Scanner un document",
     labPrescriptionReferral: "Laboratoire, ordonnance, référence",
     readingDocument: "Lecture du document...",
@@ -907,8 +907,8 @@ export const translations = {
     lowProbability: "Uwezekano mdogo",
     whyThisDiagnosis: "Kwa nini utambuzi huu?",
     sources: "Vyanzo",
-    aiDisclaimer:
-      "Hii ni tathmini ya awali inayosaidiwa na AI na sio utambuzi wa kimatibabu. Thibitisha kila mara kwa uamuzi wa kimatibabu.",
+    aiDisclaimer: ""Hii ni tathmini ya awali inayosaidiwa na AI na sio utambuzi wa kimatibabu. Thibitisha kila mara kwa uamuzi wa kimatibabu.",",
+    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "Changanua hati",
     labPrescriptionReferral: "Maabara, agizo la dawa, rufaa",
     readingDocument: "Inasoma hati...",
@@ -1206,8 +1206,8 @@ export const translations = {
     lowProbability: "कम संभावना",
     whyThisDiagnosis: "यह निदान क्यों?",
     sources: "स्रोत",
-    aiDisclaimer:
-      "यह एक प्रारंभिक AI-सहायक मूल्यांकन है और यह नैदानिक निदान नहीं है। हमेशा नैदानिक निर्णय से सत्यापित करें और संदेह होने पर रेफर करें।",
+    aiDisclaimer: ""यह एक प्रारंभिक AI-सहायक मूल्यांकन है और यह नैदानिक निदान नहीं है। हमेशा नैदानिक निर्णय से सत्यापित करें और संदेह होने पर रेफर करें।",",
+    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "दस्तावेज़ स्कैन करें",
     labPrescriptionReferral: "प्रयोगशाला, नुस्खा, रेफरल",
     readingDocument: "दस्तावेज़ पढ़ा जा रहा है...",
@@ -1514,8 +1514,8 @@ export const translations = {
     lowProbability: "Baixa probabilidade",
     whyThisDiagnosis: "Por que este diagnóstico?",
     sources: "Fontes",
-    aiDisclaimer:
-      "Esta é uma avaliação preliminar assistida por IA e não constitui um diagnóstico clínico. Sempre verifique com julgamento clínico e encaminhe em caso de dúvida.",
+    aiDisclaimer: ""Esta é uma avaliação preliminar assistida por IA e não constitui um diagnóstico clínico. Sempre verifique com julgamento clínico e encaminhe em caso de dúvida.",",
+    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "Escanear documento",
     labPrescriptionReferral: "Laboratório, prescrição, encaminhamento",
     readingDocument: "Lendo documento...",
@@ -1817,8 +1817,8 @@ export const translations = {
     lowProbability: "احتمال منخفض",
     whyThisDiagnosis: "لماذا هذا التشخيص؟",
     sources: "المصادر",
-    aiDisclaimer:
-      "هذا تقييم أولي مدعوم بالذكاء الاصطناعي ولا يشكل تشخيصًا سريريًا. تحقق دائمًا بالحكم السريري وأحِل عند الشك.",
+    aiDisclaimer: ""هذا تقييم أولي مدعوم بالذكاء الاصطناعي ولا يشكل تشخيصًا سريريًا. تحقق دائمًا بالحكم السريري وأحِل عند الشك.",",
+    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "مسح المستند",
     labPrescriptionReferral: "مختبر، وصفة طبية، إحالة",
     readingDocument: "جارٍ قراءة المستند...",
@@ -2125,8 +2125,8 @@ export const translations = {
     lowProbability: "Baja probabilidad",
     whyThisDiagnosis: "¿Por qué este diagnóstico?",
     sources: "Fuentes",
-    aiDisclaimer:
-      "Esta es una evaluación preliminar asistida por IA y no constituye un diagnóstico clínico. Verifique siempre con juicio clínico y derive ante la duda.",
+    aiDisclaimer: ""Esta es una evaluación preliminar asistida por IA y no constituye un diagnóstico clínico. Verifique siempre con juicio clínico y derive ante la duda.",",
+    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "Escanear documento",
     labPrescriptionReferral: "Laboratorio, receta, derivación",
     readingDocument: "Leyendo documento...",
