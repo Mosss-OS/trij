@@ -79,6 +79,7 @@ export interface Assessment {
   followUpQuestions?: string[];
   patientConsent?: boolean;
   consentTimestamp?: string;
+  aiFeedback?: AiFeedback;
   createdAt: string;
   syncedAt?: string;
   version: number;
@@ -132,10 +133,15 @@ export interface TriageResult {
   possible_conditions: PossibleCondition[];
   key_visual_features: string[];
   recommendation: string;
-  referral_advised: boolean;
-  follow_up_questions: string[];
-  rag_sources?: Array<{ condition: string; treatment: string; who_guideline: string }>;
-  vital_signs_interpretation?: string; /* AI interpretation of vitals if provided */
+}
+
+export type AiFeedbackRating = "correct" | "partial" | "incorrect";
+
+export interface AiFeedback {
+  rating: AiFeedbackRating;
+  actualCondition?: string;
+  ratedBy: string;
+  ratedAt: string;
 }
 
 export interface DocumentResult {
