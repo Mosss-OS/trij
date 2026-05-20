@@ -4,7 +4,7 @@ import { AlertTriangle, RefreshCw, Download, Home } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 
-type FallbackKind = "default" | "camera" | "engine" | "database" | "triage" | "document";
+type FallbackKind = "default" | "camera" | "engine" | "database" | "triage" | "document" | "faq" | "help";
 
 interface Props {
   children: ReactNode;
@@ -56,6 +56,18 @@ const FALLBACK_KEYS: Record<
     description: "scanFailedDesc",
     action: "tryAgain",
     secondary: { label: "uploadFromGallery", to: "/document" },
+  },
+  faq: {
+    title: "somethingWentWrong",
+    description: "unexpectedError",
+    action: "retry",
+    secondary: { label: "goHome", to: "/dashboard" },
+  },
+  help: {
+    title: "somethingWentWrong",
+    description: "unexpectedError",
+    action: "retry",
+    secondary: { label: "goHome", to: "/dashboard" },
   },
 };
 

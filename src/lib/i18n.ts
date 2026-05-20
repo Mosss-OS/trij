@@ -9,6 +9,8 @@ export const translations = {
     dashboard: "Dashboard",
     home: "Home",
     settings: "Settings",
+    help: "Help",
+    faq: "FAQ",
     newTriage: "New triage",
     scanDoc: "Scan doc",
     quickAction: "Quick action",
