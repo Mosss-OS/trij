@@ -30,6 +30,7 @@ import {
   Copy,
   Check,
   Loader2,
+  Play,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -529,6 +530,14 @@ function SettingsPage() {
         </Section>
 
         <ModelDownloadManager />
+
+        <Button
+          variant="outline"
+          className="w-full gap-2"
+          onClick={() => useSettingsStore.getState().resetTutorial()}
+        >
+          <Play className="h-4 w-4" /> {t("retakeTutorial")}
+        </Button>
 
         <Button variant="outline" className="w-full gap-2" onClick={signOut}>
           <LogOut className="h-4 w-4" /> {t("signOut")}

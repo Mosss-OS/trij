@@ -19,6 +19,11 @@ interface SettingsState {
   minConfidenceForLocalCare: number;
   thinkingMode: boolean;
   kioskMode: boolean;
+  tutorialCompleted: boolean;
+  tutorialSkipped: boolean;
+  completeTutorial: () => void;
+  skipTutorial: () => void;
+  resetTutorial: () => void;
   setLanguage: (l: string) => void;
   setModelId: (id: string) => void;
   setVoiceEnabled: (b: boolean) => void;
@@ -55,6 +60,11 @@ export const useSettingsStore = create<SettingsState>()(
       minConfidenceForLocalCare: 70,
       thinkingMode: false,
       kioskMode: false,
+      tutorialCompleted: false,
+      tutorialSkipped: false,
+      completeTutorial: () => set({ tutorialCompleted: true }),
+      skipTutorial: () => set({ tutorialSkipped: true }),
+      resetTutorial: () => set({ tutorialCompleted: false, tutorialSkipped: false }),
       setLanguage: (language) => set({ language }),
       setModelId: (modelId) => set({ modelId }),
       setVoiceEnabled: (voiceEnabled) => set({ voiceEnabled }),
