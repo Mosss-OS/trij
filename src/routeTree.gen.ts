@@ -16,6 +16,8 @@ import { Route as AppTriageRouteImport } from './routes/_app.triage'
 import { Route as AppSupervisorRouteImport } from './routes/_app.supervisor'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppReferralsRouteImport } from './routes/_app.referrals'
+import { Route as AppHelpRouteImport } from './routes/_app.help'
+import { Route as AppFaqRouteImport } from './routes/_app.faq'
 import { Route as AppDocumentRouteImport } from './routes/_app.document'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppPatientsIndexRouteImport } from './routes/_app.patients.index'
@@ -55,6 +57,16 @@ const AppReferralsRoute = AppReferralsRouteImport.update({
   path: '/referrals',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHelpRoute = AppHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFaqRoute = AppFaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDocumentRoute = AppDocumentRouteImport.update({
   id: '/document',
   path: '/document',
@@ -81,6 +93,8 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/dashboard': typeof AppDashboardRoute
   '/document': typeof AppDocumentRoute
+  '/faq': typeof AppFaqRoute
+  '/help': typeof AppHelpRoute
   '/referrals': typeof AppReferralsRoute
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
@@ -93,6 +107,8 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/dashboard': typeof AppDashboardRoute
   '/document': typeof AppDocumentRoute
+  '/faq': typeof AppFaqRoute
+  '/help': typeof AppHelpRoute
   '/referrals': typeof AppReferralsRoute
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
@@ -107,6 +123,8 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/document': typeof AppDocumentRoute
+  '/_app/faq': typeof AppFaqRoute
+  '/_app/help': typeof AppHelpRoute
   '/_app/referrals': typeof AppReferralsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/supervisor': typeof AppSupervisorRoute
@@ -121,6 +139,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard'
     | '/document'
+    | '/faq'
+    | '/help'
     | '/referrals'
     | '/settings'
     | '/supervisor'
@@ -133,6 +153,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/dashboard'
     | '/document'
+    | '/faq'
+    | '/help'
     | '/referrals'
     | '/settings'
     | '/supervisor'
@@ -146,6 +168,8 @@ export interface FileRouteTypes {
     | '/login'
     | '/_app/dashboard'
     | '/_app/document'
+    | '/_app/faq'
+    | '/_app/help'
     | '/_app/referrals'
     | '/_app/settings'
     | '/_app/supervisor'
@@ -211,6 +235,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReferralsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/help': {
+      id: '/_app/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof AppHelpRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/faq': {
+      id: '/_app/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof AppFaqRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/document': {
       id: '/_app/document'
       path: '/document'
@@ -245,6 +283,8 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppDocumentRoute: typeof AppDocumentRoute
+  AppFaqRoute: typeof AppFaqRoute
+  AppHelpRoute: typeof AppHelpRoute
   AppReferralsRoute: typeof AppReferralsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSupervisorRoute: typeof AppSupervisorRoute
@@ -256,6 +296,8 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppDocumentRoute: AppDocumentRoute,
+  AppFaqRoute: AppFaqRoute,
+  AppHelpRoute: AppHelpRoute,
   AppReferralsRoute: AppReferralsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSupervisorRoute: AppSupervisorRoute,
