@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useReferralAlerts } from "@/hooks/useReferralAlerts";
+import { useRole } from "@/hooks/useRBAC";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
 import {
@@ -124,8 +125,23 @@ function csvDownload(filename: string, headers: string[], rows: string[][]) {
 }
 
 function Supervisor() {
+  const role = useRole();
   const { t } = useI18n();
   const online = useOnlineStatus();
+
+  if (role === "chw") {
+    return (
+      <div className="grid min-h-[60vh] place-items-center px-4">
+        <div className="text-center">
+          <h2 className="font-display text-xl font-bold">{t("accessDenied")}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t("supervisorOnly")}</p>
+          <Button asChild className="mt-6">
+            <Link to="/patients">{t("backToPatients")}</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
   const [items, setItems] = useState<RemoteAssessment[]>([]);
   const [chwLocations, setChwLocations] = useState<ChwLocation[]>([]);
   const [loading, setLoading] = useState(true);
