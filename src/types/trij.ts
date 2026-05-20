@@ -144,6 +144,24 @@ export interface AiFeedback {
   ratedAt: string;
 }
 
+export type NotificationKind =
+  | "referral_status"
+  | "follow_up_reminder"
+  | "sync_complete"
+  | "supervisor_message"
+  | "protocol_update"
+  | "app_update";
+
+export interface InAppNotification {
+  id: string;
+  kind: NotificationKind;
+  title: string;
+  body: string;
+  linkTo?: string;
+  read: boolean;
+  createdAt: string;
+}
+
 export interface DocumentResult {
   document_type: "lab_report" | "prescription" | "referral" | "other";
   key_findings: { parameter: string; value: string; is_abnormal: boolean }[];
