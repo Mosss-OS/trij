@@ -19,6 +19,7 @@ import {
   MicOff,
   MessageSquare,
   Stethoscope,
+  Check,
 } from "lucide-react";
 import {
   triageImage,
@@ -560,7 +561,7 @@ function TriagePage() {
       )}
       <AppHeader title={t("newTriage")} subtitle={t("stepByStep")} />
       <div className="mx-auto max-w-2xl px-5 py-6">
-        <Stepper step={step} />
+        <Stepper step={step} progress={progress} progressText={progressText} />
 
         {step === "patient" && (
           <div className="mt-7 space-y-5">
@@ -1142,17 +1143,88 @@ function TriagePage() {
   );
 }
 
-function Stepper({ step }: { step: Step }) {
-  const stages: Step[] = ["patient", "presentation", "vitals", "capture", "analyzing", "result", "voice"];
-  const idx = stages.indexOf(step);
+function Stepper({ step, progress, progressText }: { step: Step; progress?: number; progressText?: string }) {
+  const { t } = useI18n();
+
+  const PHASES = [
+    { key: "capture", icon: ScanLine },
+    { key: "analyse", icon: Loader2 },
+    { key: "interview", icon: MessageSquare },
+    { key: "save", icon: Save },
+  ] as const;
+
+  const phaseForStep: Record<Step, number> = {
+    patient: 0,
+    presentation: 0,
+    vitals: 0,
+    capture: 0,
+    analyzing: 1,
+    result: 2,
+    voice: 2,
+  };
+
+  const currentPhase = phaseForStep[step] ?? 0;
+
   return (
-    <div className="flex items-center gap-1.5">
-      {stages.map((_, i) => (
-        <div
-          key={i}
-          className={`h-1.5 flex-1 rounded-full transition-colors ${i <= idx ? "bg-primary" : "bg-muted"}`}
-        />
-      ))}
-    </div>
+    <nav aria-label={t("progress")} className="w-full">
+      <div className="flex items-center justify-between gap-2">
+        {PHASES.map((phase, i) => {
+          const isComplete = i < currentPhase;
+          const isCurrent = i === currentPhase;
+          const Icon = phase.icon;
+
+          return (
+            <div key={phase.key} className="flex flex-1 items-center gap-2">
+              <div className="flex flex-col items-center gap-1">
+                <div
+                  role="status"
+                  aria-current={isCurrent ? "step" : undefined}
+                  aria-label={`${t("step")} ${i + 1} ${t(phase.key)}`}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${
+                    isComplete
+                      ? "bg-primary text-primary-foreground"
+                      : isCurrent
+                        ? "ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse bg-primary/10 text-primary"
+                        : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {isComplete ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                </div>
+                <span
+                  className={`hidden whitespace-nowrap text-[10px] font-medium leading-tight sm:block ${
+                    isCurrent ? "text-foreground" : isComplete ? "text-muted-foreground" : "text-muted-foreground/50"
+                  }`}
+                >
+                  {t(phase.key)}
+                </span>
+              </div>
+
+              {/* Progress bar connecting phases */}
+              {i < PHASES.length - 1 && (
+                <div className="flex-1 px-1">
+                  {isCurrent && step === "analyzing" && progress !== undefined ? (
+                    <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={`h-1 rounded-full transition-colors ${
+                        isComplete ? "bg-primary" : "bg-muted"
+                      }`}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {step === "analyzing" && progressText && (
+        <p className="mt-2 text-center text-xs text-muted-foreground">{progressText}</p>
+      )}
+    </nav>
   );
 }
