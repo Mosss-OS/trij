@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, Outlet, Navigate, Link } from "@tanstack/react-router";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useSessionStore } from "@/stores/sessionStore";
@@ -6,6 +6,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { BottomNav } from "@/components/BottomNav";
 import { DisclaimerDialog } from "@/components/DisclaimerDialog";
 import { SyncStatusIndicator } from "@/components/SyncStatusIndicator";
+import { TutorialOverlay } from "@/components/TutorialOverlay";
 import { Loader2, ShieldAlert, X, Beaker } from "lucide-react";
 
 export const Route = createFileRoute("/_app")({
@@ -85,6 +86,10 @@ function AppLayout() {
   const disclaimerAccepted = useSettingsStore((s) => s.disclaimerAccepted);
   const engineKind = useSettingsStore((s) => s.engineKind);
   const kioskMode = useSettingsStore((s) => s.kioskMode);
+  const tutorialCompleted = useSettingsStore((s) => s.tutorialCompleted);
+  const tutorialSkipped = useSettingsStore((s) => s.tutorialSkipped);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const isNewUser = !tutorialCompleted && !tutorialSkipped;
   if (loading) {
     return (
       <div className="grid min-h-screen place-items-center">
@@ -95,8 +100,13 @@ function AppLayout() {
   const authed = !!(session || offlineUser);
   if (!authed) return <Navigate to="/login" />;
   if (!disclaimerAccepted) return <DisclaimerDialog />;
+  useEffect(() => {
+    if (isNewUser) setShowTutorial(true);
+  }, [isNewUser]);
   return (
-    <div className={`min-h-screen pb-24 ${kioskMode ? "text-lg" : ""}`}>
+    <>
+      {showTutorial && <TutorialOverlay onComplete={() => setShowTutorial(false)} />}
+      <div className={`min-h-screen pb-24 ${kioskMode ? "text-lg" : ""}`}>
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -116,5 +126,6 @@ function AppLayout() {
       <SyncStatusIndicator />
       <BottomNav />
     </div>
+    </>
   );
 }
