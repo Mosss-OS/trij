@@ -6,6 +6,7 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { useReferralAlerts } from "@/hooks/useReferralAlerts";
 import { getDB } from "@/lib/db";
 import type { Assessment, Patient, FollowUp } from "@/types/trij";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import {
   Camera,
@@ -57,6 +58,7 @@ export const Route = createFileRoute("/_app/dashboard")({
 function DashboardPage() {
   const { t, language } = useI18n();
   const user = useSessionStore((s) => s.user);
+  const { log } = useAuditLog();
   const name = (user?.user_metadata?.name as string) || user?.email?.split("@")[0] || "CHW";
   const [recent, setRecent] = useState<(Assessment & { patient?: Patient })[]>([]);
   const [upcomingFollowUps, setUpcomingFollowUps] = useState<FollowUp[]>([]);
@@ -82,6 +84,10 @@ function DashboardPage() {
         if (!alive) return;
         setRecent(a.map((x, i) => ({ ...x, patient: patients[i] })));
         setUpcomingFollowUps(upcoming);
+        log("assessment:list", { resourceType: "assessment", details: `Dashboard: ${a.length} recent assessments` });
+        if (upcoming.length > 0) {
+          log("followup:read", { resourceType: "followup", details: `Dashboard: ${upcoming.length} upcoming follow-ups` });
+        }
       } catch {
         /* db not ready */
       }

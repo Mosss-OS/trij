@@ -6,6 +6,7 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { getDB } from "@/lib/db";
 import { useI18n } from "@/lib/i18n";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BadgeInfo, Search, UserRound, Plus, GitMerge, Lock, Unlock, Loader2 } from "lucide-react";
@@ -61,11 +62,18 @@ export const Route = createFileRoute("/_app/patients/")({
 function PatientsList() {
   const { t } = useI18n();
   const fieldMode = useSettingsStore((s) => s.fieldMode);
+  const { log } = useAuditLog();
   const [q, setQ] = useState("");
   const { patients, results, indexReady, reload } = usePatientSearch(q);
   const [matches, setMatches] = useState<MatchScore[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<MatchScore | null>(null);
   const [dedupBusy, setDedupBusy] = useState(false);
+
+  useEffect(() => {
+    if (results.length > 0) {
+      log("patient:list", { resourceType: "patient", details: `Listed ${results.length} patients` });
+    }
+  }, [results.length]);
 
   useEffect(() => {
     if (patients.length > 0) {

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { getDB } from "@/lib/db";
 import type { Patient, Assessment, FollowUp } from "@/types/trij";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,6 +91,7 @@ function PatientDetail() {
   const { patientId } = Route.useParams();
   const { t } = useI18n();
   const user = useSessionStore((s) => s.user);
+  const { log } = useAuditLog();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
@@ -103,6 +105,10 @@ function PatientDetail() {
   const [feedbackFacility, setFeedbackFacility] = useState("");
   const [feedbackOutcome, setFeedbackOutcome] = useState<"treated" | "referred_elsewhere" | "admitted" | "discharged" | "unknown">("unknown");
   const [feedbackNotes, setFeedbackNotes] = useState("");
+
+  useEffect(() => {
+    log("patient:read", { patientId, resourceType: "patient", resourceId: patientId });
+  }, [patientId]);
 
   const loadData = async () => {
     try {
