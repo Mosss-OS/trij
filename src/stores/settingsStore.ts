@@ -19,6 +19,7 @@ interface SettingsState {
   minConfidenceForLocalCare: number;
   thinkingMode: boolean;
   kioskMode: boolean;
+  lockTimeoutMinutes: number;
   tutorialCompleted: boolean;
   tutorialSkipped: boolean;
   sunlightMode: boolean;
@@ -41,6 +42,7 @@ interface SettingsState {
   setMinConfidenceForLocalCare: (v: number) => void;
   setThinkingMode: (enabled: boolean) => void;
   setKioskMode: (enabled: boolean) => void;
+  setLockTimeoutMinutes: (minutes: number) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -62,6 +64,7 @@ export const useSettingsStore = create<SettingsState>()(
       minConfidenceForLocalCare: 70,
       thinkingMode: false,
       kioskMode: false,
+      lockTimeoutMinutes: 5,
       tutorialCompleted: false,
       tutorialSkipped: false,
       sunlightMode: false,
@@ -90,6 +93,7 @@ export const useSettingsStore = create<SettingsState>()(
         set({ minConfidenceForLocalCare }),
       setThinkingMode: (enabled: boolean) => set({ thinkingMode: enabled }),
       setKioskMode: (enabled: boolean) => set({ kioskMode: enabled }),
+      setLockTimeoutMinutes: (lockTimeoutMinutes) => set({ lockTimeoutMinutes }),
     }),
     {
       name: "trij-settings",
