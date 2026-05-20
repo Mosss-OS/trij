@@ -21,9 +21,11 @@ interface SettingsState {
   kioskMode: boolean;
   tutorialCompleted: boolean;
   tutorialSkipped: boolean;
+  sunlightMode: boolean;
   completeTutorial: () => void;
   skipTutorial: () => void;
   resetTutorial: () => void;
+  setSunlightMode: (enabled: boolean) => void;
   setLanguage: (l: string) => void;
   setModelId: (id: string) => void;
   setVoiceEnabled: (b: boolean) => void;
@@ -62,9 +64,11 @@ export const useSettingsStore = create<SettingsState>()(
       kioskMode: false,
       tutorialCompleted: false,
       tutorialSkipped: false,
+      sunlightMode: false,
       completeTutorial: () => set({ tutorialCompleted: true }),
       skipTutorial: () => set({ tutorialSkipped: true }),
       resetTutorial: () => set({ tutorialCompleted: false, tutorialSkipped: false }),
+      setSunlightMode: (sunlightMode) => set({ sunlightMode }),
       setLanguage: (language) => set({ language }),
       setModelId: (modelId) => set({ modelId }),
       setVoiceEnabled: (voiceEnabled) => set({ voiceEnabled }),

@@ -180,6 +180,69 @@
   --sidebar-ring: oklch(0.7 0.13 190);
 }
 
+/* Sunlight / high-contrast mode — pure black on pure white, thicker borders, no shadows */
+.sunlight-mode {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0 0 0);
+  --primary: oklch(0.25 0.1 210);
+  --primary-foreground: oklch(1 0 0);
+  --primary-glow: oklch(0.2 0.08 210);
+  --secondary: oklch(1 0 0);
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.95 0.005 85);
+  --muted-foreground: oklch(0.15 0.01 200);
+  --accent: oklch(0.9 0.02 100);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.5 0.25 25);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.5 0.02 90);
+  --input: oklch(0.5 0.02 90);
+  --ring: oklch(0 0 0);
+  --urgency-green: oklch(0.35 0.2 145);
+  --urgency-green-bg: oklch(0.85 0.1 145);
+  --urgency-yellow: oklch(0.45 0.2 80);
+  --urgency-yellow-bg: oklch(0.9 0.12 80);
+  --urgency-red: oklch(0.5 0.25 25);
+  --urgency-red-bg: oklch(0.92 0.08 25);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0 0 0);
+  --sidebar-primary: oklch(0.25 0.1 210);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.9 0.02 100);
+  --sidebar-accent-foreground: oklch(0 0 0);
+  --sidebar-border: oklch(0.5 0.02 90);
+  --sidebar-ring: oklch(0 0 0);
+  --radius: 0;
+}
+
+.sunlight-mode * {
+  border-width: 2px !important;
+}
+
+.sunlight-mode .shadow-sm,
+.sunlight-mode .shadow,
+.sunlight-mode .shadow-md,
+.sunlight-mode .shadow-lg,
+.sunlight-mode .shadow-xl {
+  box-shadow: none !important;
+}
+
+.sunlight-mode html,
+.sunlight-mode body {
+  font-size: 18px;
+}
+
+.sunlight-mode .text-xs { font-size: 0.75rem; }
+.sunlight-mode .text-sm { font-size: 0.9rem; }
+.sunlight-mode .text-base { font-size: 1.05rem; }
+.sunlight-mode .text-lg { font-size: 1.2rem; }
+.sunlight-mode .text-xl { font-size: 1.4rem; }
+.sunlight-mode .text-2xl { font-size: 1.6rem; }
+
 @layer base {
   * {
     border-color: var(--color-border);

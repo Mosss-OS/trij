@@ -483,6 +483,22 @@ function SettingsPage() {
           </div>
         </Section>
 
+        <Section title={t("display")}>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="sunlight-mode">{t("sunlightMode")}</Label>
+                <p className="text-xs text-muted-foreground">{t("sunlightModeDesc")}</p>
+              </div>
+              <Switch
+                id="sunlight-mode"
+                checked={s.sunlightMode}
+                onCheckedChange={s.setSunlightMode}
+              />
+            </div>
+          </div>
+        </Section>
+
         <div className="rounded-3xl border bg-card p-6">
           <h2 className="font-display text-base font-semibold">{t("engineStatus")}</h2>
           <pre className="mt-3 overflow-x-auto rounded-xl bg-muted p-4 text-xs leading-relaxed">
