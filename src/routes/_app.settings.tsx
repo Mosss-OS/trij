@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { Slider } from "@/components/ui/slider";
 import {
   LogOut,
@@ -511,6 +511,20 @@ function SettingsPage() {
               <li>{t("disclaimerItem5")}</li>
             </ul>
             <p className="text-xs">{t("trij")} &mdash; Gemma 4 Good Hackathon 2026</p>
+          </div>
+          <div className="mt-4 flex gap-3">
+            <Link
+              to="/faq"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border bg-card p-3 text-sm font-medium hover:bg-muted/50"
+            >
+              FAQ
+            </Link>
+            <Link
+              to="/help"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border bg-card p-3 text-sm font-medium hover:bg-muted/50"
+            >
+              {t("help")}
+            </Link>
           </div>
         </Section>
 
