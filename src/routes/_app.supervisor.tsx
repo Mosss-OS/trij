@@ -17,6 +17,7 @@ import {
   BellRing,
   X,
   ExternalLink,
+  ShieldAlert,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useI18n } from "@/lib/i18n";
@@ -321,6 +322,14 @@ function Supervisor() {
   return (
     <>
       <AppHeader title={t("supervisor")} subtitle={t("regionOverview")} />
+      <div className="flex items-center gap-2 px-5 pt-2">
+        <Button asChild variant="outline" size="sm">
+          <Link to="/audit">
+            <ShieldAlert className="mr-1.5 h-3.5 w-3.5" />
+            {t("auditLog")}
+          </Link>
+        </Button>
+      </div>
       <div className="mx-auto max-w-4xl space-y-6 px-5 py-6">
         {!online && (
           <div className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">

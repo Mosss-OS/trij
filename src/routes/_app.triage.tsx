@@ -34,6 +34,7 @@ import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { TriageResult, Patient, Assessment, VitalSigns } from "@/types/trij";
 import { getDB } from "@/lib/db";
 import { queuePatient, queueAssessment } from "@/lib/sync";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import { saveVoiceDraft, getVoiceDraft, clearVoiceDraft, listVoiceDrafts } from "@/lib/voice-draft";
 import { getCurrentPosition } from "@/lib/geolocation";
 import { useSessionStore } from "@/stores/sessionStore";
@@ -96,6 +97,7 @@ type Step = "patient" | "presentation" | "vitals" | "capture" | "analyzing" | "r
 function TriagePage() {
   const { t } = useI18n();
   const user = useSessionStore((s) => s.user);
+  const { log } = useAuditLog();
   const language = useSettingsStore((s) => s.language);
   const engineKind = useSettingsStore((s) => s.engineKind);
   const ollamaUrl = useSettingsStore((s) => s.ollamaUrl);
@@ -326,6 +328,7 @@ function TriagePage() {
       updatedAt: new Date().toISOString(),
     };
     await queuePatient(p);
+    log("patient:create", { resourceType: "patient", resourceId: p.id, patientId: p.id });
     setPatient(p);
     setStep("presentation");
   };
@@ -471,6 +474,7 @@ function TriagePage() {
       createdAt: new Date().toISOString(),
     };
     await queueAssessment(a);
+    log("assessment:create", { resourceType: "assessment", resourceId: a.id, patientId: a.patientId });
     await clearVoiceDraft(patient.id).catch(() => {});
     clearDraft();
     voice.narrate(t("voiceGuideSaved"));
