@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { TriageResult, PossibleCondition } from "@/types/trij";
 import { UrgencyPill } from "./UrgencyPill";
+import { EducationPanel } from "./EducationPanel";
 import {
   Volume2,
   AlertTriangle,
@@ -385,6 +386,8 @@ export function AssessmentResult({
           </ul>
         </div>
       )}
+
+      <EducationPanel condition={result.condition} />
 
       <div className="flex items-start gap-3 rounded-2xl border border-urgency-yellow/20 bg-urgency-yellow/5 p-4 text-xs text-muted-foreground">
         <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-yellow" />
