@@ -3,20 +3,38 @@ import { useI18n } from "@/lib/i18n";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { verifyPin } from "@/lib/pin-auth";
-import { Lock, AlertTriangle, Loader2 } from "lucide-react";
+import { authenticateBiometric } from "@/lib/webauthn";
+import { Lock, Fingerprint, AlertTriangle, Loader2 } from "lucide-react";
 
 export function LockScreen() {
   const { t } = useI18n();
   const setScreenLocked = useSessionStore((s) => s.setScreenLocked);
   const user = useSessionStore((s) => s.user);
+  const biometricEnabled = useSettingsStore((s) => s.biometricEnabled);
   const [pin, setPin] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const [usePin, setUsePin] = useState(false);
+  const [bioAttempts, setBioAttempts] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    inputRefs.current[0]?.focus();
+    if (biometricEnabled && bioAttempts < 3) {
+      authenticateBiometric().then((ok) => {
+        if (ok && mountedRef.current) setScreenLocked(false);
+        else if (mountedRef.current) setBioAttempts((a) => a + 1);
+      });
+    }
+  }, [biometricEnabled]);
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
   }, []);
+
+  useEffect(() => {
+    if (usePin) inputRefs.current[0]?.focus();
+  }, [usePin]);
 
   const handleDigit = (idx: number, val: string) => {
     if (!/^\d?$/.test(val)) return;
@@ -64,6 +82,27 @@ export function LockScreen() {
     }
   };
 
+  if (biometricEnabled && bioAttempts < 3 && !usePin) {
+    return (
+      <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background px-6">
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+            <Fingerprint className="h-7 w-7 text-primary" />
+          </div>
+          <h1 className="mt-2 font-display text-xl font-semibold">Trij</h1>
+          <p className="text-sm text-muted-foreground">{t("useBiometricToUnlock")}</p>
+        </div>
+        {verifying && <Loader2 className="mt-6 h-5 w-5 animate-spin text-primary" />}
+        <button
+          onClick={() => setUsePin(true)}
+          className="mt-8 text-xs text-muted-foreground underline hover:text-foreground"
+        >
+          {t("usePinInstead")}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background px-6">
       <div className="flex flex-col items-center gap-2">
@@ -105,6 +144,15 @@ export function LockScreen() {
       )}
 
       {verifying && <Loader2 className="mt-4 h-5 w-5 animate-spin text-primary" />}
+
+      {biometricEnabled && (
+        <button
+          onClick={() => { setUsePin(false); setBioAttempts(0); }}
+          className="mt-4 text-xs text-muted-foreground underline hover:text-foreground"
+        >
+          {t("useBiometricInstead")}
+        </button>
+      )}
     </div>
   );
 }

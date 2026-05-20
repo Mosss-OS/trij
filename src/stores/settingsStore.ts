@@ -23,6 +23,7 @@ interface SettingsState {
   tutorialCompleted: boolean;
   tutorialSkipped: boolean;
   sunlightMode: boolean;
+  biometricEnabled: boolean;
   completeTutorial: () => void;
   skipTutorial: () => void;
   resetTutorial: () => void;
@@ -43,6 +44,7 @@ interface SettingsState {
   setThinkingMode: (enabled: boolean) => void;
   setKioskMode: (enabled: boolean) => void;
   setLockTimeoutMinutes: (minutes: number) => void;
+  setBiometricEnabled: (enabled: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -68,6 +70,7 @@ export const useSettingsStore = create<SettingsState>()(
       tutorialCompleted: false,
       tutorialSkipped: false,
       sunlightMode: false,
+      biometricEnabled: false,
       completeTutorial: () => set({ tutorialCompleted: true }),
       skipTutorial: () => set({ tutorialSkipped: true }),
       resetTutorial: () => set({ tutorialCompleted: false, tutorialSkipped: false }),
@@ -94,6 +97,7 @@ export const useSettingsStore = create<SettingsState>()(
       setThinkingMode: (enabled: boolean) => set({ thinkingMode: enabled }),
       setKioskMode: (enabled: boolean) => set({ kioskMode: enabled }),
       setLockTimeoutMinutes: (lockTimeoutMinutes) => set({ lockTimeoutMinutes }),
+      setBiometricEnabled: (biometricEnabled) => set({ biometricEnabled }),
     }),
     {
       name: "trij-settings",

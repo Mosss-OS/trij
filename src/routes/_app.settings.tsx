@@ -518,6 +518,33 @@ function SettingsPage() {
                 <option value={30}>30 {t("minutes")}</option>
               </select>
             </div>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <Label>{t("biometricAuth")}</Label>
+                <p className="text-xs text-muted-foreground">{t("biometricAuthDesc")}</p>
+              </div>
+              <Switch
+                checked={s.biometricEnabled}
+                onCheckedChange={(enabled) => {
+                  if (enabled) {
+                    import("@/lib/webauthn").then(({ registerBiometric, isBiometricAvailable }) => {
+                      isBiometricAvailable().then((avail) => {
+                        if (!avail) { toast.error(t("biometricNotAvailable")); return; }
+                        registerBiometric(s.chwName || "user").then((ok) => {
+                          if (ok) s.setBiometricEnabled(true);
+                          else toast.error(t("biometricSetupFailed"));
+                        });
+                      });
+                    });
+                  } else {
+                    import("@/lib/webauthn").then(({ unregisterBiometric }) => {
+                      unregisterBiometric();
+                      s.setBiometricEnabled(false);
+                    });
+                  }
+                }}
+              />
+            </div>
           </div>
         </Section>
 
