@@ -90,6 +90,7 @@ interface LocationData {
 interface Props {
   locations: LocationData[];
   assessmentCounts?: Record<string, number>;
+  outbreaks?: Outbreak[];
 }
 
 function ClusterGroup({
@@ -137,7 +138,11 @@ function ClusterGroup({
   return null;
 }
 
-export default function CHWMap({ locations, assessmentCounts = {} }: Props) {
+export default function CHWMap({ 
+  locations, 
+  assessmentCounts = {}, 
+  outbreaks = [] 
+}: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -168,8 +173,21 @@ export default function CHWMap({ locations, assessmentCounts = {} }: Props) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <TileCacheHook />
-      <ClusterGroup locations={valid} counts={assessmentCounts} />
-    </MapContainer>
+       <TileCacheHook />
+       <ClusterGroup locations={valid} counts={assessmentCounts} />
+       {outbreaks.map((outbreak) => (
+         <L.Circle
+           key={outbreak.id}
+           center={[outbreak.centroid_lat, outbreak.centroid_lng]}
+           radius={outbreak.radius_km * 1000}
+           color="#dc2626"
+           fillColor="#dc2626"
+           fillOpacity={0.2}
+           weight={3}
+           className="pulse-animate"
+           style={{ animation: "pulse 2s infinite" }}
+         />
+       ))}
+     </MapContainer>
   );
 }
