@@ -154,7 +154,7 @@ function ReferralsPage() {
   return (
     <>
       <AppHeader title="Referrals" />
-      <div className="mx-auto max-w-2xl px-5 py-6">
+      <div className="mx-auto max-w-4xl px-5 py-6">
         <div className="mb-5 flex gap-1 rounded-xl bg-muted p-1">
           {tabs.map(({ key, label }) => (
             <button
