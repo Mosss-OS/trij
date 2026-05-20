@@ -1,16 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { I18nErrorBoundary } from "@/components/ErrorBoundary";
-import { MergeDialog } from "@/components/MergeDialog";
-import { findPotentialDuplicates, runDedup, type MatchScore } from "@/lib/dedup";
-import { usePatientSearch } from "@/hooks/usePatientSearch";
-import { Search, UserRound, GitMerge, BadgeInfo, Loader2 } from "lucide-react";
+import { useSessionStore } from "@/stores/sessionStore";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { getDB } from "@/lib/db";
+import { useI18n } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { formatDistanceToNow } from "date-fns";
+import { BadgeInfo, Search, UserRound, Plus, GitMerge, Lock, Unlock, Loader2 } from "lucide-react";
+import { MergeDialog } from "@/components/MergeDialog";
 import { toast } from "sonner";
-import { useI18n } from "@/lib/i18n";
+import { findPotentialDuplicates, runDedup, type MatchScore } from "@/lib/dedup";
+import { usePatientSearch } from "@/hooks/usePatientSearch";
+import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_app/patients/")({
   head: () => ({
@@ -57,6 +60,7 @@ export const Route = createFileRoute("/_app/patients/")({
 
 function PatientsList() {
   const { t } = useI18n();
+  const fieldMode = useSettingsStore((s) => s.fieldMode);
   const [q, setQ] = useState("");
   const { patients, results, indexReady, reload } = usePatientSearch(q);
   const [matches, setMatches] = useState<MatchScore[]>([]);
@@ -195,6 +199,33 @@ function PatientsList() {
           </ul>
         )}
       </div>
+
+      {fieldMode && (
+        <div className="mx-auto max-w-4xl px-5 pb-24">
+          <Button
+            variant="outline"
+            className="w-full gap-2"
+            onClick={async () => {
+              const code = window.prompt("Enter supervisor PIN to exit field mode:");
+              if (!code) return;
+              try {
+                const { verifyPin } = await import("@/lib/pin-auth");
+                const ok = await verifyPin("supervisor", code);
+                if (ok) {
+                  useSettingsStore.getState().setFieldMode(false);
+                  toast.success("Field mode disabled");
+                } else {
+                  toast.error("Incorrect supervisor PIN");
+                }
+              } catch {
+                toast.error("Failed to verify PIN");
+              }
+            }}
+          >
+            <Unlock className="h-4 w-4" /> {t("exitFieldMode")}
+          </Button>
+        </div>
+      )}
 
       {selectedMatch && (
         <MergeDialog

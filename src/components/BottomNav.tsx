@@ -18,21 +18,27 @@ export function BottomNav() {
   const router = useRouter();
   const current = router.state.location.pathname;
   const kioskMode = useSettingsStore((s) => s.kioskMode);
+  const fieldMode = useSettingsStore((s) => s.fieldMode);
   const { unreadCount } = useNotifications();
 
-  const items: NavItem[] = [
-    { to: "/dashboard", labelKey: "home", icon: LayoutGrid },
-    { to: "/triage", labelKey: "newTriage", icon: Camera, primary: true },
-    { to: "/patients", labelKey: "patients", icon: Users },
-    { to: "/notifications", labelKey: "notifications", icon: Bell },
-  ];
+  const items: NavItem[] = fieldMode
+    ? [
+        { to: "/triage", labelKey: "newTriage", icon: Camera, primary: true },
+        { to: "/patients", labelKey: "patients", icon: Users },
+      ]
+    : [
+        { to: "/dashboard", labelKey: "home", icon: LayoutGrid },
+        { to: "/triage", labelKey: "newTriage", icon: Camera, primary: true },
+        { to: "/patients", labelKey: "patients", icon: Users },
+        { to: "/notifications", labelKey: "notifications", icon: Bell },
+      ];
 
   return (
     <nav
       aria-label="Main navigation"
-      className={`fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur safe-area-bottom ${kioskMode ? "pb-2 pt-1" : ""}`}
+      className={`fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur safe-area-bottom ${kioskMode || fieldMode ? "pb-2 pt-1" : ""}`}
     >
-      <div className="mx-auto grid max-w-4xl grid-cols-4">
+      <div className={`mx-auto grid max-w-4xl ${fieldMode ? "grid-cols-2" : "grid-cols-4"}`}>
         {items.map(({ to, labelKey, icon: Icon, primary }) => {
           const active = current === to || current.startsWith(to + "/");
           const isBell = labelKey === "notifications";

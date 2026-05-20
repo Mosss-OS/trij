@@ -221,12 +221,27 @@ function SettingsPage() {
       <AppHeader title={t("settings")} />
       <div className="mx-auto max-w-4xl space-y-6 px-5 py-6">
         <Section title="Accessibility">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label>{t("kioskMode")}</Label>
-              <p className="text-xs text-muted-foreground">{t("kioskModeDesc")}</p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>{t("kioskMode")}</Label>
+                <p className="text-xs text-muted-foreground">{t("kioskModeDesc")}</p>
+              </div>
+              <Switch checked={s.kioskMode} onCheckedChange={s.setKioskMode} />
             </div>
-            <Switch checked={s.kioskMode} onCheckedChange={s.setKioskMode} />
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>{t("fieldMode")}</Label>
+                <p className="text-xs text-muted-foreground">{t("fieldModeDesc")}</p>
+              </div>
+              <Switch
+                checked={s.fieldMode}
+                onCheckedChange={(enabled) => {
+                  s.setFieldMode(enabled);
+                  if (enabled) toast.success(t("fieldModeActive"));
+                }}
+              />
+            </div>
           </div>
         </Section>
 
