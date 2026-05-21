@@ -18,6 +18,9 @@ const MODEL_SIZE_ESTIMATE = 1.5 * 1024 * 1024 * 1024; // ~1.5 GB for Gemma 4 E2B
 const STORAGE_KEY = "trij_model_download_date";
 
 export async function getStorageInfo(): Promise<StorageInfo> {
+  if (typeof navigator === "undefined") {
+    return { usage: 0, quota: 0, available: "Unknown", percentUsed: 0 };
+  }
   try {
     if (!navigator.storage?.estimate) {
       return { usage: 0, quota: 0, available: "Unknown", percentUsed: 0 };
@@ -37,7 +40,7 @@ export async function getStorageInfo(): Promise<StorageInfo> {
 }
 
 export function getModelStatus(): ModelStatus {
-  const date = localStorage.getItem(STORAGE_KEY);
+  const date = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
   return {
     modelId: getModelId(),
     downloaded: !!date,
@@ -47,10 +50,12 @@ export function getModelStatus(): ModelStatus {
 }
 
 export function markModelDownloaded(): void {
+  if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEY, new Date().toISOString());
 }
 
 export function clearModelDownloadFlag(): void {
+  if (typeof window === "undefined") return;
   localStorage.removeItem(STORAGE_KEY);
 }
 
