@@ -9,16 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppTriageRouteImport } from './routes/_app.triage'
 import { Route as AppSupervisorRouteImport } from './routes/_app.supervisor'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppReferralsRouteImport } from './routes/_app.referrals'
+import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
+import { Route as AppHelpRouteImport } from './routes/_app.help'
+import { Route as AppFaqRouteImport } from './routes/_app.faq'
 import { Route as AppDocumentRouteImport } from './routes/_app.document'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppAuditRouteImport } from './routes/_app.audit'
 import { Route as AppPatientsIndexRouteImport } from './routes/_app.patients.index'
 import { Route as AppPatientsPatientIdRouteImport } from './routes/_app.patients.$patientId'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
@@ -43,6 +54,26 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReferralsRoute = AppReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHelpRoute = AppHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFaqRoute = AppFaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDocumentRoute = AppDocumentRouteImport.update({
   id: '/document',
   path: '/document',
@@ -51,6 +82,11 @@ const AppDocumentRoute = AppDocumentRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuditRoute = AppAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPatientsIndexRoute = AppPatientsIndexRouteImport.update({
@@ -66,8 +102,14 @@ const AppPatientsPatientIdRoute = AppPatientsPatientIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/audit': typeof AppAuditRoute
   '/dashboard': typeof AppDashboardRoute
   '/document': typeof AppDocumentRoute
+  '/faq': typeof AppFaqRoute
+  '/help': typeof AppHelpRoute
+  '/notifications': typeof AppNotificationsRoute
+  '/referrals': typeof AppReferralsRoute
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
@@ -76,8 +118,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/audit': typeof AppAuditRoute
   '/dashboard': typeof AppDashboardRoute
   '/document': typeof AppDocumentRoute
+  '/faq': typeof AppFaqRoute
+  '/help': typeof AppHelpRoute
+  '/notifications': typeof AppNotificationsRoute
+  '/referrals': typeof AppReferralsRoute
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
@@ -88,8 +136,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_app/audit': typeof AppAuditRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/document': typeof AppDocumentRoute
+  '/_app/faq': typeof AppFaqRoute
+  '/_app/help': typeof AppHelpRoute
+  '/_app/notifications': typeof AppNotificationsRoute
+  '/_app/referrals': typeof AppReferralsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/supervisor': typeof AppSupervisorRoute
   '/_app/triage': typeof AppTriageRoute
@@ -100,8 +154,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
+    | '/audit'
     | '/dashboard'
     | '/document'
+    | '/faq'
+    | '/help'
+    | '/notifications'
+    | '/referrals'
     | '/settings'
     | '/supervisor'
     | '/triage'
@@ -110,8 +170,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
+    | '/audit'
     | '/dashboard'
     | '/document'
+    | '/faq'
+    | '/help'
+    | '/notifications'
+    | '/referrals'
     | '/settings'
     | '/supervisor'
     | '/triage'
@@ -121,8 +187,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
+    | '/login'
+    | '/_app/audit'
     | '/_app/dashboard'
     | '/_app/document'
+    | '/_app/faq'
+    | '/_app/help'
+    | '/_app/notifications'
+    | '/_app/referrals'
     | '/_app/settings'
     | '/_app/supervisor'
     | '/_app/triage'
@@ -133,10 +205,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app': {
       id: '/_app'
       path: ''
@@ -172,6 +252,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/referrals': {
+      id: '/_app/referrals'
+      path: '/referrals'
+      fullPath: '/referrals'
+      preLoaderRoute: typeof AppReferralsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notifications': {
+      id: '/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/help': {
+      id: '/_app/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof AppHelpRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/faq': {
+      id: '/_app/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof AppFaqRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/document': {
       id: '/_app/document'
       path: '/document'
@@ -184,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/audit': {
+      id: '/_app/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AppAuditRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/patients/': {
@@ -204,8 +319,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAuditRoute: typeof AppAuditRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppDocumentRoute: typeof AppDocumentRoute
+  AppFaqRoute: typeof AppFaqRoute
+  AppHelpRoute: typeof AppHelpRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
+  AppReferralsRoute: typeof AppReferralsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSupervisorRoute: typeof AppSupervisorRoute
   AppTriageRoute: typeof AppTriageRoute
@@ -214,8 +334,13 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAuditRoute: AppAuditRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppDocumentRoute: AppDocumentRoute,
+  AppFaqRoute: AppFaqRoute,
+  AppHelpRoute: AppHelpRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
+  AppReferralsRoute: AppReferralsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSupervisorRoute: AppSupervisorRoute,
   AppTriageRoute: AppTriageRoute,
@@ -228,6 +353,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

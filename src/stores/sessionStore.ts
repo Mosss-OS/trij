@@ -13,9 +13,11 @@ interface SessionState {
   offlineUser: OfflineUser | null;
   isOfflineAuth: boolean;
   isInitialized: boolean;
+  screenLocked: boolean;
   setSession: (s: Session | null) => void;
   setLoading: (b: boolean) => void;
   setOfflineSession: (user: OfflineUser) => void;
+  setScreenLocked: (locked: boolean) => void;
   clearAuth: () => void;
   setInitialized: (b: boolean) => void;
 }
@@ -27,6 +29,7 @@ export const useSessionStore = create<SessionState>((set) => ({
   offlineUser: null,
   isOfflineAuth: false,
   isInitialized: false,
+  screenLocked: false,
   setSession: (session) =>
     set({ session, user: session?.user ?? null, offlineUser: null, isOfflineAuth: false, isInitialized: true }),
   setLoading: (loading) => set({ loading }),
@@ -39,6 +42,7 @@ export const useSessionStore = create<SessionState>((set) => ({
       loading: false,
       isInitialized: true,
     }),
+  setScreenLocked: (screenLocked) => set({ screenLocked }),
   clearAuth: () =>
     set({
       session: null,

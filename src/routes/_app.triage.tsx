@@ -18,6 +18,8 @@ import {
   Mic,
   MicOff,
   MessageSquare,
+  Stethoscope,
+  Check,
 } from "lucide-react";
 import {
   triageImage,
@@ -29,15 +31,23 @@ import {
   type ConvMessage,
 } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
-import type { TriageResult, Patient, Assessment } from "@/types/trij";
+import type { TriageResult, Patient, Assessment, VitalSigns } from "@/types/trij";
 import { getDB } from "@/lib/db";
 import { queuePatient, queueAssessment } from "@/lib/sync";
+import { useAuditLog } from "@/hooks/useAuditLog";
+import { saveVoiceDraft, getVoiceDraft, clearVoiceDraft, listVoiceDrafts } from "@/lib/voice-draft";
 import { getCurrentPosition } from "@/lib/geolocation";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { VoiceAssistant } from "@/lib/voice";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { useVoiceGuidance } from "@/hooks/useVoiceGuidance";
+import { CloudInferenceIndicator } from "@/components/CloudInferenceIndicator";
+import { AiFailureOverlay, classifyAiError } from "@/components/AiFailureOverlay";
+import type { AiFailureKind } from "@/components/AiFailureOverlay";
+import { AiFeedbackWidget } from "@/components/AiFeedbackWidget";
+import type { AiFeedback } from "@/types/trij";
 
 interface QAPair {
   question: string;
@@ -45,7 +55,36 @@ interface QAPair {
 }
 
 export const Route = createFileRoute("/_app/triage")({
-  head: () => ({ meta: [{ title: "New triage — Trij" }] }),
+  head: () => ({
+    meta: [
+      {
+        title: "New Triage — AI Medical Triage Assessment | Trij Free Medical Triage",
+      },
+      {
+        name: "description",
+        content:
+          "Perform a free AI-assisted medical triage assessment. Assess wounds, rashes, respiratory symptoms, fever, and more. Get instant urgency classification (Green/Yellow/Red) with confidence scoring — all on-device, no internet required.",
+      },
+      {
+        property: "og:title",
+        content: "New Triage — AI Medical Triage Assessment | Trij",
+      },
+      {
+        property: "og:description",
+        content:
+          "Free AI-powered medical triage assessment. Describe symptoms or snap a photo for instant urgency level and treatment recommendation — all offline.",
+      },
+      {
+        name: "twitter:title",
+        content: "New Triage — AI Medical Triage Assessment | Trij",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Free AI-powered medical triage assessment. Describe symptoms or snap a photo for instant urgency level and treatment recommendation — all offline.",
+      },
+    ],
+  }),
   component: () => (
     <I18nErrorBoundary kind="triage">
       <TriagePage />
@@ -53,23 +92,52 @@ export const Route = createFileRoute("/_app/triage")({
   ),
 });
 
-type Step = "patient" | "capture" | "analyzing" | "result" | "voice";
+type Step = "patient" | "presentation" | "vitals" | "capture" | "analyzing" | "result" | "voice";
 
 function TriagePage() {
   const { t } = useI18n();
   const user = useSessionStore((s) => s.user);
+  const { log } = useAuditLog();
   const language = useSettingsStore((s) => s.language);
   const engineKind = useSettingsStore((s) => s.engineKind);
   const ollamaUrl = useSettingsStore((s) => s.ollamaUrl);
   const minConfidenceForLocalCare = useSettingsStore((s) => s.minConfidenceForLocalCare);
   const voiceEnabled = useSettingsStore((s) => s.voiceEnabled);
+  const voiceTestMode = useSettingsStore((s) => s.voiceTestMode);
   const navigate = useNavigate();
+  const voice = useVoiceGuidance();
   const [step, setStep] = useState<Step>("patient");
   const [patient, setPatient] = useState<Patient | null>(null);
   const [identifier, setIdentifier] = useState("");
   const [age, setAge] = useState("");
   const [sex, setSex] = useState<"M" | "F" | "other">("F");
+  /* Presentation type — selected after patient info, before vitals */
+  const [presentationType, setPresentationType] = useState<string>("dermatology");
+  const [symptomDescription, setSymptomDescription] = useState("");
+  /* Vital signs state — collected after patient info, before photo capture */
+  const [vitalSigns, setVitalSigns] = useState<{
+    systolicBP: string;
+    diastolicBP: string;
+    heartRate: string;
+    respiratoryRate: string;
+    temperature: string;
+    oxygenSaturation: string;
+    muac: string;
+    weight: string;
+    painScale: string;
+  }>({
+    systolicBP: "",
+    diastolicBP: "",
+    heartRate: "",
+    respiratoryRate: "",
+    temperature: "",
+    oxygenSaturation: "",
+    muac: "",
+    weight: "",
+    painScale: "",
+  });
   const [image, setImage] = useState<string | null>(null);
+  const [imageSource, setImageSource] = useState<"camera" | "gallery">("camera");
   const [consent, setConsent] = useState(false);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
@@ -77,14 +145,70 @@ function TriagePage() {
   const [voiceHistory, setVoiceHistory] = useState<QAPair[]>([]);
   const [voiceBusy, setVoiceBusy] = useState(false);
   const [voiceProcessing, setVoiceProcessing] = useState(false);
+  const [typedAnswer, setTypedAnswer] = useState("");
+  const aiFeedbackRef = useRef<AiFeedback | undefined>(undefined);
   const voiceRef = useRef<VoiceAssistant | null>(null);
   const convoRef = useRef<ConvMessage[]>([]);
   const kindRef = useRef<"webllm" | "ollama" | "demo">("webllm");
   const [currentQuestion, setCurrentQuestion] = useState("");
-  const [typedAnswer, setTypedAnswer] = useState("");
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [patientId, setPatientId] = useState<string | null>(null);
+  const [aiFailureKind, setAiFailureKind] = useState<AiFailureKind | null>(null);
+  const [pendingCapture, setPendingCapture] = useState<string | null>(null);
+  const pendingTextRef = useRef(false);
 
+  /* Auto-save triage draft every 30 seconds */
+  useEffect(() => {
+    if (step === "result" || step === "analyzing" || step === "voice") return;
+    if (step === "patient" && !patient) return;
+    const interval = setInterval(() => {
+      try {
+        const draft = {
+          step,
+          patient,
+          identifier,
+          age,
+          sex,
+          presentationType,
+          symptomDescription,
+          vitalSigns,
+          image,
+          consent,
+          savedAt: Date.now(),
+        };
+        localStorage.setItem("trij-triage-draft", JSON.stringify(draft));
+      } catch {}
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [step, patient, identifier, age, sex, presentationType, symptomDescription, vitalSigns, image, consent]);
+
+  /* Restore draft on mount */
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("trij-triage-draft");
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (Date.now() - draft.savedAt > 86400000) {
+        localStorage.removeItem("trij-triage-draft");
+        return;
+      }
+      if (draft.patient && draft.step !== "result" && draft.step !== "voice") {
+        setPatient(draft.patient);
+        setIdentifier(draft.identifier || "");
+        setAge(draft.age || "");
+        setSex(draft.sex || "F");
+        setPresentationType(draft.presentationType || "dermatology");
+        setSymptomDescription(draft.symptomDescription || "");
+        if (draft.vitalSigns) setVitalSigns(draft.vitalSigns);
+        if (draft.image) setImage(draft.image);
+        setConsent(draft.consent || false);
+      }
+    } catch {}
+  }, []);
+
+  const clearDraft = () => {
+    try { localStorage.removeItem("trij-triage-draft"); } catch {}
+  };
 
   useEffect(() => {
     if (!voiceRef.current) {
@@ -93,7 +217,96 @@ function TriagePage() {
     voiceRef.current.setLanguage(language);
   }, [language]);
 
+  useEffect(() => {
+    if (!voice.active) return;
+    if (voice.speaking || voice.listening) return;
+    switch (step) {
+      case "patient":
+        voice.narrate(
+          `${t("voiceGuideWhoIsPatient")} ${t("voiceGuidePatientId")} ${t("voiceGuideAge")} ${t("voiceGuideSex")} ${t("voiceGuideConsent")}`,
+        );
+        break;
+      case "presentation":
+        voice.narrate(t("presentationTypeTitle") + ". " + t("presentationTypeDesc"));
+        break;
+      case "vitals":
+        voice.narrate(t("captureVitals") + ". " + t("vitalsDesc"));
+        break;
+      case "capture":
+        voice.narrate(t("voiceGuideCapture"));
+        break;
+      case "analyzing":
+        voice.narrate(t("analyzing") + "...");
+        break;
+      case "result":
+        if (result) {
+          const txt = [
+            t("voiceGuideResult"),
+            t("likelyCondition") + ": " + result.condition,
+            t("voiceGuideConfidence").replace("{pct}", String(Math.round(result.confidence))),
+            t("voiceGuideUrgency").replace("{level}", result.urgency),
+            t("voiceGuideRecommended") + " " + (result.recommendation ?? ""),
+          ].join(". ");
+          voice.narrate(txt);
+        }
+        break;
+    }
+  }, [step, voice.active]);
+
   const [capturingLocation, setCapturingLocation] = useState(false);
+  const [resumableDrafts, setResumableDrafts] = useState<
+    Awaited<ReturnType<typeof listVoiceDrafts>>
+  >([]);
+
+  useEffect(() => {
+    if (!user) return;
+    listVoiceDrafts(user.id)
+      .then(setResumableDrafts)
+      .catch(() => {});
+  }, [user]);
+
+  const persistDraft = async (
+    p: Patient,
+    res: TriageResult,
+    img: string,
+    qa: QAPair[],
+    currentQ: string,
+    msgs: ConvMessage[],
+    consentVal: boolean,
+  ) => {
+    try {
+      await saveVoiceDraft({
+        patientId: p.id,
+        chwUserId: p.chwUserId,
+        patient: p,
+        triageResult: res,
+        image: img,
+        messages: msgs,
+        qaHistory: qa,
+        currentQuestion: currentQ,
+        consent: consentVal,
+      });
+    } catch (err) {
+      console.warn("Failed to save voice draft", err);
+    }
+  };
+
+  const resumeDraft = async (patientId: string) => {
+    const draft = await getVoiceDraft(patientId);
+    if (!draft) return;
+    setPatient(draft.patient);
+    setIdentifier(draft.patient.identifier);
+    setAge(draft.patient.ageYears ? String(draft.patient.ageYears) : "");
+    setSex(draft.patient.sex ?? "F");
+    setImage(draft.image);
+    setResult(draft.triageResult);
+    setVoiceHistory(draft.qaHistory);
+    setCurrentQuestion(draft.currentQuestion);
+    setConsent(draft.consent);
+    convoRef.current = draft.messages;
+    setStep("voice");
+    toast.success("Resumed voice interview");
+  };
 
   const startPatient = async () => {
     if (!user || !identifier.trim()) return;
@@ -113,11 +326,32 @@ function TriagePage() {
       sex,
       locationLat: coords?.lat,
       locationLng: coords?.lng,
+      version: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
     await queuePatient(p);
+    log("patient:create", { resourceType: "patient", resourceId: p.id, patientId: p.id });
     setPatient(p);
+    setStep("presentation");
+  };
+
+  const onVitalsComplete = () => {
+    setStep("capture");
+  };
+
+  const skipVitals = () => {
+    setVitalSigns({
+      systolicBP: "",
+      diastolicBP: "",
+      heartRate: "",
+      respiratoryRate: "",
+      temperature: "",
+      oxygenSaturation: "",
+      muac: "",
+      weight: "",
+      painScale: "",
+    });
     setStep("capture");
   };
 
@@ -135,32 +369,93 @@ function TriagePage() {
             setProgressText(r.text || t("preparing") + "...");
           });
         } catch (err) {
-          console.error("WebLLM load failed, falling back to demo", err);
-          toast.error(t("inferenceFailed") + ": WebGPU issues. Using demo mode.");
-          kind = "demo";
-          kindRef.current = "demo";
+          console.error("WebLLM load failed", err);
+          setAiFailureKind("model_not_ready");
+          setPendingCapture(dataUrl);
+          setStep("capture");
+          return;
         }
       }
 
       setProgressText(t("analyzing") + "...");
       setProgress(100);
-      const r = await triageImage(dataUrl, language, kind, ollamaUrl);
+      const r = await triageImage(dataUrl, language, kind, ollamaUrl, presentationType, symptomDescription);
       setResult(r);
       setStep("result");
     } catch (err) {
-      toast.error(t("inferenceFailed") + ": " + (err as Error).message);
+      setAiFailureKind(classifyAiError(err));
+      setPendingCapture(dataUrl);
       setStep("capture");
     }
   };
 
+  const onTextOnlyAnalyze = async () => {
+    /* For non-dermatology assessments, use a placeholder image and pass the symptom description */
+    pendingTextRef.current = true;
+    setStep("analyzing");
+    try {
+      let kind = engineKind === "auto" ? await detectEngine() : engineKind;
+      kindRef.current = kind;
+
+      if (kind === "webllm" && !isLoaded(kind)) {
+        try {
+          await loadEngine(kind, (r) => {
+            setProgress(Math.round((r.progress || 0) * 100));
+            setProgressText(r.text || t("preparing") + "...");
+          });
+        } catch (err) {
+          console.error("WebLLM load failed", err);
+          setAiFailureKind("model_not_ready");
+          setPendingCapture("");
+          setStep("capture");
+          return;
+        }
+      }
+
+      setProgressText(t("analyzing") + "...");
+      setProgress(100);
+      /* Pass an empty placeholder image — the model will rely on symptom description */
+      const r = await triageImage("", language, kind, ollamaUrl, presentationType, symptomDescription);
+      setResult(r);
+      setStep("result");
+    } catch (err) {
+      setAiFailureKind(classifyAiError(err));
+      setPendingCapture("");
+      setStep("capture");
+    }
+  };
+
+  const buildVitalSigns = () => {
+    const parsed = {
+      systolicBP: vitalSigns.systolicBP ? Number(vitalSigns.systolicBP) : undefined,
+      diastolicBP: vitalSigns.diastolicBP ? Number(vitalSigns.diastolicBP) : undefined,
+      heartRate: vitalSigns.heartRate ? Number(vitalSigns.heartRate) : undefined,
+      respiratoryRate: vitalSigns.respiratoryRate ? Number(vitalSigns.respiratoryRate) : undefined,
+      temperature: vitalSigns.temperature ? Number(vitalSigns.temperature) : undefined,
+      oxygenSaturation: vitalSigns.oxygenSaturation ? Number(vitalSigns.oxygenSaturation) : undefined,
+      muac: vitalSigns.muac ? Number(vitalSigns.muac) : undefined,
+      weight: vitalSigns.weight ? Number(vitalSigns.weight) : undefined,
+      painScale: vitalSigns.painScale ? Number(vitalSigns.painScale) : undefined,
+    };
+    /* Only include vitals if at least one field has a value */
+    const hasAny = Object.values(parsed).some((v) => v !== undefined);
+    return hasAny ? (parsed as VitalSigns) : undefined;
+  };
+
   const save = async () => {
-    if (!user || !patient || !result || !image) return;
+    if (!user || !patient || !result) return;
+    const hasImage = !!image;
+    voice.narrate(t("voiceGuideSaving"));
     const a: Assessment = {
       id: crypto.randomUUID(),
       patientId: patient.id,
       chwUserId: user.id,
-      images: [image],
+      images: hasImage ? [image!] : [],
+      vitalSigns: buildVitalSigns(),
       condition: result.condition,
+      presentationType: presentationType !== "dermatology" ? (presentationType as import("@/types/trij").PresentationType) : undefined,
+      description: symptomDescription || undefined,
+      icd10Code: result.icd10_code,
       confidence: result.confidence,
       urgency: result.urgency,
       possibleConditions: result.possible_conditions,
@@ -175,16 +470,23 @@ function TriagePage() {
         voiceHistory.length > 0
           ? voiceHistory.map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`).join("\n")
           : undefined,
+      aiFeedback: aiFeedbackRef.current,
       language,
+      imageSource,
+      version: 0,
       createdAt: new Date().toISOString(),
     };
     await queueAssessment(a);
+    log("assessment:create", { resourceType: "assessment", resourceId: a.id, patientId: a.patientId });
+    await clearVoiceDraft(patient.id).catch(() => {});
+    clearDraft();
+    voice.narrate(t("voiceGuideSaved"));
     toast.success(t("savedOffline"));
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
   };
 
   const startVoiceAssessment = async () => {
-    if (!result) return;
+    if (!result || !patient || !image) return;
     setVoiceHistory([]);
     convoRef.current = initVoiceConversation(language, result);
     setStep("voice");
@@ -203,6 +505,7 @@ function TriagePage() {
         return;
       }
       setCurrentQuestion(decision.question);
+      await persistDraft(patient, result, image, [], decision.question, messages, consent);
       if (voiceEnabled) voiceRef.current?.speak(decision.question);
     } catch (err) {
       toast.error(t("voiceFailed") + ": " + (err as Error).message);
@@ -213,11 +516,12 @@ function TriagePage() {
   };
 
   const handleVoiceAnswer = async (answer: string) => {
-    if (!answer.trim()) return;
+    if (!answer.trim() || !patient || !result || !image) return;
     const updated = [...voiceHistory, { question: currentQuestion, answer: answer.trim() }];
     setVoiceHistory(updated);
     setTypedAnswer("");
     if (updated.length >= 5) {
+      await persistDraft(patient, result, image, updated, "", convoRef.current, consent);
       toast.success(t("voiceComplete"));
       setStep("result");
       return;
@@ -232,11 +536,13 @@ function TriagePage() {
       );
       convoRef.current = messages;
       if (decision.done || !decision.question) {
+        await persistDraft(patient, result, image, updated, "", messages, consent);
         toast.success(t("voiceComplete"));
         setStep("result");
         return;
       }
       setCurrentQuestion(decision.question);
+      await persistDraft(patient, result, image, updated, decision.question, messages, consent);
       if (voiceEnabled) voiceRef.current?.speak(decision.question);
     } catch (err) {
       toast.error(t("voiceFailed") + ": " + (err as Error).message);
@@ -271,41 +577,174 @@ function TriagePage() {
 
   return (
     <>
+      {aiFailureKind && (
+        <AiFailureOverlay
+          kind={aiFailureKind}
+          onRetry={() => {
+            setAiFailureKind(null);
+            if (pendingTextRef.current) {
+              pendingTextRef.current = false;
+              setTimeout(() => onTextOnlyAnalyze(), 100);
+            } else if (pendingCapture !== null) {
+              const data = pendingCapture;
+              setPendingCapture(null);
+              setTimeout(() => onCapture(data), 100);
+            }
+          }}
+          onUseDemo={() => {
+            setAiFailureKind(null);
+            setPendingCapture(null);
+            pendingTextRef.current = false;
+            const data = pendingCapture;
+            setPendingCapture(null);
+            const runDemo = async () => {
+              kindRef.current = "demo";
+              setStep("analyzing");
+              try {
+                const r = await triageImage(data || "", language, "demo", ollamaUrl, presentationType, symptomDescription);
+                setResult(r);
+                setStep("result");
+              } catch {
+                setStep("capture");
+              }
+            };
+            runDemo();
+          }}
+          onManualAssessment={(r) => {
+            setAiFailureKind(null);
+            setPendingCapture(null);
+            pendingTextRef.current = false;
+            setResult(r);
+            setStep("result");
+          }}
+          onDismiss={() => {
+            setAiFailureKind(null);
+            setPendingCapture(null);
+            pendingTextRef.current = false;
+          }}
+        />
+      )}
       <AppHeader title={t("newTriage")} subtitle={t("stepByStep")} />
-      <div className="mx-auto max-w-2xl px-5 py-6">
-        <Stepper step={step} />
+      <div className="mx-auto max-w-4xl px-5 py-6">
+        <Stepper step={step} progress={progress} progressText={progressText} />
 
         {step === "patient" && (
           <div className="mt-7 space-y-5">
+            {resumableDrafts.length > 0 && (
+              <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
+                <p className="text-sm font-medium">Resume voice interview</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  You have {resumableDrafts.length} unfinished interview
+                  {resumableDrafts.length > 1 ? "s" : ""}.
+                </p>
+                <div className="mt-3 space-y-2">
+                  {resumableDrafts.slice(0, 3).map((d) => (
+                    <div
+                      key={d.patientId}
+                      className="flex items-center justify-between gap-2 rounded-lg bg-background/60 p-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{d.patient.identifier}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {d.qaHistory.length} answered · {new Date(d.updatedAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" onClick={() => resumeDraft(d.patientId)}>
+                          Resume
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={async () => {
+                            await clearVoiceDraft(d.patientId);
+                            setResumableDrafts((arr) =>
+                              arr.filter((x) => x.patientId !== d.patientId),
+                            );
+                          }}
+                        >
+                          Discard
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <div>
               <h2 className="font-display text-xl font-semibold">{t("whoIsPatient")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{t("patientCodeDesc")}</p>
             </div>
             <div className="space-y-1.5">
-              <Label>{t("patientIdentifier")}</Label>
-              <Input
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="e.g. AP-0142"
-              />
+              <Label htmlFor="patient-id">{t("patientIdentifier")}</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="patient-id"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="e.g. AP-0142"
+                  className="flex-1"
+                />
+                {voice.active && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={async () => {
+                      const id = await voice.ask(
+                        voice.language === "en-US"
+                          ? "Say the patient ID"
+                          : t("voiceGuidePatientId"),
+                      );
+                      if (id) setIdentifier(id);
+                    }}
+                    disabled={voice.listening}
+                  >
+                    <Mic className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>{t("ageYears")}</Label>
-                <Input
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  type="number"
-                  min={0}
-                  max={120}
-                />
+                <Label htmlFor="patient-age">{t("ageYears")}</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="patient-age"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    type="number"
+                    min={0}
+                    max={120}
+                    className="flex-1"
+                  />
+                  {voice.active && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={async () => {
+                        const a = await voice.ask(
+                          voice.language === "en-US" ? "Say the age in years" : t("voiceGuideAge"),
+                        );
+                        if (a) {
+                          const num = a.replace(/\D/g, "");
+                          if (num) setAge(num);
+                        }
+                      }}
+                      disabled={voice.listening}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label>{t("sex")}</Label>
-                <div className="flex rounded-lg border p-1">
+                <div className="flex rounded-lg border p-1" role="radiogroup" aria-label={t("sex")}>
                   {(["F", "M", "other"] as const).map((s) => (
                     <button
                       key={s}
+                      role="radio"
+                      aria-checked={sex === s}
                       onClick={() => setSex(s)}
                       className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${sex === s ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
                     >
@@ -313,6 +752,41 @@ function TriagePage() {
                     </button>
                   ))}
                 </div>
+                {voice.active && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-1 w-full gap-1 text-xs"
+                    onClick={async () => {
+                      const s = await voice.ask(
+                        voice.language === "en-US"
+                          ? "Say male, female, or other"
+                          : t("voiceGuideSex"),
+                      );
+                      if (s) {
+                        const lower = s.toLowerCase();
+                        if (
+                          lower.includes("female") ||
+                          lower.includes("f") ||
+                          lower.includes("woman") ||
+                          lower.includes("girl")
+                        )
+                          setSex("F");
+                        else if (
+                          lower.includes("male") ||
+                          lower.includes("m") ||
+                          lower.includes("man") ||
+                          lower.includes("boy")
+                        )
+                          setSex("M");
+                        else setSex("other");
+                      }
+                    }}
+                    disabled={voice.listening}
+                  >
+                    <Mic className="mr-1 h-3 w-3" /> {t("voiceAssistant")}
+                  </Button>
+                )}
               </div>
             </div>
             <label className="flex items-start gap-3 rounded-xl border bg-secondary/20 p-4">
@@ -321,6 +795,24 @@ function TriagePage() {
                 {t("consentDesc")}
               </span>
             </label>
+            {voice.active && !consent && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                onClick={async () => {
+                  const ok = await voice.confirm(t("voiceGuideConsent"));
+                  if (ok) {
+                    setConsent(true);
+                    voice.narrate(t("voiceGuideConsentConfirmed"));
+                  }
+                }}
+                disabled={voice.listening}
+              >
+                <Volume2 className="h-4 w-4" /> {t("voiceAssistant")} —{" "}
+                {t("voiceGuideConsentConfirmed")}
+              </Button>
+            )}
             <Button
               onClick={startPatient}
               disabled={!identifier.trim() || !consent || capturingLocation}
@@ -340,8 +832,203 @@ function TriagePage() {
           </div>
         )}
 
+        {step === "presentation" && (
+          <div className="mt-7 space-y-5">
+            <div>
+              <h2 className="font-display text-xl font-semibold">{t("presentationTypeTitle")}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{t("presentationTypeDesc")}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {([
+                ["dermatology", t("dermatologyIcon") || "Skin"],
+                ["respiratory", t("respiratoryIcon") || "Lungs"],
+                ["fever", t("feverIcon") || "Fever"],
+                ["gastrointestinal", t("giIcon") || "Stomach"],
+                ["neurological", t("neuroIcon") || "Brain"],
+                ["malnutrition", t("malnutritionIcon") || "Nutrition"],
+                ["eye_ear", t("eyeEarIcon") || "Eye/Ear"],
+                ["musculoskeletal", t("mskIcon") || "Joint"],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setPresentationType(value)}
+                  className={`rounded-xl border-2 p-3 text-center text-sm font-medium transition-all ${
+                    presentationType === value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:border-primary/50 hover:bg-muted"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {presentationType !== "dermatology" && (
+              <div className="space-y-2">
+                <Label>{t("symptomDescription")}</Label>
+                <textarea
+                  value={symptomDescription}
+                  onChange={(e) => setSymptomDescription(e.target.value)}
+                  placeholder={t("symptomDescriptionPlaceholder")}
+                  className="w-full rounded-xl border bg-card p-3 text-sm outline-none focus:border-primary"
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">{t("symptomDescriptionHint")}</p>
+              </div>
+            )}
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setStep("vitals")}
+                size="lg"
+                className="flex-1 gap-2"
+                disabled={presentationType !== "dermatology" && !symptomDescription.trim()}
+              >
+                {t("continue")} <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === "vitals" && (
+          <div className="mt-7 space-y-5">
+            <div>
+              <h2 className="font-display text-xl font-semibold">{t("captureVitals")}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{t("vitalsDesc")}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="space-y-1.5">
+                <Label>{t("bp")}</Label>
+                <div className="flex gap-1">
+                  <Input
+                    value={vitalSigns.systolicBP}
+                    onChange={(e) => setVitalSigns((v) => ({ ...v, systolicBP: e.target.value }))}
+                    placeholder="120"
+                    type="number"
+                    min={0}
+                    max={300}
+                    className="w-full"
+                  />
+                  <span className="flex items-center text-xs text-muted-foreground">/</span>
+                  <Input
+                    value={vitalSigns.diastolicBP}
+                    onChange={(e) => setVitalSigns((v) => ({ ...v, diastolicBP: e.target.value }))}
+                    placeholder="80"
+                    type="number"
+                    min={0}
+                    max={200}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("heartRate")}</Label>
+                <Input
+                  value={vitalSigns.heartRate}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, heartRate: e.target.value }))}
+                  placeholder={t("hrPlaceholder")}
+                  type="number"
+                  min={0}
+                  max={300}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("respiratoryRate")}</Label>
+                <Input
+                  value={vitalSigns.respiratoryRate}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, respiratoryRate: e.target.value }))}
+                  placeholder={t("rrPlaceholder")}
+                  type="number"
+                  min={0}
+                  max={100}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("temperature")}</Label>
+                <Input
+                  value={vitalSigns.temperature}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, temperature: e.target.value }))}
+                  placeholder={t("tempPlaceholder")}
+                  type="number"
+                  min={30}
+                  max={45}
+                  step={0.1}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("oxygenSaturation")}</Label>
+                <Input
+                  value={vitalSigns.oxygenSaturation}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, oxygenSaturation: e.target.value }))}
+                  placeholder={t("spo2Placeholder")}
+                  type="number"
+                  min={0}
+                  max={100}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("muac")}</Label>
+                <Input
+                  value={vitalSigns.muac}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, muac: e.target.value }))}
+                  placeholder={t("muacPlaceholder")}
+                  type="number"
+                  min={0}
+                  max={60}
+                  step={0.1}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("weight")}</Label>
+                <Input
+                  value={vitalSigns.weight}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, weight: e.target.value }))}
+                  placeholder={t("weightPlaceholder")}
+                  type="number"
+                  min={0}
+                  max={300}
+                  step={0.1}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("painScale")}</Label>
+                <Input
+                  value={vitalSigns.painScale}
+                  onChange={(e) => setVitalSigns((v) => ({ ...v, painScale: e.target.value }))}
+                  placeholder="0-10"
+                  type="number"
+                  min={0}
+                  max={10}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button onClick={onVitalsComplete} size="lg" className="flex-1 gap-2">
+                {t("continue")} <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button onClick={skipVitals} size="lg" variant="ghost" className="gap-2">
+                {t("vitalsUnknown")}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {step === "capture" && (
           <div className="mt-6 space-y-4">
+            {presentationType !== "dermatology" && symptomDescription.trim() && (
+              <div className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+                <MessageSquare className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
+                <div className="text-sm">
+                  <p className="font-medium">{t("textOnlyMode")}</p>
+                  <p className="mt-1 text-muted-foreground">{t("textOnlyDesc")}</p>
+                  <Button
+                    onClick={onTextOnlyAnalyze}
+                    size="sm"
+                    className="mt-3 gap-2"
+                  >
+                    {t("analyzeSymptoms")} <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
             <div className="flex items-start gap-3 rounded-2xl border bg-card p-4">
               <ScanLine className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
               <div className="text-sm">
@@ -350,7 +1037,11 @@ function TriagePage() {
               </div>
             </div>
             <WebGPUCheck engineKind={engineKind} ollamaUrl={ollamaUrl} compact />
-            <CameraCapture onCapture={onCapture} onCancel={() => setStep("patient")} />
+            <CameraCapture
+              onCapture={onCapture}
+              onSource={(s) => setImageSource(s)}
+              onCancel={() => setStep("presentation")}
+            />
           </div>
         )}
 
@@ -359,7 +1050,7 @@ function TriagePage() {
             {image && (
               <img
                 src={image}
-                alt=""
+                alt="Captured wound or skin condition photo being analyzed by AI"
                 className="h-40 w-40 rounded-2xl object-cover ring-4 ring-primary/20"
               />
             )}
@@ -367,7 +1058,11 @@ function TriagePage() {
             <div className="w-full max-w-sm space-y-2">
               <p className="text-sm font-medium">{progressText || t("preparing") + "..."}</p>
               <Progress value={progress} />
-              <p className="text-xs text-muted-foreground">{t("runningLocally")}</p>
+              {engineKind === "cloud" ? (
+                <CloudInferenceIndicator active />
+              ) : (
+                <p className="text-xs text-muted-foreground">{t("runningLocally")}</p>
+              )}
             </div>
           </div>
         )}
@@ -375,14 +1070,27 @@ function TriagePage() {
         {step === "result" && result && (
           <div className="mt-6 space-y-5">
             {image && (
-              <img src={image} alt="" className="aspect-video w-full rounded-2xl object-cover" />
+              <img
+                src={image}
+                alt="Captured wound or skin condition photo assessment result"
+                className="aspect-video w-full rounded-2xl object-cover"
+              />
             )}
             <AssessmentResult
               result={result}
               onSpeak={speak}
               minConfidenceForLocalCare={minConfidenceForLocalCare}
+              engineKind={kindRef.current as "webllm" | "ollama" | "demo" | "cloud" | "auto"}
             />
+            <AiFeedbackWidget onFeedback={(fb) => { aiFeedbackRef.current = fb; }} userId={user?.id || ""} />
             <div className="flex flex-wrap gap-3">
+              <Button
+                variant="outline"
+                className="flex-1 gap-2"
+                onClick={() => { if (image && window.confirm(t("retakeConfirm"))) setStep("capture"); }}
+              >
+                <ScanLine className="h-4 w-4" /> {t("retakePhoto")}
+              </Button>
               <Button
                 variant="outline"
                 className="flex-1 gap-2"
@@ -472,22 +1180,124 @@ function TriagePage() {
             </div>
           </div>
         )}
+
+        {voice.active && (
+          <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-2">
+            <Button
+              variant="secondary"
+              size="icon"
+              className="h-12 w-12 rounded-full shadow-lg"
+              onClick={() => {
+                if (voice.speaking) {
+                  voice.stop();
+                } else {
+                  const txt = {
+                    patient: `${t("voiceGuideWhoIsPatient")} ${t("voiceGuidePatientId")} ${t("voiceGuideAge")} ${t("voiceGuideSex")} ${t("voiceGuideConsent")}`,
+                    presentation: `${t("presentationTypeTitle")}. ${t("presentationTypeDesc")}.`,
+                    vitals: `${t("captureVitals")}. ${t("vitalsDesc")}.`,
+                    capture: t("voiceGuideCapture"),
+                    analyzing: t("analyzing") + "...",
+                    result: result
+                      ? `${t("voiceGuideResult")}. ${t("likelyCondition")}: ${result.condition}. ${t("voiceGuideConfidence").replace("{pct}", String(Math.round(result.confidence)))}. ${t("voiceGuideUrgency").replace("{level}", result.urgency)}.`
+                      : "",
+                    voice: currentQuestion,
+                  }[step];
+                  if (txt) voice.narrate(txt);
+                }
+              }}
+              title={voice.speaking ? "Stop" : "Guide me"}
+            >
+              {voice.speaking ? <MicOff className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+            </Button>
+          </div>
+        )}
       </div>
     </>
   );
 }
 
-function Stepper({ step }: { step: Step }) {
-  const stages: Step[] = ["patient", "capture", "analyzing", "result", "voice"];
-  const idx = stages.indexOf(step);
+function Stepper({ step, progress, progressText }: { step: Step; progress?: number; progressText?: string }) {
+  const { t } = useI18n();
+
+  const PHASES = [
+    { key: "capture", icon: ScanLine },
+    { key: "analyse", icon: Loader2 },
+    { key: "interview", icon: MessageSquare },
+    { key: "save", icon: Save },
+  ] as const;
+
+  const phaseForStep: Record<Step, number> = {
+    patient: 0,
+    presentation: 0,
+    vitals: 0,
+    capture: 0,
+    analyzing: 1,
+    result: 2,
+    voice: 2,
+  };
+
+  const currentPhase = phaseForStep[step] ?? 0;
+
   return (
-    <div className="flex items-center gap-1.5">
-      {stages.map((_, i) => (
-        <div
-          key={i}
-          className={`h-1.5 flex-1 rounded-full transition-colors ${i <= idx ? "bg-primary" : "bg-muted"}`}
-        />
-      ))}
-    </div>
+    <nav aria-label={t("progress")} className="w-full">
+      <div className="flex items-center justify-between gap-2">
+        {PHASES.map((phase, i) => {
+          const isComplete = i < currentPhase;
+          const isCurrent = i === currentPhase;
+          const Icon = phase.icon;
+
+          return (
+            <div key={phase.key} className="flex flex-1 items-center gap-2">
+              <div className="flex flex-col items-center gap-1">
+                <div
+                  role="status"
+                  aria-current={isCurrent ? "step" : undefined}
+                  aria-label={`${t("step")} ${i + 1} ${t(phase.key)}`}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${
+                    isComplete
+                      ? "bg-primary text-primary-foreground"
+                      : isCurrent
+                        ? "ring-2 ring-primary ring-offset-2 ring-offset-background animate-pulse bg-primary/10 text-primary"
+                        : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {isComplete ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                </div>
+                <span
+                  className={`hidden whitespace-nowrap text-[10px] font-medium leading-tight sm:block ${
+                    isCurrent ? "text-foreground" : isComplete ? "text-muted-foreground" : "text-muted-foreground/50"
+                  }`}
+                >
+                  {t(phase.key)}
+                </span>
+              </div>
+
+              {/* Progress bar connecting phases */}
+              {i < PHASES.length - 1 && (
+                <div className="flex-1 px-1">
+                  {isCurrent && step === "analyzing" && progress !== undefined ? (
+                    <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={`h-1 rounded-full transition-colors ${
+                        isComplete ? "bg-primary" : "bg-muted"
+                      }`}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {step === "analyzing" && progressText && (
+        <p className="mt-2 text-center text-xs text-muted-foreground">{progressText}</p>
+      )}
+    </nav>
   );
 }
