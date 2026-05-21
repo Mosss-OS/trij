@@ -34,6 +34,7 @@ export function useAuthSession() {
     timeoutId = setTimeout(() => {
       if (!cancelled) {
         setLoading(false);
+        setInitialized(true);
         console.warn("[Auth] getSession timed out, proceeding without session");
       }
     }, SESSION_TIMEOUT);
