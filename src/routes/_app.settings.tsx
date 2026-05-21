@@ -16,11 +16,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { Slider } from "@/components/ui/slider";
-import { LogOut, AlertTriangle, ShieldCheck, FlaskConical, Rabbit, KeyRound } from "lucide-react";
+import {
+  LogOut,
+  AlertTriangle,
+  ShieldCheck,
+  FlaskConical,
+  Rabbit,
+  KeyRound,
+  Volume2,
+  UserPlus,
+  Copy,
+  Check,
+  Loader2,
+  Play,
+} from "lucide-react";
 import { useEffect, useState } from "react";
-import { detectOllama, type EngineKind } from "@/lib/gemma";
+import {
+  detectOllama,
+  type EngineKind,
+  PHI_VISION_MODEL_ID,
+  GEMMA4_E2B_MODEL_ID,
+} from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import { OllamaSetup } from "@/components/OllamaSetup";
 import { StorageMonitor } from "@/components/StorageMonitor";
@@ -35,10 +53,45 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_app/settings")({
-  head: () => ({ meta: [{ title: "Settings — Trij" }] }),
+  head: () => ({
+    meta: [
+      {
+        title: "Settings — Language, Voice & AI Engine | Trij Medical Triage",
+      },
+      {
+        name: "description",
+        content:
+          "Configure Trij settings: choose AI inference engine (WebLLM, Ollama, cloud, or demo), set interface language (English, French, Swahili, Hindi, Arabic, Portuguese), adjust voice guidance, manage storage, and set up offline PIN access.",
+      },
+      {
+        name: "keywords",
+        content:
+          "medical app settings, AI inference setup, WebGPU medical AI, Ollama healthcare, multilingual medical app, voice guidance healthcare, offline PIN, medical app configuration",
+      },
+      {
+        property: "og:title",
+        content: "Settings — Configure Trij Medical Triage",
+      },
+      {
+        property: "og:description",
+        content:
+          "Configure AI engine, language, voice guidance, and privacy settings for Trij medical triage app.",
+      },
+      {
+        name: "twitter:title",
+        content: "Settings — Configure Trij Medical Triage",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Configure AI engine, language, voice guidance, and privacy settings for Trij medical triage app.",
+      },
+    ],
+  }),
   component: () => (
     <I18nErrorBoundary kind="engine">
       <SettingsPage />
@@ -59,12 +112,91 @@ function SettingsPage() {
   const [pinConfirm, setPinConfirm] = useState("");
   const [pinError, setPinError] = useState("");
   const [pinBusy, setPinBusy] = useState(false);
+  const [isSupervisor, setIsSupervisor] = useState(false);
+  const [codes, setCodes] = useState<
+    { code: string; used_by_user_id: string | null; used_at: string | null; created_at: string }[]
+  >([]);
+  const [genBusy, setGenBusy] = useState(false);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [demoWarningOpen, setDemoWarningOpen] = useState(false);
+
+  const handleEngineChange = (v: string) => {
+    if (v === "demo") {
+      setDemoWarningOpen(true);
+    } else {
+      s.setEngineKind(v as EngineKind | "auto");
+    }
+  };
+
+  const confirmDemo = () => {
+    s.setEngineKind("demo");
+    setDemoWarningOpen(false);
+    console.warn("[Trij] Demo mode activated — results are simulated, not for patient care");
+  };
 
   useEffect(() => {
     if (offlineUser) {
       hasPinForUser(offlineUser.id).then(setHasPin);
     }
   }, [offlineUser]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        if (!session.session) return;
+        const { data: hasRole } = await (supabase.rpc as any)("has_role", {
+          _user_id: session.session.user.id,
+          _role: "supervisor",
+        });
+        setIsSupervisor(!!hasRole);
+        if (hasRole) {
+          const { data: codesData } = await (supabase.from as any)("supervisor_codes")
+            .select("code, used_by_user_id, used_at, created_at")
+            .order("created_at", { ascending: false });
+          setCodes(codesData ?? []);
+        }
+      } catch {
+        /* */
+      }
+    })();
+  }, []);
+
+  const generateCode = async () => {
+    setGenBusy(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, "")}/functions/v1/generate-supervisor-code`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token ?? ""}`,
+          },
+        },
+      );
+      const data = await res.json();
+      if (data.code) {
+        setCodes((prev) => [
+          {
+            code: data.code,
+            used_by_user_id: null,
+            used_at: null,
+            created_at: new Date().toISOString(),
+          },
+          ...prev,
+        ]);
+        navigator.clipboard?.writeText(data.code);
+        toast.success(`Code ${data.code} generated and copied!`);
+      } else {
+        toast.error(data.error ?? "Failed to generate code");
+      }
+    } catch {
+      toast.error("Failed to generate code");
+    } finally {
+      setGenBusy(false);
+    }
+  };
 
   const signOut = async () => {
     try {
@@ -77,16 +209,42 @@ function SettingsPage() {
   };
 
   const engineOptions: { value: EngineKind | "auto"; label: string; desc: string }[] = [
-    { value: "auto", label: "Auto-detect", desc: "WebGPU → Ollama → Demo" },
+    { value: "auto", label: "Auto-detect", desc: "Cloud (mobile) / WebGPU → Ollama → Demo (desktop)" },
     { value: "webllm", label: "WebLLM (WebGPU)", desc: "In-browser Gemma via WebGPU" },
     { value: "ollama", label: "Ollama (local)", desc: "Local Ollama server" },
+    { value: "cloud", label: "Cloud inference", desc: "Remote Gemma 4 26B via Supabase" },
     { value: "demo", label: "Demo mode", desc: "Mock data, no real model needed" },
   ];
 
   return (
     <>
       <AppHeader title={t("settings")} />
-      <div className="mx-auto max-w-2xl space-y-6 px-5 py-6">
+      <div className="mx-auto max-w-4xl space-y-6 px-5 py-6">
+        <Section title="Accessibility">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>{t("kioskMode")}</Label>
+                <p className="text-xs text-muted-foreground">{t("kioskModeDesc")}</p>
+              </div>
+              <Switch checked={s.kioskMode} onCheckedChange={s.setKioskMode} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>{t("fieldMode")}</Label>
+                <p className="text-xs text-muted-foreground">{t("fieldModeDesc")}</p>
+              </div>
+              <Switch
+                checked={s.fieldMode}
+                onCheckedChange={(enabled) => {
+                  s.setFieldMode(enabled);
+                  if (enabled) toast.success(t("fieldModeActive"));
+                }}
+              />
+            </div>
+          </div>
+        </Section>
+
         <Section title={t("languageAndVoice")}>
           <div className="space-y-1.5">
             <Label>{t("interfaceAndSpeech")}</Label>
@@ -110,15 +268,42 @@ function SettingsPage() {
             </div>
             <Switch checked={s.voiceEnabled} onCheckedChange={s.setVoiceEnabled} />
           </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>{t("voiceGuidedMode")}</Label>
+              <p className="text-xs text-muted-foreground">{t("voiceGuidedModeDesc")}</p>
+            </div>
+            <Switch
+              checked={s.voiceGuidedMode}
+              onCheckedChange={s.setVoiceGuidedMode}
+              disabled={!s.voiceEnabled}
+            />
+          </div>
+          {s.voiceEnabled && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>{t("voiceSpeed")}</Label>
+                <span className="flex items-center gap-1 font-mono text-sm font-semibold">
+                  <Volume2 className="h-3.5 w-3.5 text-primary" />
+                  {s.voiceSpeed.toFixed(1)}x
+                </span>
+              </div>
+              <Slider
+                min={0.5}
+                max={2.0}
+                step={0.1}
+                value={[s.voiceSpeed]}
+                onValueChange={([v]) => s.setVoiceSpeed(v)}
+              />
+              <p className="text-xs text-muted-foreground">{t("voiceSpeedDesc")}</p>
+            </div>
+          )}
         </Section>
 
         <Section title={t("aiEngine")}>
           <div className="space-y-1.5">
             <Label>{t("inferenceEngine")}</Label>
-            <Select
-              value={s.engineKind}
-              onValueChange={(v) => s.setEngineKind(v as EngineKind | "auto")}
-            >
+            <Select value={s.engineKind} onValueChange={handleEngineChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -134,6 +319,30 @@ function SettingsPage() {
               {engineOptions.find((o) => o.value === s.engineKind)?.desc}
             </p>
           </div>
+
+          {s.engineKind === "webllm" && (
+            <div className="space-y-1.5">
+              <Label>WebLLM model</Label>
+              <Select value={s.modelId} onValueChange={s.setModelId}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={PHI_VISION_MODEL_ID}>
+                    Phi-3.5 Vision (4 GB) — Images + Text
+                  </SelectItem>
+                  <SelectItem value={GEMMA4_E2B_MODEL_ID}>
+                    Gemma 4 E2B (1.5 GB) — Text Only
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {s.modelId === GEMMA4_E2B_MODEL_ID
+                  ? "Faster to load, best for follow-up questions and voice. Phi-3.5 Vision is loaded automatically when you triage an image or analyze a document."
+                  : "Vision-capable. Supports image triage, document analysis, follow-up questions, and voice."}
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center justify-between">
             <div>
@@ -183,6 +392,60 @@ function SettingsPage() {
           )}
         </Section>
 
+        {isSupervisor && (
+          <Section title="Supervisor Codes">
+            <p className="text-xs text-muted-foreground">
+              Generate invitation codes that CHWs can enter during signup to link themselves to you.
+            </p>
+            <Button onClick={generateCode} disabled={genBusy} className="gap-2">
+              {genBusy ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <UserPlus className="h-4 w-4" />
+              )}
+              Generate new code
+            </Button>
+            {codes.length > 0 && (
+              <ul className="space-y-2">
+                {codes.map((c, i) => (
+                  <li
+                    key={c.code}
+                    className="flex items-center justify-between gap-3 rounded-xl border bg-secondary/20 p-3"
+                  >
+                    <div className="min-w-0">
+                      <code className="rounded bg-muted px-2 py-0.5 font-mono text-sm font-semibold tracking-wider">
+                        {c.code}
+                      </code>
+                      {c.used_by_user_id ? (
+                        <p className="mt-0.5 text-xs text-muted-foreground">Used</p>
+                      ) : (
+                        <p className="mt-0.5 text-xs text-emerald-600">Available</p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 gap-1 text-xs"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(c.code);
+                        setCopiedIdx(i);
+                        setTimeout(() => setCopiedIdx(null), 2000);
+                      }}
+                    >
+                      {copiedIdx === i ? (
+                        <Check className="h-3.5 w-3.5 text-emerald-600" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                      {copiedIdx === i ? "Copied" : "Copy"}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Section>
+        )}
+
         {offlineUser && (
           <Section title={t("offlinePin")}>
             <div className="rounded-2xl border bg-secondary/30 p-4">
@@ -201,9 +464,22 @@ function SettingsPage() {
                 >
                   {hasPin ? t("change") : t("setup")}
                 </Button>
-              </div>
             </div>
-          </Section>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <Label>{t("encryptData")}</Label>
+                <p className="text-xs text-muted-foreground">{t("encryptDataDesc")}</p>
+              </div>
+              <Switch
+                checked={s.encryptionEnabled}
+                onCheckedChange={(enabled) => {
+                  s.setEncryptionEnabled(enabled);
+                  toast.success(enabled ? t("encryptionEnabled") : t("encryptionDisabled"));
+                }}
+              />
+            </div>
+          </div>
+        </Section>
         )}
 
         <Section title={t("storage")}>
@@ -231,6 +507,71 @@ function SettingsPage() {
                 <span>100% — {t("neverRefer")}</span>
               </div>
               <p className="text-xs text-muted-foreground">{t("confidenceDesc")}</p>
+            </div>
+          </div>
+        </Section>
+
+        <Section title={t("display")}>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="sunlight-mode">{t("sunlightMode")}</Label>
+                <p className="text-xs text-muted-foreground">{t("sunlightModeDesc")}</p>
+              </div>
+              <Switch
+                id="sunlight-mode"
+                checked={s.sunlightMode}
+                onCheckedChange={s.setSunlightMode}
+              />
+            </div>
+          </div>
+        </Section>
+
+        <Section title={t("security")}>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <Label>{t("autoLock")}</Label>
+                <p className="text-xs text-muted-foreground">{t("autoLockDesc")}</p>
+              </div>
+              <select
+                value={s.lockTimeoutMinutes}
+                onChange={(e) => s.setLockTimeoutMinutes(Number(e.target.value))}
+                className="ml-4 rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value={0}>{t("never")}</option>
+                <option value={1}>1 {t("minute")}</option>
+                <option value={5}>5 {t("minutes")}</option>
+                <option value={10}>10 {t("minutes")}</option>
+                <option value={30}>30 {t("minutes")}</option>
+              </select>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <Label>{t("biometricAuth")}</Label>
+                <p className="text-xs text-muted-foreground">{t("biometricAuthDesc")}</p>
+              </div>
+              <Switch
+                checked={s.biometricEnabled}
+                onCheckedChange={(enabled) => {
+                  if (enabled) {
+                    import("@/lib/webauthn").then(({ registerBiometric, isBiometricAvailable }) => {
+                      isBiometricAvailable().then((avail) => {
+                        if (!avail) { toast.error(t("biometricNotAvailable")); return; }
+                        registerBiometric(s.chwName || "user").then((ok) => {
+                          if (ok) s.setBiometricEnabled(true);
+                          else toast.error(t("biometricSetupFailed"));
+                        });
+                      });
+                    });
+                  } else {
+                    import("@/lib/webauthn").then(({ unregisterBiometric }) => {
+                      unregisterBiometric();
+                      s.setBiometricEnabled(false);
+                    });
+                  }
+                }}
+              />
             </div>
           </div>
         </Section>
@@ -265,9 +606,31 @@ function SettingsPage() {
             </ul>
             <p className="text-xs">{t("trij")} &mdash; Gemma 4 Good Hackathon 2026</p>
           </div>
+          <div className="mt-4 flex gap-3">
+            <Link
+              to="/faq"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border bg-card p-3 text-sm font-medium hover:bg-muted/50"
+            >
+              FAQ
+            </Link>
+            <Link
+              to="/help"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border bg-card p-3 text-sm font-medium hover:bg-muted/50"
+            >
+              {t("help")}
+            </Link>
+          </div>
         </Section>
 
         <ModelDownloadManager />
+
+        <Button
+          variant="outline"
+          className="w-full gap-2"
+          onClick={() => useSettingsStore.getState().resetTutorial()}
+        >
+          <Play className="h-4 w-4" /> {t("retakeTutorial")}
+        </Button>
 
         <Button variant="outline" className="w-full gap-2" onClick={signOut}>
           <LogOut className="h-4 w-4" /> {t("signOut")}
@@ -348,6 +711,37 @@ function SettingsPage() {
               {pinBusy ? "Saving..." : "Save PIN"}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={demoWarningOpen} onOpenChange={setDemoWarningOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-urgency-red">
+              <AlertTriangle className="h-5 w-5" />
+              Demo Mode — Not for Medical Use
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Demo mode returns <strong>simulated results</strong> for testing only. Do{" "}
+              <strong>not</strong> use for actual patient assessment.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-xl border bg-amber-50 p-4 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+            <p className="font-medium">If you select demo mode:</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5">
+              <li>All assessments will contain fake, plausible-sounding results</li>
+              <li>A persistent red banner will appear on every screen</li>
+              <li>Switch to WebLLM, Ollama, or Cloud to return to real assessments</li>
+            </ul>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDemoWarningOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDemo}>
+              Enter Demo Mode
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

@@ -1,5 +1,19 @@
 const MAX_DIMENSION = 1024;
 const JPEG_QUALITY = 0.6;
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+export function validateImageType(file: File): boolean {
+  return ALLOWED_TYPES.includes(file.type);
+}
+
+export function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
 
 export function compressImage(dataUrl: string): Promise<string> {
   return new Promise((resolve, reject) => {

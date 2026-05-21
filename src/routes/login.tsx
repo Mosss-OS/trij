@@ -7,11 +7,12 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShieldCheck, Loader2, WifiOff, KeyRound } from "lucide-react";
+import { ShieldCheck, Loader2, WifiOff, KeyRound, MailCheck } from "lucide-react";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { toast } from "sonner";
 import { hasPinForUser, verifyPin, recordFailedAttempt, setupPin } from "@/lib/pin-auth";
 import { getDB } from "@/lib/db";
+import { validateSupervisorCode } from "@/lib/supervisor-codes";
 import {
   Dialog,
   DialogContent,
@@ -38,11 +39,28 @@ function clearLastUserId() {
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Sign in — Trij" },
+      { title: "Sign In — Trij Free Offline AI Medical Triage" },
       {
         name: "description",
         content:
-          "Trij: offline-first AI triage for community health workers, powered by on-device Gemma.",
+          "Sign in to Trij, the free offline-first AI medical triage app for community health workers. Access wound assessment, rash analysis, and patient records — with or without internet.",
+      },
+      {
+        name: "keywords",
+        content:
+          "sign in medical triage, community health worker login, offline healthcare app, free medical assessment",
+      },
+      { property: "og:title", content: "Sign In — Trij Medical Triage" },
+      {
+        property: "og:description",
+        content:
+          "Access free offline AI medical triage. Sign in to assess wounds, rashes, and documents on-device.",
+      },
+      { name: "twitter:title", content: "Sign In — Trij Medical Triage" },
+      {
+        name: "twitter:description",
+        content:
+          "Access free offline AI medical triage. Sign in to assess wounds, rashes, and documents on-device.",
       },
     ],
   }),
@@ -61,6 +79,10 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [supervisorCode, setSupervisorCode] = useState("");
+  const [supervisorName, setSupervisorName] = useState("");
+  const [codeValidating, setCodeValidating] = useState(false);
+  const [codeValid, setCodeValid] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
 
   const [pinMode, setPinMode] = useState(false);
@@ -76,6 +98,35 @@ function LoginPage() {
   const [setupPinConfirm, setSetupPinConfirm] = useState("");
   const [setupPinError, setSetupPinError] = useState("");
 
+  const [awaitingVerification, setAwaitingVerification] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  const handleResendVerification = async () => {
+    if (!awaitingVerification || resending || resendCooldown > 0) return;
+    setResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: awaitingVerification,
+        options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+      });
+      if (error) throw error;
+      toast.success("Verification email sent. Check your inbox.");
+      setResendCooldown(30);
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setResending(false);
+    }
+  };
+
   useEffect(() => {
     if (loading) return;
     if (session || offlineUser) return;
@@ -88,15 +139,11 @@ function LoginPage() {
     (async () => {
       try {
         const lastId = getLastUserId();
-        let records: import("@/lib/pin-auth").PinRecord[];
+        let rec: import("@/lib/pin-auth").PinRecord | undefined;
         if (lastId) {
-          const r = await getDB().pinAuth.get(lastId);
-          records = r ? [r] : [];
-        } else {
-          records = await getDB().pinAuth.toArray();
+          rec = await getDB().pinAuth.get(lastId);
         }
-        if (records.length > 0) {
-          const rec = records[0];
+        if (rec) {
           setEmail(rec.email);
           setPinMode(true);
           setLocked(rec.locked);
@@ -112,6 +159,34 @@ function LoginPage() {
     })();
   }, [loading, online, session, offlineUser]);
 
+  useEffect(() => {
+    if (mode !== "signup" || supervisorCode.length < 6) {
+      setCodeValid(null);
+      setSupervisorName("");
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setCodeValidating(true);
+      let cancelled = false;
+      const timeout = setTimeout(() => {
+        cancelled = true;
+        setCodeValidating(false);
+      }, 8_000);
+      try {
+        const res = await validateSupervisorCode(supervisorCode);
+        if (cancelled) return;
+        setCodeValid(res.valid);
+        setSupervisorName(res.supervisor_name ?? "");
+      } catch {
+        if (!cancelled) setCodeValid(false);
+      } finally {
+        clearTimeout(timeout);
+        if (!cancelled) setCodeValidating(false);
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [supervisorCode, mode]);
+
   if (loading || checkingPin) {
     return (
       <div className="grid min-h-screen place-items-center">
@@ -121,19 +196,30 @@ function LoginPage() {
   }
   if (session || offlineUser) return <Navigate to="/dashboard" />;
 
+  const AUTH_TIMEOUT = 15_000;
+
   const handleOnlineSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      cancelled = true;
+      setBusy(false);
+      toast.error("Request timed out — check your connection and try again.");
+    }, AUTH_TIMEOUT);
     try {
       if (mode === "signup") {
+        const meta: Record<string, string> = { name };
+        if (supervisorCode.trim()) meta.supervisor_code = supervisorCode.trim();
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: { name },
+            data: meta,
           },
         });
+        if (cancelled) return;
         if (error) throw error;
         if (data.session?.user) {
           toast.success(t("accountCreated"));
@@ -145,12 +231,15 @@ function LoginPage() {
           }
         } else {
           toast.info(t("checkEmailConfirm"));
+          setAwaitingVerification(email);
+          setResendCooldown(30);
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+        if (cancelled) return;
         if (error) throw error;
         if (data.session?.user) {
           const { user } = data.session;
@@ -163,9 +252,11 @@ function LoginPage() {
         }
       }
     } catch (err) {
+      if (cancelled) return;
       toast.error((err as Error).message);
     } finally {
-      setBusy(false);
+      clearTimeout(timer);
+      if (!cancelled) setBusy(false);
     }
   };
 
@@ -250,16 +341,18 @@ function LoginPage() {
 
   if (pinMode && !online) {
     return (
-      <div className="relative min-h-screen overflow-hidden bg-background">
+      <div className="relative min-h-screen bg-background">
         <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl" />
 
-        <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
+        <div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-6 py-10 overflow-y-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-                <span className="font-display text-xl font-bold">T</span>
-              </div>
+              <img
+                src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
+                alt="Trij logo — free offline AI medical triage"
+                className="h-10 w-10 rounded-2xl object-contain shadow-lg shadow-primary/30"
+              />
               <span className="font-display text-xl font-bold">Trij</span>
             </div>
             <OfflineIndicator />
@@ -394,17 +487,85 @@ function LoginPage() {
     );
   }
 
+  if (awaitingVerification) {
+    return (
+      <div className="relative min-h-screen bg-background">
+        <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl" />
+        <div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-6 py-10 overflow-y-auto">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-2.5">
+              <img
+                src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
+                alt="Trij logo"
+                className="h-10 w-10 rounded-2xl object-contain shadow-lg shadow-primary/30"
+              />
+              <span className="font-display text-xl font-bold">Trij</span>
+            </Link>
+            <OfflineIndicator />
+          </div>
+
+          <div className="mt-12 flex items-center gap-3">
+            <MailCheck className="h-8 w-8 text-primary" />
+            <h1 className="font-display text-2xl font-bold leading-tight tracking-tight">
+              Verify your email
+            </h1>
+          </div>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            We sent a verification link to{" "}
+            <span className="font-medium text-foreground">{awaitingVerification}</span>. Click the
+            link in the email to activate your account, then sign in.
+          </p>
+
+          <div className="mt-10 space-y-3 rounded-3xl border bg-card p-6 shadow-sm">
+            <Button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={resending || resendCooldown > 0}
+              className="w-full"
+              size="lg"
+            >
+              {resending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {resendCooldown > 0
+                ? `Resend verification email (${resendCooldown}s)`
+                : "Resend verification email"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setAwaitingVerification(null);
+                setMode("signin");
+              }}
+              className="w-full"
+              size="lg"
+            >
+              Back to sign in
+            </Button>
+          </div>
+
+          <p className="mt-auto pt-10 text-center text-xs text-muted-foreground">
+            <ShieldCheck className="mr-1 inline h-3.5 w-3.5" />
+            {t("patientDataNeverLeaves")}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
+    <div className="relative min-h-screen bg-background">
       <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
+      <div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-6 py-10 overflow-y-auto">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30">
-              <span className="font-display text-xl font-bold">T</span>
-            </div>
+            <img
+              src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
+              alt="Trij logo — free offline AI medical triage"
+              className="h-10 w-10 rounded-2xl object-contain shadow-lg shadow-primary/30"
+            />
             <span className="font-display text-xl font-bold">Trij</span>
           </Link>
           <OfflineIndicator />
@@ -424,16 +585,65 @@ function LoginPage() {
           className="mt-10 space-y-4 rounded-3xl border bg-card p-6 shadow-sm"
         >
           {mode === "signup" && (
-            <div className="space-y-1.5">
-              <Label htmlFor="name">{t("yourName")}</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="A. Patel"
-                required
-              />
-            </div>
+            <>
+              <div className="space-y-1.5">
+                <Label htmlFor="name">{t("yourName")}</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="A. Patel"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="supervisor-code">
+                  Supervisor code <span className="text-xs text-muted-foreground">(optional)</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="supervisor-code"
+                    value={supervisorCode}
+                    onChange={(e) => {
+                      setSupervisorCode(e.target.value.toUpperCase().slice(0, 8));
+                      setCodeValid(null);
+                      setSupervisorName("");
+                    }}
+                    placeholder="e.g. ABC3X7K2"
+                    className={
+                      codeValid === true
+                        ? "pr-10"
+                        : codeValid === false
+                          ? "pr-10 border-destructive"
+                          : ""
+                    }
+                    maxLength={8}
+                  />
+                  {codeValidating && (
+                    <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                  )}
+                  {codeValid === true && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-emerald-600">
+                      ✓
+                    </span>
+                  )}
+                  {codeValid === false && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-destructive">
+                      ✗
+                    </span>
+                  )}
+                </div>
+                {supervisorName && codeValid && (
+                  <p className="text-xs text-emerald-600">Linked to {supervisorName}</p>
+                )}
+                {codeValid === false && (
+                  <p className="text-xs text-destructive">Code not found or already used</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Enter the 8-character code from your supervisor (if you have one).
+                </p>
+              </div>
+            </>
           )}
           <div className="space-y-1.5">
             <Label htmlFor="email">{t("email")}</Label>

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -12,12 +12,16 @@
  * Typography: Plus Jakarta Sans (display) + Inter (body), via Google Fonts.
  */
 
-
 @theme inline {
-  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-serif: "Source Serif 4", "Iowan Old Style", "Apple Garamond", Georgia, serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* Claude.com font stacks (exact). "Anthropic Sans" / "Anthropic Serif" / "Anthropic Mono"
+   * are Anthropic's proprietary webfonts and are not redistributable. We declare them as
+   * the first family so users/devices that have them installed render with them, and we
+   * mirror Claude's literal fallback chains for everyone else. Weights used on claude.com
+   * are a 300–800 variable range (sans, serif) and 400 (mono). */
+  --font-display: "Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: "Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: "Anthropic Serif", Georgia, "Arial Hebrew", "Noto Sans Hebrew", "Times New Roman", Times, "Hiragino Sans", "Yu Gothic", Meiryo, "Noto Sans CJK JP", "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Apple SD Gothic Neo", "Malgun Gothic", serif;
+  --font-mono: "Anthropic Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -175,6 +179,69 @@
   --sidebar-ring: oklch(0.7 0.13 190);
 }
 
+/* Sunlight / high-contrast mode — pure black on pure white, thicker borders, no shadows */
+.sunlight-mode {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0 0 0);
+  --primary: oklch(0.25 0.1 210);
+  --primary-foreground: oklch(1 0 0);
+  --primary-glow: oklch(0.2 0.08 210);
+  --secondary: oklch(1 0 0);
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.95 0.005 85);
+  --muted-foreground: oklch(0.15 0.01 200);
+  --accent: oklch(0.9 0.02 100);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.5 0.25 25);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.5 0.02 90);
+  --input: oklch(0.5 0.02 90);
+  --ring: oklch(0 0 0);
+  --urgency-green: oklch(0.35 0.2 145);
+  --urgency-green-bg: oklch(0.85 0.1 145);
+  --urgency-yellow: oklch(0.45 0.2 80);
+  --urgency-yellow-bg: oklch(0.9 0.12 80);
+  --urgency-red: oklch(0.5 0.25 25);
+  --urgency-red-bg: oklch(0.92 0.08 25);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0 0 0);
+  --sidebar-primary: oklch(0.25 0.1 210);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.9 0.02 100);
+  --sidebar-accent-foreground: oklch(0 0 0);
+  --sidebar-border: oklch(0.5 0.02 90);
+  --sidebar-ring: oklch(0 0 0);
+  --radius: 0;
+}
+
+.sunlight-mode * {
+  border-width: 2px !important;
+}
+
+.sunlight-mode .shadow-sm,
+.sunlight-mode .shadow,
+.sunlight-mode .shadow-md,
+.sunlight-mode .shadow-lg,
+.sunlight-mode .shadow-xl {
+  box-shadow: none !important;
+}
+
+.sunlight-mode html,
+.sunlight-mode body {
+  font-size: 18px;
+}
+
+.sunlight-mode .text-xs { font-size: 0.75rem; }
+.sunlight-mode .text-sm { font-size: 0.9rem; }
+.sunlight-mode .text-base { font-size: 1.05rem; }
+.sunlight-mode .text-lg { font-size: 1.2rem; }
+.sunlight-mode .text-xl { font-size: 1.4rem; }
+.sunlight-mode .text-2xl { font-size: 1.6rem; }
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -206,4 +273,16 @@
   font-size: 0.75rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
 }

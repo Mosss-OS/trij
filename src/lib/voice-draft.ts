@@ -1,8 +1,6 @@
 import { getDB, type VoiceDraft } from "@/lib/db";
 
-export async function saveVoiceDraft(
-  draft: Omit<VoiceDraft, "updatedAt">,
-): Promise<void> {
+export async function saveVoiceDraft(draft: Omit<VoiceDraft, "updatedAt">): Promise<void> {
   const db = getDB();
   await db.voiceDrafts.put({ ...draft, updatedAt: new Date().toISOString() });
 }

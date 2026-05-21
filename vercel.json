@@ -1,0 +1,15 @@
+{
+  "framework": "tanstack-start",
+  "buildCommand": "vite build",
+  "installCommand": "npm install",
+  "outputDirectory": "dist/client",
+  "functions": {
+    "api/index.mjs": {
+      "includeFiles": "dist/server/**",
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ]
+}

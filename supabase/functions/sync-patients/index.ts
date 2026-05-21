@@ -50,10 +50,9 @@ serve(async (req) => {
     });
     if (error) throw error;
 
-    return new Response(
-      JSON.stringify({ ok: true, count: mapped.length }),
-      { headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ ok: true, count: mapped.length }), {
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
     return new Response(JSON.stringify({ error: (err as Error).message }), {
       status: 500,

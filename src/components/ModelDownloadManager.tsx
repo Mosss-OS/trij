@@ -20,7 +20,7 @@ export function ModelDownloadManager() {
   const { t } = useI18n();
   const engineKind = useSettingsStore((s) => s.engineKind);
   const [storage, setStorage] = useState<StorageInfo | null>(null);
-  const [model, setModel] = useState<ModelStatus>(getModelStatus());
+  const [model, setModel] = useState<ModelStatus>(() => getModelStatus());
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [engineLoaded, setEngineLoaded] = useState(false);

@@ -1,14 +1,24 @@
 {
-  "name": "Trij — Field Triage",
+  "name": "Trij — On-device AI Medical Triage for Community Health Workers",
   "short_name": "Trij",
-  "description": "Offline-first AI triage for community health workers, powered by on-device Gemma.",
+  "description": "Free, offline-first AI medical triage app for community health workers in remote areas. On-device wound assessment, rash analysis, and document scanning powered by Google DeepMind Gemma 4 — no internet needed.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f7f5ee",
   "theme_color": "#0f5d63",
   "orientation": "portrait",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "https://res.cloudinary.com/dv0tt80vn/image/upload/c_fill,w_192,h_192/v1778960068/Trij_l7tyxj.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://res.cloudinary.com/dv0tt80vn/image/upload/c_fill,w_512,h_512/v1778960068/Trij_l7tyxj.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

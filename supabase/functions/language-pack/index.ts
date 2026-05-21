@@ -25,10 +25,10 @@ serve(async (req) => {
       .single();
 
     if (error || !data) {
-      return new Response(
-        JSON.stringify({ error: "Language pack not found", lang }),
-        { status: 404, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Language pack not found", lang }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     return new Response(JSON.stringify(data), {
