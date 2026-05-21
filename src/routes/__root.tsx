@@ -13,6 +13,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { registerSW, listenForSyncMessages } from "@/lib/sw-register";
 import { processSyncQueue } from "@/lib/sync";
 import { useI18n } from "@/lib/i18n";
+import { useSessionStore } from "@/stores/sessionStore";
+import { useAuthSession } from "@/hooks/useAuthSession";
+import { Loader2 } from "lucide-react";
 
 function NotFoundComponent() {
   return (
@@ -215,6 +218,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const { isInitialized } = useSessionStore();
+  useAuthSession();
 
   useEffect(() => {
     registerSW();
@@ -227,9 +231,12 @@ function RootComponent() {
     return unsub;
   }, []);
 
-  // Wait for auth initialization before rendering app content
   if (!isInitialized) {
-    return null;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (

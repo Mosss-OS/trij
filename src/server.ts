@@ -35,8 +35,8 @@ function securityHeaders(): Record<string, string> {
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co http://localhost:11434 ws://localhost:11434",
       "img-src 'self' data: blob: https://res.cloudinary.com",
       "media-src 'self' blob:",
-      "style-src 'self' 'unsafe-inline'",
-      "font-src 'self' data:",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' data: https://fonts.gstatic.com",
     ].join("; "),
   };
 }
