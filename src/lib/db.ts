@@ -1,5 +1,19 @@
 import Dexie, { type Table } from "dexie";
-import type { Patient, Assessment, SyncQueueItem } from "@/types/trij";
+import type { Patient, Assessment, FollowUp, SyncQueueItem, SyncConflict, TriageResult, InAppNotification, AuditEvent } from "@/types/trij";
+import type { ConvMessage } from "@/lib/gemma";
+
+export interface VoiceDraft {
+  patientId: string;
+  chwUserId: string;
+  patient: Patient;
+  triageResult: TriageResult;
+  image: string;
+  messages: ConvMessage[];
+  qaHistory: { question: string; answer: string }[];
+  currentQuestion: string;
+  consent: boolean;
+  updatedAt: string;
+}
 
 export interface ErrorLog {
   id?: number;
@@ -24,9 +38,14 @@ export interface PinAuthRecord {
 export class TrijDB extends Dexie {
   patients!: Table<Patient, string>;
   assessments!: Table<Assessment, string>;
+  followUps!: Table<FollowUp, string>;
   syncQueue!: Table<SyncQueueItem, number>;
   errorLogs!: Table<ErrorLog, number>;
   pinAuth!: Table<PinAuthRecord, string>;
+  voiceDrafts!: Table<VoiceDraft, string>;
+  syncConflicts!: Table<SyncConflict, number>;
+  notifications!: Table<InAppNotification, string>;
+  auditLogs!: Table<AuditEvent, number>;
 
   constructor() {
     super("TrijDB");
@@ -36,6 +55,56 @@ export class TrijDB extends Dexie {
       syncQueue: "++id, table, action, recordId, createdAt",
       errorLogs: "++id, timestamp",
       pinAuth: "userId, email",
+    });
+    this.version(4).stores({
+      patients: "id, chwUserId, identifier, createdAt, syncedAt",
+      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
+      syncQueue: "++id, table, action, recordId, createdAt",
+      errorLogs: "++id, timestamp",
+      pinAuth: "userId, email",
+      voiceDrafts: "patientId, chwUserId, updatedAt",
+    });
+    this.version(5).stores({
+      patients: "id, chwUserId, identifier, createdAt, syncedAt",
+      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
+      syncQueue: "++id, table, action, recordId, createdAt",
+      errorLogs: "++id, timestamp",
+      pinAuth: "userId, email",
+      voiceDrafts: "patientId, chwUserId, updatedAt",
+      syncConflicts: "++id, table, recordId, createdAt",
+    });
+    this.version(6).stores({
+      patients: "id, chwUserId, identifier, createdAt, syncedAt",
+      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
+      followUps: "id, patientId, chwUserId, status, scheduledFor, createdAt, syncedAt",
+      syncQueue: "++id, table, action, recordId, createdAt",
+      errorLogs: "++id, timestamp",
+      pinAuth: "userId, email",
+      voiceDrafts: "patientId, chwUserId, updatedAt",
+      syncConflicts: "++id, table, recordId, createdAt",
+    });
+    this.version(7).stores({
+      patients: "id, chwUserId, identifier, createdAt, syncedAt",
+      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
+      followUps: "id, patientId, chwUserId, status, scheduledFor, createdAt, syncedAt",
+      syncQueue: "++id, table, action, recordId, createdAt",
+      errorLogs: "++id, timestamp",
+      pinAuth: "userId, email",
+      voiceDrafts: "patientId, chwUserId, updatedAt",
+      syncConflicts: "++id, table, recordId, createdAt",
+      notifications: "id, kind, read, createdAt",
+    });
+    this.version(8).stores({
+      patients: "id, chwUserId, identifier, createdAt, syncedAt",
+      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
+      followUps: "id, patientId, chwUserId, status, scheduledFor, createdAt, syncedAt",
+      syncQueue: "++id, table, action, recordId, createdAt",
+      errorLogs: "++id, timestamp",
+      pinAuth: "userId, email",
+      voiceDrafts: "patientId, chwUserId, updatedAt",
+      syncConflicts: "++id, table, recordId, createdAt",
+      notifications: "id, kind, read, createdAt",
+      auditLogs: "++id, action, userId, patientId, resourceType, timestamp, synced",
     });
   }
 }
