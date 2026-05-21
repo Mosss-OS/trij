@@ -7,6 +7,8 @@ import { useReferralAlerts } from "@/hooks/useReferralAlerts";
 import { useRole } from "@/hooks/useRBAC";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { detectOutbreaks, type Outbreak, type OutbreakAssessment, type OutbreakAlert } from "@/lib/outbreak";
 import {
   Loader2,
   MapPin,
@@ -49,6 +51,7 @@ interface RemoteAssessment {
   chw_user_id: string | null;
   created_at: string;
   patients: { identifier: string } | null;
+  patient_id: string;
 }
 
 interface ChwLocation {
@@ -186,7 +189,7 @@ function Supervisor() {
        setChwLocations((chwRes.data ?? []) as ChwLocation[]);
        
        // Detect outbreaks
-       const detected = detectOutbreaks(assessmentsWithLoc as OutbreakAssessment[], 5, 3, 7);
+        const detected = detectOutbreaks(assessmentsWithLoc as OutbreakAssessment[], { epsKm: 5, minPts: 3, daysWindow: 7 });
        setOutbreaks(detected);
        
        // Generate new alerts for outbreaks not already alerted

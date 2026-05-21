@@ -29,6 +29,7 @@ import {
   initVoiceConversation,
   nextVoiceTurn,
   type ConvMessage,
+  type EngineKind,
 } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { TriageResult, Patient, Assessment, VitalSigns } from "@/types/trij";
@@ -149,7 +150,7 @@ function TriagePage() {
   const aiFeedbackRef = useRef<AiFeedback | undefined>(undefined);
   const voiceRef = useRef<VoiceAssistant | null>(null);
   const convoRef = useRef<ConvMessage[]>([]);
-  const kindRef = useRef<"webllm" | "ollama" | "demo">("webllm");
+  const kindRef = useRef<EngineKind>("webllm");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [patientId, setPatientId] = useState<string | null>(null);
@@ -495,7 +496,7 @@ function TriagePage() {
       const { decision, messages } = await nextVoiceTurn(
         convoRef.current,
         null,
-        kindRef.current as "webllm" | "ollama" | "demo",
+        kindRef.current,
         ollamaUrl,
       );
       convoRef.current = messages;
@@ -531,7 +532,7 @@ function TriagePage() {
       const { decision, messages } = await nextVoiceTurn(
         convoRef.current,
         answer.trim(),
-        kindRef.current as "webllm" | "ollama" | "demo",
+        kindRef.current,
         ollamaUrl,
       );
       convoRef.current = messages;

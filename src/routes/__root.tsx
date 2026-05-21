@@ -241,8 +241,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster />
+      <div className="pt-16 pb-16">
+        <Outlet />
+        <Toaster />
+      </div>
     </QueryClientProvider>
   );
 }

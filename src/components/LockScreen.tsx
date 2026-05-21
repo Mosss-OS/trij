@@ -2,14 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { verifyPin } from "@/lib/pin-auth";
+import { hasPinForUser, verifyPin } from "@/lib/pin-auth";
 import { authenticateBiometric } from "@/lib/webauthn";
 import { deriveKey, cacheKey, clearKey } from "@/lib/crypto";
-import { Lock, Fingerprint, AlertTriangle, Loader2 } from "lucide-react";
+import { Lock, Fingerprint, AlertTriangle, Loader2, LogOut } from "lucide-react";
 
 export function LockScreen() {
   const { t } = useI18n();
   const setScreenLocked = useSessionStore((s) => s.setScreenLocked);
+  const clearAuth = useSessionStore((s) => s.clearAuth);
   const user = useSessionStore((s) => s.user);
   const biometricEnabled = useSettingsStore((s) => s.biometricEnabled);
   const encryptionSalt = useSettingsStore((s) => s.encryptionSalt);
@@ -18,11 +19,23 @@ export function LockScreen() {
   const [verifying, setVerifying] = useState(false);
   const [usePin, setUsePin] = useState(false);
   const [bioAttempts, setBioAttempts] = useState(0);
+  const [noPinConfigured, setNoPinConfigured] = useState(false);
+  const [checkingPin, setCheckingPin] = useState(true);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const mountedRef = useRef(true);
 
   useEffect(() => {
     clearKey();
+    if (user?.id) {
+      hasPinForUser(user.id).then((exists) => {
+        if (mountedRef.current) {
+          setNoPinConfigured(!exists);
+          setCheckingPin(false);
+        }
+      });
+    } else {
+      setCheckingPin(false);
+    }
     if (biometricEnabled && bioAttempts < 3) {
       authenticateBiometric().then((ok) => {
         if (ok && mountedRef.current) setScreenLocked(false);
@@ -30,6 +43,18 @@ export function LockScreen() {
       });
     }
   }, [biometricEnabled]);
+
+  const retryBiometric = async () => {
+    if (verifying) return;
+    setVerifying(true);
+    try {
+      const ok = await authenticateBiometric();
+      if (ok && mountedRef.current) setScreenLocked(false);
+      else if (mountedRef.current) setBioAttempts((a) => a + 1);
+    } finally {
+      if (mountedRef.current) setVerifying(false);
+    }
+  };
 
   useEffect(() => {
     return () => { mountedRef.current = false; };
@@ -87,13 +112,51 @@ export function LockScreen() {
     }
   };
 
+  if (checkingPin) {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (noPinConfigured) {
+    return (
+      <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background px-6">
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
+            <Lock className="h-7 w-7 text-destructive" />
+          </div>
+          <h1 className="mt-2 font-display text-xl font-semibold">{t("trij")}</h1>
+          <p className="text-sm text-muted-foreground text-center max-w-xs">
+            No PIN has been configured for this account. The app locked due to inactivity, but there is no PIN to unlock it.
+          </p>
+          <p className="text-xs text-muted-foreground text-center max-w-xs mt-2">
+            Sign out and start fresh, or contact your supervisor for assistance.
+          </p>
+        </div>
+        <button
+          onClick={() => { clearAuth(); setScreenLocked(false); }}
+          className="mt-8 flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </button>
+      </div>
+    );
+  }
+
   if (biometricEnabled && bioAttempts < 3 && !usePin) {
     return (
       <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background px-6">
         <div className="flex flex-col items-center gap-2">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+          <button
+            onClick={retryBiometric}
+            className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 transition-colors hover:bg-primary/20"
+            aria-label={t("useBiometricToUnlock")}
+          >
             <Fingerprint className="h-7 w-7 text-primary" />
-          </div>
+          </button>
           <h1 className="mt-2 font-display text-xl font-semibold">Trij</h1>
           <p className="text-sm text-muted-foreground">{t("useBiometricToUnlock")}</p>
         </div>
