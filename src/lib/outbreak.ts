@@ -1,4 +1,4 @@
-interface OutbreakAssessment {
+export interface OutbreakAssessment {
   id: string;
   condition: string;
   urgency: "green" | "yellow" | "red" | null;
@@ -108,11 +108,15 @@ export function detectOutbreaks(
         id: outbreakId,
         condition: point.condition!,
         cases: neighbors.length,
-        startDate: Math.min(
-          ...neighbors.map((n) => new Date(n.created_at).getTime())
+        startDate: new Date(
+          Math.min(
+            ...neighbors.map((n) => new Date(n.created_at).getTime())
+          )
         ).toISOString(),
-        endDate: Math.max(
-          ...neighbors.map((n) => new Date(n.created_at).getTime())
+        endDate: new Date(
+          Math.max(
+            ...neighbors.map((n) => new Date(n.created_at).getTime())
+          )
         ).toISOString(),
         centroid_lat: centroidLat,
         centroid_lng: centroidLng,
@@ -149,4 +153,11 @@ export interface Outbreak {
   radius_km: number;
   affected_chw_ids: string[];
   patient_ids: string[];
+}
+
+export interface OutbreakAlert {
+  id: string;
+  outbreakId: string;
+  triggeredAt: string;
+  acknowledged: boolean;
 }

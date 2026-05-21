@@ -70,7 +70,7 @@ export function AiFailureOverlay({
       condition: manualCondition || "Unspecified condition",
       confidence: 0,
       urgency: manualUrgency,
-      possible_conditions: manualCondition ? [{ condition: manualCondition, probability: 100 }] : [],
+      possible_conditions: manualCondition ? [{ name: manualCondition, probability: 100 }] : [],
       key_visual_features: [],
       recommendation:
         manualUrgency === "red"

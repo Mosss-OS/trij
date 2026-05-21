@@ -3,14 +3,14 @@ import { getDB } from "@/lib/db";
 import { encrypt, decrypt, isKeyCached } from "@/lib/crypto";
 import type { Patient, Assessment } from "@/types/trij";
 
-const PATIENT_FIELDS: (keyof Patient)[] = ["identifier", "notes", "name"];
-const ASSESSMENT_FIELDS: (keyof Assessment)[] = ["condition", "notes", "recommendation"];
+const PATIENT_FIELDS: (keyof Patient)[] = ["identifier", "notes"];
+const ASSESSMENT_FIELDS: (keyof Assessment)[] = ["condition", "recommendation"];
 
 async function encryptPatient(p: Patient): Promise<Patient> {
   for (const field of PATIENT_FIELDS) {
     const val = p[field];
     if (typeof val === "string" && val.length > 0) {
-      (p as Record<string, unknown>)[field] = await encrypt(val);
+      (p as unknown as Record<string, unknown>)[field] = await encrypt(val);
     }
   }
   return p;
@@ -21,7 +21,7 @@ async function decryptPatient(p: Patient): Promise<Patient> {
     const val = p[field];
     if (typeof val === "string" && val.startsWith("0")) {
       try {
-        (p as Record<string, unknown>)[field] = await decrypt(val);
+        (p as unknown as Record<string, unknown>)[field] = await decrypt(val);
       } catch {
         // leave as-is if not encrypted
       }
@@ -34,7 +34,7 @@ async function encryptAssessment(a: Assessment): Promise<Assessment> {
   for (const field of ASSESSMENT_FIELDS) {
     const val = a[field];
     if (typeof val === "string" && val.length > 0) {
-      (a as Record<string, unknown>)[field] = await encrypt(val);
+      (a as unknown as Record<string, unknown>)[field] = await encrypt(val);
     }
   }
   return a;
@@ -45,7 +45,7 @@ async function decryptAssessment(a: Assessment): Promise<Assessment> {
     const val = a[field];
     if (typeof val === "string" && val.startsWith("0")) {
       try {
-        (a as Record<string, unknown>)[field] = await decrypt(val);
+        (a as unknown as Record<string, unknown>)[field] = await decrypt(val);
       } catch {
         // leave as-is
       }

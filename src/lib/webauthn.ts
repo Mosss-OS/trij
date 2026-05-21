@@ -12,7 +12,7 @@ export async function isBiometricRegistered(): Promise<boolean> {
     const cred = await navigator.credentials.get({
       publicKey: {
         challenge: crypto.getRandomValues(new Uint8Array(32)),
-        allowCredentials: [{ id: base64ToBytes(id), type: "public-key" }],
+        allowCredentials: [{ id: base64ToBytes(id) as BufferSource, type: "public-key" }],
         timeout: 1000,
       },
       mediation: "silent",
@@ -66,7 +66,7 @@ export async function authenticateBiometric(): Promise<boolean> {
     const cred = await navigator.credentials.get({
       publicKey: {
         challenge,
-        allowCredentials: [{ id: base64ToBytes(credentialId), type: "public-key" }],
+        allowCredentials: [{ id: base64ToBytes(credentialId) as BufferSource, type: "public-key" }],
         userVerification: "required",
         timeout: 30000,
       },

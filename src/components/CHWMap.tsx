@@ -1,7 +1,8 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from "react-leaflet";
 import L from "leaflet";
 import "leaflet.markercluster";
 import { useEffect, useState } from "react";
+import { Outbreak } from "@/lib/outbreak";
 
 function syncColor(lastSync: string | null): string {
   if (!lastSync) return "#ef4444";
@@ -175,19 +176,14 @@ export default function CHWMap({
       />
        <TileCacheHook />
        <ClusterGroup locations={valid} counts={assessmentCounts} />
-       {outbreaks.map((outbreak) => (
-         <L.Circle
-           key={outbreak.id}
-           center={[outbreak.centroid_lat, outbreak.centroid_lng]}
-           radius={outbreak.radius_km * 1000}
-           color="#dc2626"
-           fillColor="#dc2626"
-           fillOpacity={0.2}
-           weight={3}
-           className="pulse-animate"
-           style={{ animation: "pulse 2s infinite" }}
-         />
-       ))}
+        {outbreaks.map((outbreak) => (
+          <Circle
+            key={outbreak.id}
+            center={[outbreak.centroid_lat, outbreak.centroid_lng]}
+            radius={outbreak.radius_km * 1000}
+            pathOptions={{ color: "#dc2626", fillColor: "#dc2626", fillOpacity: 0.2, weight: 3 }}
+          />
+        ))}
      </MapContainer>
   );
 }

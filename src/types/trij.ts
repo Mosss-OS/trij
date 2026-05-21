@@ -133,6 +133,9 @@ export interface TriageResult {
   possible_conditions: PossibleCondition[];
   key_visual_features: string[];
   recommendation: string;
+  referral_advised?: boolean;
+  rag_sources?: { condition: string; treatment: string; who_guideline: string }[];
+  follow_up_questions?: string[];
 }
 
 export type AiFeedbackRating = "correct" | "partial" | "incorrect";

@@ -98,6 +98,8 @@ function LoginPage() {
   const [setupPinConfirm, setSetupPinConfirm] = useState("");
   const [setupPinError, setSetupPinError] = useState("");
 
+  const [pendingOfflineUser, setPendingOfflineUser] = useState<{ id: string; email: string } | null>(null);
+
   const [awaitingVerification, setAwaitingVerification] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -332,6 +334,10 @@ function LoginPage() {
       setPendingPinUser(null);
       setSetupPinValue("");
       setSetupPinConfirm("");
+      if (pendingOfflineUser) {
+        setOfflineSession(pendingOfflineUser);
+        setPendingOfflineUser(null);
+      }
     } catch (err) {
       setSetupPinError((err as Error).message);
     } finally {
@@ -690,7 +696,12 @@ function LoginPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => setOfflineSession({ id: crypto.randomUUID(), email: "demo@trij.app" })}
+            onClick={() => {
+              const id = crypto.randomUUID();
+              setPendingOfflineUser({ id, email: "demo@trij.app" });
+              setPendingPinUser(id);
+              setShowPinSetup(true);
+            }}
             className="w-full"
             size="lg"
           >
