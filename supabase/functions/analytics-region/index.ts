@@ -35,7 +35,8 @@ serve(async (req) => {
 
     const urgencyCounts = { green: 0, yellow: 0, red: 0 };
     for (const a of assessments.data ?? []) {
-      if (a.urgency && a.urgency in urgencyCounts) urgencyCounts[a.urgency as keyof typeof urgencyCounts]++;
+      if (a.urgency && a.urgency in urgencyCounts)
+        urgencyCounts[a.urgency as keyof typeof urgencyCounts]++;
     }
 
     const conditionFreq: Record<string, number> = {};
@@ -52,7 +53,8 @@ serve(async (req) => {
       if (!a.created_at) continue;
       const day = a.created_at.slice(0, 10);
       if (!dailyTrend[day]) dailyTrend[day] = { green: 0, yellow: 0, red: 0 };
-      if (a.urgency && a.urgency in dailyTrend[day]) dailyTrend[day][a.urgency as keyof typeof dailyTrend[day]]++;
+      if (a.urgency && a.urgency in dailyTrend[day])
+        dailyTrend[day][a.urgency as keyof (typeof dailyTrend)[day]]++;
     }
 
     return new Response(

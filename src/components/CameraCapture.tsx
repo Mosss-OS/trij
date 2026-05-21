@@ -1,26 +1,48 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, RotateCw, X, Loader2, Sun, Moon, AlertTriangle } from "lucide-react";
+import { Camera, RotateCw, X, Loader2, Sun, Moon, AlertTriangle, ImageUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { compressImage, analyzeVideoFrame, type FrameAnalysis } from "@/lib/camera";
+import {
+  compressImage,
+  analyzeVideoFrame,
+  readFileAsDataURL,
+  validateImageType,
+  type FrameAnalysis,
+} from "@/lib/camera";
 import { useI18n } from "@/lib/i18n";
+import { toast } from "sonner";
 
 interface Props {
   onCapture: (dataUrl: string) => void;
   onCancel?: () => void;
+  onSource?: (source: "camera" | "gallery") => void;
 }
 
-export function CameraCapture({ onCapture, onCancel }: Props) {
+export function CameraCapture({ onCapture, onCancel, onSource }: Props) {
   const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [facing, setFacing] = useState<"environment" | "user">("environment");
   const [error, setError] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
   const [analysis, setAnalysis] = useState<FrameAnalysis | null>(null);
   const [forceCapture, setForceCapture] = useState(false);
+  const [cameraAvailable, setCameraAvailable] = useState<boolean | null>(null);
   const analysisRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    navigator.mediaDevices
+      ?.enumerateDevices()
+      .then((devices) => {
+        setCameraAvailable(devices.some((d) => d.kind === "videoinput"));
+      })
+      .catch(() => {
+        setCameraAvailable(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (cameraAvailable === false) return;
     let active = true;
     const start = async () => {
       try {
@@ -44,7 +66,7 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
       stream?.getTracks().forEach((t) => t.stop());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [facing]);
+  }, [facing, cameraAvailable]);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -59,6 +81,14 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
     };
   }, []);
 
+  const processImage = async (dataUrl: string, source: "camera" | "gallery") => {
+    setCompressing(true);
+    const compressed = await compressImage(dataUrl);
+    setCompressing(false);
+    onSource?.(source);
+    onCapture(compressed);
+  };
+
   const capture = async () => {
     const v = videoRef.current;
     if (!v) return;
@@ -70,22 +100,67 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
     ctx.drawImage(v, 0, 0);
     const raw = canvas.toDataURL("image/jpeg", 0.85);
     stream?.getTracks().forEach((t) => t.stop());
-    setCompressing(true);
-    const compressed = await compressImage(raw);
-    setCompressing(false);
-    onCapture(compressed);
+    await processImage(raw, "camera");
+  };
+
+  const handleGallerySelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!validateImageType(file)) {
+      toast.error(t("uploadPhoto") + ": JPEG, PNG, WebP only");
+      return;
+    }
+    try {
+      const dataUrl = await readFileAsDataURL(file);
+      await processImage(dataUrl, "gallery");
+    } catch {
+      toast.error(t("failedPrefix") + t("uploadPhoto"));
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const canAutoCapture = analysis && !analysis.isBlurry && !analysis.isTooDark;
   const showWarning = analysis && (analysis.isBlurry || analysis.isTooDark) && !forceCapture;
 
-  if (error) {
+  if (cameraAvailable === false || error) {
     return (
-      <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-center">
-        <p className="text-sm text-destructive">
-          {t("cameraUnavailable")}: {error}
-        </p>
-        <p className="mt-2 text-xs text-muted-foreground">{t("uploadPhoto")}</p>
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-dashed p-8 text-center">
+          <ImageUp className="mx-auto h-10 w-10 text-muted-foreground" />
+          <p className="mt-3 text-sm font-medium">
+            {cameraAvailable === false
+              ? t("uploadFromGallery")
+              : `${t("cameraUnavailable")}: ${error}`}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("uploadPhoto")}</p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleGallerySelect}
+          />
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={compressing}
+          >
+            {compressing ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <ImageUp className="mr-2 h-4 w-4" />
+            )}
+            {t("uploadFromGallery")}
+          </Button>
+        </div>
+        {error && (
+          <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-center">
+            <p className="text-xs text-muted-foreground">
+              {t("cameraUnavailable")}: {error}
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -177,14 +252,33 @@ export function CameraCapture({ onCapture, onCancel }: Props) {
             className={`h-7 w-7 ${canAutoCapture || forceCapture ? "text-primary" : "text-muted-foreground"}`}
           />
         </button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="text-white hover:bg-white/10"
-          onClick={() => setFacing((f) => (f === "environment" ? "user" : "environment"))}
-        >
-          <RotateCw className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="text-white hover:bg-white/10"
+            onClick={() => setFacing((f) => (f === "environment" ? "user" : "environment"))}
+          >
+            <RotateCw className="h-5 w-5" />
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleGallerySelect}
+          />
+          <Button
+            size="icon"
+            variant="ghost"
+            className="text-white hover:bg-white/10"
+            onClick={() => fileInputRef.current?.click()}
+            title={t("uploadFromGallery")}
+            aria-label={t("uploadFromGallery")}
+          >
+            <ImageUp className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
     </div>
   );

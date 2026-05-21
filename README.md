@@ -23,6 +23,8 @@ Take a photo → AI assesses → Get urgency + recommendation → Save offline �
 
 No internet needed. No patient data leaves the device.
 
+> **Tip:** Add a 30s screen recording GIF here showing the triage flow (camera → analysis → result → save). Videos/photos of the app in action dramatically increase engagement on GitHub.
+
 ---
 
 ## Features
@@ -164,6 +166,41 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, code conventions
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
+
+---
+
+## For investors
+
+Trij is actively looking for mission-aligned investors to scale impact.
+
+**Why Trij?** 1 billion people lack access to a physician within a 2-hour travel radius. Smartphone penetration in these regions is >60%, but reliable internet is rare. Trij is the only open-source, offline-first AI triage app that runs completely on-device — no internet, no cloud costs, no patient data leaving the phone.
+
+**Ask:** We're looking for seed funding to support real-world pilots, clinical validation studies, and language expansion across Sub-Saharan Africa and South Asia.
+
+**Contact:** triij.app@gmail.com · [x.com/Trij_app](https://x.com/Trij_app)
+
+---
+
+**Product Hunt investor answers:**
+
+**Why are you the right founder/team to work on this?**
+> Solo founder with 8+ years building production web applications and AI systems at scale. Deep understanding of both the technical stack (WebGPU, LLM inference optimization, offline-first architecture, PWA) and the deployment constraints of low-resource settings. Chose on-device inference over cloud APIs because I've seen firsthand that connectivity assumptions baked into most healthtech products fail in the field. This isn't a prototype — it's a working, deployed PWA with real medical AI inference happening entirely in-browser.
+
+**Why did you pick this idea to work on?**
+> Because existing telemedicine and AI triage tools require internet, cloud access, or expensive subscriptions — making them useless for the community health workers who need them most. I wanted to prove that on-device Gemma 4 could deliver clinically useful triage on a $100 Android phone with zero connectivity. The Kaggle x Google DeepMind "Gemma 4 Good" Hackathon was the perfect catalyst. Every architectural decision — WebGPU inference, IndexedDB storage, Web Speech API for voice — was driven by the constraint of working without internet.
+
+**Who are your competitors, and what do you understand about this idea that they don't?**
+> - **Cloud telemedicine platforms** (Babylon, Ada Health, K Health) — require constant internet, charge per consult, not designed for CHWs in remote villages.
+> - **Rule-based digital IMCI tools** — no image analysis, no voice, no document OCR. Limited to decision-tree algorithms.
+> - **Closed-source on-device AI apps** — can't be audited, customized, or extended by the communities they serve.
+>
+> What we understand that competitors don't: **On-devide AI + open-source + offline-first is the only combination that works at scale for community health in low-resource settings.** Cloud-dependent tools fail where connectivity is unreliable. Closed-source tools can't be localized or verified. Rule-based tools can't analyze images or voice. Trij combines all three capabilities — image assessment, voice guidance, document OCR — in a single free, open-source PWA that runs on any modern smartphone with or without internet.
+
+**What's your revenue and/or growth rate?**
+> Currently pre-revenue. The app is free and open-source (Apache 2.0). Built for the Gemma 4 Good Hackathon and launched publicly on Product Hunt. Early traction includes organic interest from global health NGOs, CHW training programs, and digital health communities. Revenue model under exploration: premium deployment support for NGOs/governments, API access for health system integration, and managed hosting for institutions. Core triage functionality will remain free and open-source.
+
+**Anything else you would like investors to know?**
+> We're looking for more than capital — we need strategic partners who can open doors to pilot programs with ministries of health, NGO networks, and CHW training organizations. The technical foundation is solid (React 19, TanStack Start, WebLLM + WebGPU, Dexie.js, Supabase) and the app is fully functional. The next critical steps are: (1) clinical validation studies with real CHWs, (2) expansion to additional languages and regions, (3) integration with national health record systems. If you have networks in global health or digital public goods, we should talk.
 
 ---
 

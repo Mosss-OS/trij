@@ -25,10 +25,10 @@ serve(async (req) => {
       .single();
 
     if (error || !data) {
-      return new Response(
-        JSON.stringify({ error: "Model not found", model: modelId }),
-        { status: 404, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Model not found", model: modelId }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     return new Response(JSON.stringify(data), {

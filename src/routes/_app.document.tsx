@@ -3,6 +3,7 @@ import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { I18nErrorBoundary } from "@/components/ErrorBoundary";
 import { CameraCapture } from "@/components/CameraCapture";
+import { ImageEditor } from "@/components/ImageEditor";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { analyzeDocument, detectEngine } from "@/lib/gemma";
@@ -14,7 +15,41 @@ import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_app/document")({
-  head: () => ({ meta: [{ title: "Document scan — Trij" }] }),
+  head: () => ({
+    meta: [
+      {
+        title: "Medical Document Scanner — AI OCR | Trij Free Medical Triage",
+      },
+      {
+        name: "description",
+        content:
+          "Free AI-powered medical document scanner. Analyze lab reports, prescriptions, and referral letters with on-device OCR. Get structured summaries and abnormal value highlights — no internet needed.",
+      },
+      {
+        name: "keywords",
+        content:
+          "medical document scanner, OCR lab reports, prescription analysis AI, free document analyzer, offline medical OCR, healthcare document scanner, lab result reader",
+      },
+      {
+        property: "og:title",
+        content: "Medical Document Scanner — AI OCR | Trij",
+      },
+      {
+        property: "og:description",
+        content:
+          "Free AI medical document scanner. Analyze lab reports and prescriptions on-device. No internet needed.",
+      },
+      {
+        name: "twitter:title",
+        content: "Medical Document Scanner — AI OCR | Trij",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Free AI medical document scanner. Analyze lab reports and prescriptions on-device. No internet needed.",
+      },
+    ],
+  }),
   component: () => (
     <I18nErrorBoundary kind="document">
       <DocumentScan />
@@ -28,13 +63,18 @@ function DocumentScan() {
   const engineKind = useSettingsStore((s) => s.engineKind);
   const ollamaUrl = useSettingsStore((s) => s.ollamaUrl);
   const navigate = useNavigate();
-  const [step, setStep] = useState<"capture" | "analyzing" | "result">("capture");
+  const [step, setStep] = useState<"capture" | "edit" | "analyzing" | "result">("capture");
   const [image, setImage] = useState<string | null>(null);
   const [result, setResult] = useState<DocumentResult | null>(null);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
 
-  const onCapture = async (dataUrl: string) => {
+  const onCapture = (dataUrl: string) => {
+    setImage(dataUrl);
+    setStep("edit");
+  };
+
+  const onCropConfirm = async (dataUrl: string) => {
     setImage(dataUrl);
     setStep("analyzing");
     try {
@@ -53,12 +93,19 @@ function DocumentScan() {
   return (
     <>
       <AppHeader title={t("scanningDoc")} subtitle={t("labPrescriptionReferral")} />
-      <div className="mx-auto max-w-2xl px-5 py-6">
+      <div className="mx-auto max-w-4xl px-5 py-6">
         {step === "capture" && (
           <div className="space-y-4">
             <WebGPUCheck engineKind={engineKind} ollamaUrl={ollamaUrl} compact />
             <CameraCapture onCapture={onCapture} onCancel={() => navigate({ to: "/dashboard" })} />
           </div>
+        )}
+        {step === "edit" && image && (
+          <ImageEditor
+            image={image}
+            onConfirm={onCropConfirm}
+            onRetake={() => setStep("capture")}
+          />
         )}
         {step === "analyzing" && (
           <div className="mt-10 flex flex-col items-center gap-5 text-center">
@@ -72,7 +119,11 @@ function DocumentScan() {
         {step === "result" && result && (
           <div className="mt-2 space-y-5">
             {image && (
-              <img src={image} alt="" className="aspect-video w-full rounded-2xl object-cover" />
+              <img
+                src={image}
+                alt="Captured medical document being analyzed by AI"
+                className="aspect-video w-full rounded-2xl object-cover"
+              />
             )}
             <div className="rounded-3xl border bg-card p-6">
               <p className="text-xs uppercase tracking-wider text-muted-foreground">

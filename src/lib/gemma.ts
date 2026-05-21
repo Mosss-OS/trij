@@ -1,4 +1,4 @@
-import { CreateMLCEngine, type MLCEngine, type InitProgressReport } from "@mlc-ai/web-llm";
+import type { MLCEngine, InitProgressReport } from "@mlc-ai/web-llm";
 export type { InitProgressReport };
 import {
   getTriageSystemPrompt,
@@ -9,16 +9,34 @@ import {
 import type { TriageResult, DocumentResult, Urgency } from "@/types/trij";
 import { TRIAGE_TOOL, DOCUMENT_TOOL, FOLLOW_UP_TOOL, parseToolCall, triesJson } from "./tools";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useSessionStore } from "@/stores/sessionStore";
+import { retrieve, getCompactKbContext } from "./rag";
+import { getIcd10Code } from "./icd10";
+
+type MultimodalContent = Array<
+  { type: "image_url"; image_url: { url: string } } | { type: "text"; text: string }
+>;
+
+function multimodal(content: MultimodalContent): MultimodalContent {
+  return content;
+}
 
 /* ─── Engine type ─────────────────────────────────────────── */
 
-export type EngineKind = "webllm" | "ollama" | "demo";
+export type EngineKind = "webllm" | "ollama" | "demo" | "cloud";
 
 /* ─── WebLLM internals ────────────────────────────────────── */
 
 let webllmEngine: MLCEngine | null = null;
 let webllmLoading: Promise<MLCEngine> | null = null;
-let WEBLLM_MODEL_ID = "gemma-2-2b-it-q4f16_1-MLC";
+export const GEMMA4_E2B_MODEL_ID = "gemma-4-E2B-it-q4f16_1-MLC";
+export const PHI_VISION_MODEL_ID = "Phi-3.5-vision-instruct-q4f16_1-MLC";
+
+export function isModelVLM(modelId: string): boolean {
+  return modelId === PHI_VISION_MODEL_ID;
+}
+
+let WEBLLM_MODEL_ID = PHI_VISION_MODEL_ID;
 
 export function setModelId(id: string) {
   WEBLLM_MODEL_ID = id;
@@ -141,10 +159,23 @@ export async function checkWebGPUCompatibility(): Promise<WebGPUCompatibility> {
   };
 }
 
+/* ─── Mobile detection ─────────────────────────────────────── */
+
+/** Detects mobile devices via user agent to select appropriate inference engine.
+ *  Mobile devices cannot download large (~2-5GB) models, so cloud inference is preferred. */
+export function isMobileDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Mobi|Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent,
+  );
+}
+
 /* ─── Engine auto-detection ──────────────────────────────── */
 
 export async function detectEngine(prefer: EngineKind | "auto" = "auto"): Promise<EngineKind> {
   if (prefer !== "auto") return prefer;
+  /* Mobile devices use cloud inference by default — downloading multi-GB models is impractical. */
+  if (isMobileDevice()) return "cloud";
   if (await supportsWebGPU()) return "webllm";
   if (await detectOllama()) return "ollama";
   return "demo";
@@ -215,12 +246,42 @@ function formatBytes(bytes: number): string {
 
 /* ─── WebLLM engine ──────────────────────────────────────── */
 
-async function loadWebLLM(onProgress?: (p: InitProgressReport) => void): Promise<MLCEngine> {
-  if (webllmEngine) return webllmEngine;
+async function loadModel(
+  modelId: string,
+  onProgress?: (p: InitProgressReport) => void,
+): Promise<MLCEngine> {
+  if (webllmEngine && WEBLLM_MODEL_ID === modelId) return webllmEngine;
   if (webllmLoading) return webllmLoading;
-  webllmLoading = CreateMLCEngine(WEBLLM_MODEL_ID, {
-    initProgressCallback: (report) => onProgress?.(report),
-  })
+
+  const { CreateMLCEngine } = await import("@mlc-ai/web-llm");
+
+  WEBLLM_MODEL_ID = modelId;
+  webllmEngine = null;
+  webllmLoading = null;
+
+  const baseConfig = {
+    initProgressCallback: (report: InitProgressReport) => onProgress?.(report),
+  };
+
+  const enginePromise =
+    modelId === GEMMA4_E2B_MODEL_ID
+      ? CreateMLCEngine(modelId, {
+          ...baseConfig,
+          appConfig: {
+            model_list: [
+              {
+                model: "https://huggingface.co/welcoma/gemma-4-E2B-it-q4f16_1-MLC",
+                model_id: GEMMA4_E2B_MODEL_ID,
+                model_lib:
+                  "https://huggingface.co/welcoma/gemma-4-E2B-it-q4f16_1-MLC/resolve/main/libs/gemma-4-E2B-it-q4f16_1-MLC-webgpu.wasm",
+                required_features: ["shader-f16"],
+              },
+            ],
+          },
+        })
+      : CreateMLCEngine(modelId, baseConfig);
+
+  webllmLoading = enginePromise
     .then((e) => {
       webllmEngine = e;
       return e;
@@ -229,6 +290,10 @@ async function loadWebLLM(onProgress?: (p: InitProgressReport) => void): Promise
       webllmLoading = null;
     });
   return webllmLoading;
+}
+
+async function loadWebLLM(onProgress?: (p: InitProgressReport) => void): Promise<MLCEngine> {
+  return loadModel(useSettingsStore.getState().modelId, onProgress);
 }
 
 export function isWebLLMLoaded() {
@@ -401,6 +466,104 @@ function demoDocument(): DocumentResult {
   return DEMO_DOCUMENTS[Math.floor(Math.random() * DEMO_DOCUMENTS.length)];
 }
 
+/* ─── Cloud inference ──────────────────────────────────────── */
+
+const DEFAULT_CLOUD_URL = `${typeof window !== "undefined" ? window.location.origin : ""}/functions/v1/infer-gemma4`;
+const CLOUD_QUOTA_KEY = "trij-cloud-quota";
+const MAX_CLOUD_INFERENCES = 50;
+
+let _cloudQuota = 0;
+
+export function getCloudQuota(): { used: number; max: number } {
+  return { used: _cloudQuota, max: MAX_CLOUD_INFERENCES };
+}
+
+export function resetCloudQuota() {
+  _cloudQuota = 0;
+  if (typeof localStorage !== "undefined") {
+    localStorage.removeItem(CLOUD_QUOTA_KEY);
+  }
+}
+
+function loadCloudQuota() {
+  try {
+    const raw = localStorage.getItem(CLOUD_QUOTA_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      const today = new Date().toISOString().slice(0, 10);
+      if (data.date === today) {
+        _cloudQuota = data.count;
+      } else {
+        localStorage.removeItem(CLOUD_QUOTA_KEY);
+        _cloudQuota = 0;
+      }
+    }
+  } catch {
+    _cloudQuota = 0;
+  }
+}
+
+function saveCloudQuota() {
+  try {
+    localStorage.setItem(
+      CLOUD_QUOTA_KEY,
+      JSON.stringify({ date: new Date().toISOString().slice(0, 10), count: _cloudQuota }),
+    );
+  } catch {
+    /* noop */
+  }
+}
+
+async function cloudInference(
+  imageDataUrl: string,
+  language: string,
+  ragContext?: string,
+  presentationType?: string,
+  description?: string,
+  supabaseUrl?: string,
+  supabaseAnonKey?: string,
+): Promise<TriageResult> {
+  loadCloudQuota();
+  if (_cloudQuota >= MAX_CLOUD_INFERENCES) {
+    throw new Error("Daily cloud inference quota exceeded");
+  }
+
+  const functionUrl = supabaseUrl ? `${supabaseUrl}/functions/v1/infer-gemma4` : DEFAULT_CLOUD_URL;
+
+  const session = useSettingsStore.getState();
+  const token = useSessionStore.getState().session?.access_token;
+
+  const prompt = description
+    ? `Patient presentation type: ${presentationType ?? "dermatology"}. Symptom description: "${description}". Analyze and return the triage assessment.`
+    : "Analyze this medical image and return the triage assessment.";
+
+  const res = await fetch(functionUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token || ""}`,
+    },
+    body: JSON.stringify({
+      image: imageDataUrl,
+      prompt,
+      language,
+      ragContext,
+      presentationType,
+      description,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `Cloud inference failed (${res.status})`);
+  }
+
+  const result: TriageResult = await res.json();
+  _cloudQuota++;
+  saveCloudQuota();
+  return result;
+}
+
 /* ─── Public API ──────────────────────────────────────────── */
 
 export async function loadEngine(
@@ -435,58 +598,141 @@ export async function triageImage(
   language: string,
   kind: EngineKind,
   ollamaUrl?: string,
+  presentationType?: string,
+  description?: string,
 ): Promise<TriageResult> {
+  const settings = useSettingsStore.getState();
+  const kbContext = getCompactKbContext();
+  let result: TriageResult;
+
+  const userMessage = description
+    ? `Presentation type: ${presentationType ?? "dermatology"}. Symptom description: "${description}". Analyze and return the triage assessment.`
+    : "Analyze this medical image and return the triage assessment.";
+
+  if (kind === "cloud") {
+    /* Attempt cloud inference; fall back to demo if offline or unauthenticated.
+     * This ensures mobile users always get a result even without connectivity. */
+    try {
+      result = await cloudInference(imageDataUrl, language, kbContext, presentationType, description);
+      result = attachRagSources(result);
+      return result;
+    } catch (err) {
+      console.warn("Cloud inference failed, falling back to demo mode:", err);
+      await sleep(2000 + Math.random() * 1500);
+      result = demoAssessment();
+      result = attachRagSources(result);
+      return result;
+    }
+  }
+
   if (kind === "demo") {
     await sleep(2000 + Math.random() * 1500);
-    return demoAssessment();
+    result = demoAssessment();
+    result = attachRagSources(result);
+    return result;
   }
 
   if (kind === "ollama") {
-    const response = await ollamaChat(
-      [
-        { role: "system", content: getTriageSystemPrompt(language) },
-        {
-          role: "user",
-          content: "Analyze this medical image and return the triage assessment.",
-          images: [imageDataUrl],
-        },
-      ],
-      ollamaUrl ?? "http://localhost:11434",
-      [TRIAGE_TOOL],
-    );
-    const result = parseToolCall<TriageResult>(response.message, null);
-    if (result) return result;
-    return triesJson<TriageResult>(response.message.content ?? "", FALLBACK_TRIAGE);
+    try {
+      const response = await ollamaChat(
+        [
+          { role: "system", content: getTriageSystemPrompt(language, false, kbContext, presentationType, description) },
+          {
+            role: "user",
+            content: userMessage,
+            images: [imageDataUrl],
+          },
+        ],
+        ollamaUrl ?? "http://localhost:11434",
+        [TRIAGE_TOOL],
+      );
+      result =
+        parseToolCall<TriageResult>(response.message, null) ||
+        triesJson<TriageResult>(response.message.content ?? "", FALLBACK_TRIAGE);
+      result = attachRagSources(result);
+      return result;
+    } catch (err) {
+      if (settings.cloudFallbackConsent) {
+        console.warn("Ollama failed, falling back to cloud:", err);
+        result = await cloudInference(imageDataUrl, language, kbContext, presentationType, description);
+        result = attachRagSources(result);
+        return result;
+      }
+      throw err;
+    }
   }
 
-  const e = await loadWebLLM();
-  const settings = useSettingsStore.getState();
-  const temperature = settings.thinkingMode ? 0.7 : 0.1;
+  try {
+    const e = await (isModelVLM(useSettingsStore.getState().modelId)
+      ? loadWebLLM()
+      : loadModel(PHI_VISION_MODEL_ID));
+    const temperature = settings.thinkingMode ? 0.7 : 0.1;
 
-  const reply = await e.chat.completions.create({
-    messages: [
-      { role: "system", content: getTriageSystemPrompt(language, settings.thinkingMode) },
-      {
-        role: "user",
-        content: [
-          { type: "image_url", image_url: { url: imageDataUrl } },
-          { type: "text", text: "Analyze this medical image and return the triage assessment." },
-        ] as never,
+    const contentItems: MultimodalContent = description
+      ? [{ type: "text" as const, text: userMessage }]
+      : [
+          { type: "image_url" as const, image_url: { url: imageDataUrl } },
+          { type: "text" as const, text: userMessage },
+        ];
+
+    const reply = await e.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: getTriageSystemPrompt(language, settings.thinkingMode, kbContext, presentationType, description),
+        },
+        {
+          role: "user",
+          content: multimodal(contentItems),
+        },
+      ],
+      tools: [TRIAGE_TOOL],
+      tool_choice: {
+        type: "function",
+        function: { name: "triage_assessment" },
       },
-    ],
-    tools: [TRIAGE_TOOL as never],
-    tool_choice: {
-      type: "function",
-      function: { name: "triage_assessment" },
-    } as never,
-    max_tokens: 800,
-    temperature,
-  });
-  const message = reply.choices[0]?.message;
-  if (!message) return FALLBACK_TRIAGE;
-  const result = parseToolCall<TriageResult>(message, null);
-  if (result) return result;
-  return triesJson<TriageResult>(message.content ?? "", FALLBACK_TRIAGE);
+      max_tokens: 1024,
+      temperature,
+    });
+    const message = reply.choices[0]?.message;
+    if (!message) {
+      result = FALLBACK_TRIAGE;
+      result.rag_sources = undefined;
+      return result;
+    }
+    result =
+      parseToolCall<TriageResult>(message, null) ||
+      triesJson<TriageResult>(message.content ?? "", FALLBACK_TRIAGE);
+    result = attachRagSources(result);
+    return result;
+  } catch (err) {
+    if (settings.cloudFallbackConsent) {
+      console.warn("WebLLM failed, falling back to cloud:", err);
+      result = await cloudInference(imageDataUrl, language, kbContext, presentationType, description);
+      result = attachRagSources(result);
+      return result;
+    }
+    throw err;
+  }
+}
+
+function attachRagSources(r: TriageResult): TriageResult {
+  const features = r.key_visual_features || [];
+  let result = { ...r };
+  /* Attach ICD-10 code if AI provided one or we can look it up */
+  const icd10 = getIcd10Code(r);
+  if (icd10) result.icd10_code = icd10;
+  if (features.length === 0) return result;
+  const { sources } = retrieve(features, 3);
+  if (sources.length === 0) return result;
+  return {
+    ...result,
+    rag_sources: sources.map((s) => ({
+      condition: s.condition,
+      treatment: s.treatment,
+      who_guideline: s.who_guideline,
+    })),
+  };
 }
 
 /* ─── Document analysis ───────────────────────────────────── */
@@ -529,8 +775,11 @@ export async function analyzeDocument(
     return triesJson<DocumentResult>(response.message.content ?? "", FALLBACK_DOC);
   }
 
-  const e = await loadWebLLM();
   const settings = useSettingsStore.getState();
+
+  const e = await (isModelVLM(useSettingsStore.getState().modelId)
+    ? loadWebLLM()
+    : loadModel(PHI_VISION_MODEL_ID));
   const temperature = settings.thinkingMode ? 0.7 : 0.1;
 
   const reply = await e.chat.completions.create({
@@ -538,19 +787,19 @@ export async function analyzeDocument(
       { role: "system", content: getDocumentSystemPrompt(language, settings.thinkingMode) },
       {
         role: "user",
-        content: [
+        content: multimodal([
           { type: "image_url", image_url: { url: imageDataUrl } },
           { type: "text", text: "Extract the key information from this document." },
-        ] as never,
+        ]),
       },
     ],
-    tools: [DOCUMENT_TOOL as never],
+    tools: [DOCUMENT_TOOL],
     tool_choice: {
       type: "function",
       function: { name: "document_analysis" },
-    } as never,
+    },
     temperature,
-    max_tokens: 800,
+    max_tokens: 1024,
   });
   const message = reply.choices[0]?.message;
   if (!message) return FALLBACK_DOC;
@@ -623,11 +872,11 @@ export async function nextFollowUp(
       { role: "system", content: prompt },
       { role: "user", content: "Generate the next follow-up question." },
     ],
-    tools: [FOLLOW_UP_TOOL as never],
+    tools: [FOLLOW_UP_TOOL],
     tool_choice: {
       type: "function",
       function: { name: "generate_follow_up" },
-    } as never,
+    },
     temperature,
     max_tokens: 120,
   });
@@ -692,7 +941,7 @@ export async function nextVoiceTurn(
         content: "Start the interview. Ask the first follow-up question.",
       });
     }
-    
+
     const askedCount = updated.filter((m) => m.role === "assistant").length;
     const testPool = [
       "How long has the condition been present?",
@@ -760,12 +1009,12 @@ export async function nextVoiceTurn(
   const settings = useSettingsStore.getState();
   const temperature = settings.thinkingMode ? 0.7 : 0.4;
   const reply = await e.chat.completions.create({
-    messages: updated as never,
-    tools: [FOLLOW_UP_TOOL as never],
+    messages: updated,
+    tools: [FOLLOW_UP_TOOL],
     tool_choice: {
       type: "function",
       function: { name: "generate_follow_up" },
-    } as never,
+    },
     temperature,
     max_tokens: 200,
   });

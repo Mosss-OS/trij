@@ -20,7 +20,9 @@ serve(async (req) => {
 
     let query = supabase
       .from("assessments")
-      .select("id, condition, urgency, referral_status, referral_advised, created_at, patients(identifier)")
+      .select(
+        "id, condition, urgency, referral_status, referral_advised, created_at, patients(identifier)",
+      )
       .not("referral_status", "eq", "none")
       .order("created_at", { ascending: false })
       .limit(50);

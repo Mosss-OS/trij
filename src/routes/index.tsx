@@ -16,21 +16,25 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+const LANDING_TITLE = "Trij — Free Offline AI Medical Triage App for Community Health Workers";
+const LANDING_DESC =
+  "Trij is a free, open-source AI medical triage app for community health workers. Assess wounds, rashes, and medical documents offline with on-device AI. No internet needed, patient data never leaves the phone.";
+const LANDING_OG_TITLE = "Free Offline Medical Triage — Trij";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Trij — On-device AI triage for community health workers" },
+      { title: LANDING_TITLE },
+      { name: "description", content: LANDING_DESC },
       {
-        name: "description",
+        name: "keywords",
         content:
-          "Trij brings offline-first, privacy-preserving AI triage to the field. Powered by on-device Gemma — works without the internet.",
+          "free medical triage, community health, offline healthcare AI, wound assessment app, rash analysis, on-device medical AI, open source health software",
       },
-      { property: "og:title", content: "Trij — On-device AI triage" },
-      {
-        property: "og:description",
-        content:
-          "Offline-first triage for community health workers. Camera, voice, and Gemma — all on the device.",
-      },
+      { property: "og:title", content: LANDING_OG_TITLE },
+      { property: "og:description", content: LANDING_DESC },
+      { name: "twitter:title", content: LANDING_OG_TITLE },
+      { name: "twitter:description", content: LANDING_DESC },
     ],
   }),
   component: LandingPage,
@@ -43,7 +47,7 @@ function LandingPage() {
   const authed = !!(session || offlineUser);
 
   return (
-    <div className="font-serif min-h-screen overflow-x-hidden bg-[oklch(0.98_0.008_85)] text-[oklch(0.18_0.02_240)] antialiased">
+    <div className="min-h-screen overflow-x-hidden bg-[oklch(0.98_0.008_85)] text-[oklch(0.18_0.02_240)] antialiased">
       <BackgroundOrbs />
       <Nav authed={authed} />
       <Hero authed={authed} />
@@ -91,9 +95,11 @@ function Nav({ authed }: { authed: boolean }) {
       className="sticky top-3 z-40 mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-full border border-white/30 bg-white/40 px-4 py-2.5 backdrop-blur-xl backdrop-saturate-150 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_8px_24px_-12px_rgba(15,42,60,0.15)] sm:px-6"
     >
       <Link to="/" className="flex items-center gap-2">
-        <div className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-[oklch(0.55_0.10_200)] to-[oklch(0.35_0.08_220)] text-white shadow-md">
-          <ShieldCheck className="h-4 w-4" />
-        </div>
+        <img
+          src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
+          alt="Trij logo — free offline AI medical triage app"
+          className="h-8 w-8 rounded-lg object-contain"
+        />
         <span className="font-sans text-base font-semibold tracking-tight">Trij</span>
       </Link>
       <nav className="hidden items-center gap-7 font-sans text-sm text-foreground/70 md:flex">
