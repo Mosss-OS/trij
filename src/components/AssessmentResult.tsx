@@ -364,9 +364,10 @@ export function AssessmentResult({
   engineKind,
 }: Props) {
   const { t } = useI18n();
-  const belowThreshold = result.confidence < minConfidenceForLocalCare;
-  const veryLowConfidence = result.confidence < 30;
-  const lowConfidence = result.confidence < 50 && !veryLowConfidence;
+  const confidencePoint = result.confidence.confidence_point;
+  const belowThreshold = confidencePoint < minConfidenceForLocalCare;
+  const veryLowConfidence = confidencePoint < 30;
+  const lowConfidence = confidencePoint < 50 && !veryLowConfidence;
   const effectiveReferral = belowThreshold || result.referral_advised || veryLowConfidence;
 
   const borderClass = veryLowConfidence
