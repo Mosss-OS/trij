@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Clinical Protocol Schema",
+  "description": "Schema for validating clinical protocol submissions for Trij",
+  "type": "object",
+  "required": ["id", "name", "version", "lastUpdated", "clinicalBackground", "assessmentCriteria", "urgencyClassification", "safetyRules"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the protocol (e.g., 'cellulitis', 'pneumonia')"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name of the condition"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version number following semantic versioning (e.g., '1.0.0')"
+    },
+    "lastUpdated": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date when protocol was last updated"
+    },
+    "clinicalBackground": {
+      "type": "object",
+      "description": "Clinical context for the condition",
+      "required": ["description", "targetPopulation", "epidemiology"],
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Brief description of the condition"
+        },
+        "targetPopulation": {
+          "type": "string",
+          "description": "Target patient population (e.g., 'adults', 'children under 5', 'pregnant women')"
+        },
+        "epidemiology": {
+          "type": "string",
+          "description": "Epidemiological context and regional considerations"
+        }
+      }
+    },
+    "assessmentCriteria": {
+      "type": "array",
+      "description": "Key symptoms and findings for assessment",
+      "items": {
+        "type": "object",
+        "required": ["symptom", "description"],
+        "properties": {
+          "symptom": {
+            "type": "string",
+            "description": "Symptom or clinical finding"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of how to assess this symptom"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["mild", "moderate", "severe"],
+            "description": "Severity level of this symptom"
+          }
+        }
+      }
+    },
+    "urgencyClassification": {
+      "type": "object",
+      "description": "Criteria for determining urgency level",
+      "required": ["green", "yellow", "red"],
+      "properties": {
+        "green": {
+          "type": "object",
+          "description": "Criteria for green (low urgency) classification",
+          "required": ["criteria", "recommendedAction"],
+          "properties": {
+            "criteria": {
+              "type": "array",
+              "description": "List of criteria that qualify for green urgency",
+              "items": {
+                "type": "string"
+              }
+            },
+            "recommendedAction": {
+              "type": "string",
+              "description": "Recommended action for green urgency cases"
+            }
+          }
+        },
+        "yellow": {
+          "type": "object",
+          "description": "Criteria for yellow (medium urgency) classification",
+          "required": ["criteria", "recommendedAction"],
+          "properties": {
+            "criteria": {
+              "type": "array",
+              "description": "List of criteria that qualify for yellow urgency",
+              "items": {
+                "type": "string"
+              }
+            },
+            "recommendedAction": {
+              "type": "string",
+              "description": "Recommended action for yellow urgency cases"
+            }
+          }
+        },
+        "red": {
+          "type": "object",
+          "description": "Criteria for red (high urgency) classification",
+          "required": ["criteria", "recommendedAction"],
+          "properties": {
+            "criteria": {
+              "type": "array",
+              "description": "List of criteria that qualify for red urgency",
+              "items": {
+                "type": "string"
+              }
+            },
+            "recommendedAction": {
+              "type": "string",
+              "description": "Recommended action for red urgency cases"
+            }
+          }
+        }
+      }
+    },
+    "safetyRules": {
+      "type": "array",
+      "description": "Safety rules and red flags",
+      "items": {
+        "type": "object",
+        "required": ["rule", "action"],
+        "properties": {
+          "rule": {
+            "type": "string",
+            "description": "Safety rule description"
+          },
+          "action": {
+            "type": "string",
+            "description": "Action to take when rule is triggered"
+          },
+          "overrideUrgency": {
+            "type": "string",
+            "enum": ["green", "yellow", "red"],
+            "description": "Urgency level to set when this rule is triggered"
+          }
+        }
+      }
+    },
+    "referralCriteria": {
+      "type": "array",
+      "description": "Criteria requiring referral",
+      "items": {
+        "type": "string"
+      }
+    },
+    "references": {
+      "type": "array",
+      "description": "Clinical references and guidelines",
+      "items": {
+        "type": "object",
+        "required": ["source", "url"],
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Name of the guideline or reference"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the guideline or reference"
+          }
+        }
+      }
+    },
+    "contributors": {
+      "type": "array",
+      "description": "Contributors to this protocol",
+      "items": {
+        "type": "object",
+        "required": ["name", "role"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Contributor name"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["author", "clinician-reviewer", "translator"],
+            "description": "Role of the contributor"
+          },
+          "github": {
+            "type": "string",
+            "description": "GitHub username"
+          }
+        }
+      }
+    }
+  }
+}
