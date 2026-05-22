@@ -114,6 +114,7 @@ export interface Assessment {
     sourceUrl?: string;
   };
   nutrition?: NutritionRecord;
+  symptoms?: string[];
   recommendation?: string;
   voiceLog?: string;
   language: string;
