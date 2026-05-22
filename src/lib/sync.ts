@@ -3,6 +3,40 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Patient, Assessment, FollowUp, ReferralFeedback, SyncQueueItem, SyncConflict } from "@/types/trij";
 import { registerBackgroundSync } from "./sw-register";
 
+/**
+ * Enhanced error logging for sync operations
+ * Provides detailed diagnostic information for troubleshooting sync failures
+ */
+function logSyncError(context: string, error: unknown, item?: SyncQueueItem) {
+  const errorDetails = {
+    context,
+    timestamp: new Date().toISOString(),
+    errorMessage: error instanceof Error ? error.message : String(error),
+    errorStack: error instanceof Error ? error.stack : undefined,
+    itemDetails: item ? {
+      table: item.table,
+      action: item.action,
+      recordId: item.recordId,
+      attempts: item.attempts,
+      lastError: item.lastError,
+      createdAt: item.createdAt,
+    } : undefined,
+  };
+  
+  console.error("[Sync Error]", errorDetails);
+  
+  // Store error in localStorage for debugging
+  try {
+    const syncErrors = JSON.parse(localStorage.getItem("trij-sync-errors") || "[]");
+    syncErrors.push(errorDetails);
+    // Keep only last 50 errors
+    if (syncErrors.length > 50) syncErrors.shift();
+    localStorage.setItem("trij-sync-errors", JSON.stringify(syncErrors));
+  } catch (e) {
+    console.warn("Failed to store sync error in localStorage", e);
+  }
+}
+
 export const MAX_RETRIES = 3;
 export const RETRY_BACKOFF_MS = [5_000, 30_000, 120_000];
 
@@ -143,18 +177,26 @@ function threeWayMerge(
 export async function processSyncQueue(
   onProgress?: SyncProgressCallback,
 ): Promise<{ ok: number; failed: number; deadLetter: number }> {
-  if (typeof navigator !== "undefined" && !navigator.onLine) return { ok: 0, failed: 0 };
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    logSyncError("processSyncQueue", new Error("Device is offline"));
+    return { ok: 0, failed: 0, deadLetter: 0 };
+  }
 
   const {
     data: { session },
+    error: sessionError,
   } = await supabase.auth.getSession();
-  if (!session) return { ok: 0, failed: 0 };
+  if (sessionError || !session) {
+    logSyncError("processSyncQueue", sessionError || new Error("No active session"));
+    return { ok: 0, failed: 0, deadLetter: 0 };
+  }
 
   const db = getDB();
   const items = await db.syncQueue.toArray();
   let ok = 0,
     failed = 0,
     deadLetter = 0;
+  
   for (const item of items) {
     const progress: SyncProgressItem = {
       id: item.id!,
@@ -163,9 +205,19 @@ export async function processSyncQueue(
       status: "syncing",
     };
     onProgress?.(progress);
+    
     try {
+      // Validate payload before processing
+      if (!item.payload || Object.keys(item.payload).length === 0) {
+        throw new Error("Empty or invalid payload");
+      }
+      
       if (item.table === "patients") {
         const p = item.payload as Patient;
+        if (!p.id || !p.chwUserId || !p.identifier) {
+          throw new Error("Invalid patient data: missing required fields");
+        }
+        
         const serverRec = await fetchServerRecord("patients", p.id);
         if (serverRec && serverRec.version !== undefined && serverRec.version > p.version) {
           const conflict: SyncConflict = {
@@ -204,6 +256,10 @@ export async function processSyncQueue(
         await db.patients.update(p.id, { syncedAt: new Date().toISOString() });
       } else if (item.table === "follow_ups") {
         const f = item.payload as FollowUp;
+        if (!f.id || !f.patientId || !f.chwUserId) {
+          throw new Error("Invalid follow-up data: missing required fields");
+        }
+        
         const { error } = await supabase.from("follow_ups" as never).upsert({
           id: f.id,
           patient_id: f.patientId,
@@ -220,6 +276,10 @@ export async function processSyncQueue(
         await db.followUps.update(f.id, { syncedAt: new Date().toISOString() });
       } else if (item.table === "assessments") {
         const a = item.payload as Assessment;
+        if (!a.id || !a.patientId || !a.chwUserId) {
+          throw new Error("Invalid assessment data: missing required fields");
+        }
+        
         const serverRec = await fetchServerRecord("assessments", a.id);
         if (serverRec && serverRec.version !== undefined && serverRec.version > a.version) {
           const conflict: SyncConflict = {
@@ -269,29 +329,36 @@ export async function processSyncQueue(
         } as never);
         if (error) throw error;
         await db.assessments.update(a.id, { syncedAt: new Date().toISOString() });
+      } else {
+        throw new Error(`Unknown table type: ${item.table}`);
       }
+      
       await db.syncQueue.delete(item.id!);
       ok++;
       onProgress?.({ ...progress, status: "ok" });
-} catch (err) {
-        const attempts = (item.attempts ?? 0) + 1;
-        
-        // If we've exceeded max retries, move to dead letter queue
-        if (attempts >= MAX_RETRIES) {
-          await moveToDeadLetter(item);
-          deadLetter++;
-          onProgress?.({ ...progress, status: "dead_letter", error: (err as Error).message });
-        } else {
-          failed++;
-          await db.syncQueue.update(item.id!, {
-            attempts,
-            lastError: (err as Error).message,
-          });
-          onProgress?.({ ...progress, status: "failed", error: (err as Error).message });
-        }
+    } catch (err) {
+      logSyncError(`processSyncQueue-${item.table}`, err, item);
+      
+      const attempts = (item.attempts ?? 0) + 1;
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      
+      // If we've exceeded max retries, move to dead letter queue
+      if (attempts >= MAX_RETRIES) {
+        await moveToDeadLetter(item);
+        deadLetter++;
+        onProgress?.({ ...progress, status: "dead_letter", error: errorMessage });
+      } else {
+        failed++;
+        await db.syncQueue.update(item.id!, {
+          attempts,
+          lastError: errorMessage,
+        });
+        onProgress?.({ ...progress, status: "failed", error: errorMessage });
       }
+    }
   }
-   return { ok, failed, deadLetter };
+  
+  return { ok, failed, deadLetter };
 }
 
 export async function getConflicts(): Promise<SyncConflict[]> {
@@ -397,6 +464,44 @@ export async function retryDeadLetterItem(id: number): Promise<void> {
 
 export async function deleteDeadLetterItem(id: number): Promise<void> {
   await getDB().deadLetterQueue.delete(id);
+}
+
+/**
+ * Get sync error logs for debugging
+ * Returns the last 50 sync errors stored in localStorage
+ */
+export function getSyncErrorLogs(): Array<{
+  context: string;
+  timestamp: string;
+  errorMessage: string;
+  errorStack?: string;
+  itemDetails?: {
+    table: string;
+    action: string;
+    recordId: string;
+    attempts: number;
+    lastError: string;
+    createdAt: string;
+  };
+}> {
+  try {
+    const syncErrors = JSON.parse(localStorage.getItem("trij-sync-errors") || "[]");
+    return syncErrors;
+  } catch (e) {
+    console.warn("Failed to retrieve sync error logs", e);
+    return [];
+  }
+}
+
+/**
+ * Clear sync error logs
+ */
+export function clearSyncErrorLogs(): void {
+  try {
+    localStorage.removeItem("trij-sync-errors");
+  } catch (e) {
+    console.warn("Failed to clear sync error logs", e);
+  }
 }
 
 export async function queueFollowUp(followUp: FollowUp) {
