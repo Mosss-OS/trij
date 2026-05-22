@@ -1,232 +1,536 @@
-export interface RedFlag {
+/**
+ * Red Flag Symptom Detection System
+ * 
+ * Critical clinical safety rules that detect emergency conditions
+ * and force immediate referral regardless of AI model confidence.
+ * 
+ * These rules run synchronously BEFORE AI inference to ensure
+ * patient safety is never dependent on model reliability.
+ */
+
+// Symptom and vital sign input types
+export interface SymptomInput {
+  fever?: boolean;
+  feverTemperature?: number; // in Celsius
+  alteredConsciousness?: boolean;
+  confusion?: boolean;
+  rapidBreathing?: boolean;
+  respiratoryRate?: number; // breaths per minute
+  stiffNeck?: boolean;
+  photophobia?: boolean;
+  headache?: boolean;
+  vaginalBleeding?: boolean;
+  pregnancy?: boolean;
+  fitting?: boolean;
+  seizures?: boolean;
+  facialDroop?: boolean;
+  armWeakness?: boolean;
+  speechSlurring?: boolean;
+  difficultySpeaking?: boolean;
+  sunkenEyes?: boolean;
+  noUrine?: boolean;
+  noUrineDuration?: number; // hours
+  unableToDrink?: boolean;
+  dryMouth?: boolean;
+  thirst?: boolean;
+  highBloodSugar?: boolean;
+  bloodSugar?: number; // mg/dL
+  lowBloodSugar?: boolean;
+  severeWeightLoss?: boolean;
+  muscleWasting?: boolean;
+  edema?: boolean;
+  kwashiorkor?: boolean;
+  marasmus?: boolean;
+  chestPain?: boolean;
+  shortnessOfBreath?: boolean;
+  difficultyBreathing?: boolean;
+  blueLips?: boolean;
+  blueSkin?: boolean;
+  severeAbdominalPain?: boolean;
+  abdominalDistension?: boolean;
+  vomitingBlood?: boolean;
+  blackStool?: boolean;
+  severeHeadache?: boolean;
+  visionChanges?: boolean;
+  weakness?: boolean;
+  numbness?: boolean;
+  age?: number; // in years
+  pregnantTrimester?: number; // 1, 2, or 3
+}
+
+export interface RedFlagRule {
   id: string;
-  title: string;
-  suspectedCondition: string;
+  name: string;
   description: string;
-  action: string;
+  immediateAction: string;
+  check: (input: SymptomInput) => boolean;
+  severity: "critical" | "severe";
+  category: "infection" | "neurological" | "obstetric" | "cardiovascular" | "metabolic" | "nutritional" | "trauma" | "other";
 }
 
-export interface RedFlagInput {
-  vitalSigns?: {
-    systolicBP?: number;
-    diastolicBP?: number;
-    heartRate?: number;
-    respiratoryRate?: number;
-    temperature?: number;
-    oxygenSaturation?: number;
-    muac?: number;
-    weight?: number;
-    painScale?: number;
+export interface RedFlagDetection {
+  rule: RedFlagRule;
+  triggered: boolean;
+  timestamp: Date;
+  input: Partial<SymptomInput>;
+}
+
+export interface RedFlagResult {
+  detected: boolean;
+  flags: RedFlagDetection[];
+  emergencyAction: string;
+  nearestFacility?: string;
+}
+
+// Sepsis detection rules
+const sepsisRules: RedFlagRule[] = [
+  {
+    id: "sepsis-1",
+    name: "Sepsis - Classic Triad",
+    description: "Fever + altered consciousness + rapid breathing",
+    immediateAction: "EMERGENCY: Immediate hospital referral for suspected sepsis. Administer antibiotics if available and transport urgently.",
+    check: (input) => 
+      input.fever === true && 
+      (input.alteredConsciousness === true || input.confusion === true) &&
+      (input.rapidBreathing === true || (input.respiratoryRate && input.respiratoryRate > 30)),
+    severity: "critical",
+    category: "infection"
+  },
+  {
+    id: "sepsis-2",
+    name: "Sepsis - High Fever with Altered Mental State",
+    description: "High fever (≥39°C) with confusion or altered consciousness",
+    immediateAction: "EMERGENCY: Immediate hospital referral for severe infection. Monitor vital signs during transport.",
+    check: (input) =>
+      (input.feverTemperature !== undefined && input.feverTemperature >= 39) &&
+      (input.alteredConsciousness === true || input.confusion === true),
+    severity: "critical",
+    category: "infection"
+  },
+  {
+    id: "sepsis-3",
+    name: "Sepsis - Extreme Tachypnea with Fever",
+    description: "Fever with very rapid breathing (≥40 breaths/min)",
+    immediateAction: "EMERGENCY: Immediate hospital referral for respiratory distress. Provide oxygen if available.",
+    check: (input) =>
+      input.fever === true &&
+      (input.respiratoryRate !== undefined && input.respiratoryRate >= 40),
+    severity: "critical",
+    category: "infection"
+  }
+];
+
+// Meningitis detection rules
+const meningitisRules: RedFlagRule[] = [
+  {
+    id: "meningitis-1",
+    name: "Meningitis - Classic Triad",
+    description: "Stiff neck + fever + photophobia",
+    immediateAction: "EMERGENCY: Immediate hospital referral for suspected meningitis. Do not delay for lumbar puncture - start antibiotics urgently.",
+    check: (input) =>
+      input.stiffNeck === true &&
+      input.fever === true &&
+      input.photophobia === true,
+    severity: "critical",
+    category: "neurological"
+  },
+  {
+    id: "meningitis-2",
+    name: "Meningitis - Severe Headache with Fever and Neck Stiffness",
+    description: "Severe headache + fever + stiff neck",
+    immediateAction: "EMERGENCY: Immediate hospital referral for suspected meningitis. Transport with head elevation.",
+    check: (input) =>
+      input.severeHeadache === true &&
+      input.fever === true &&
+      input.stiffNeck === true,
+    severity: "critical",
+    category: "neurological"
+  },
+  {
+    id: "meningitis-3",
+    name: "Meningitis - Altered Consciousness with Fever",
+    description: "Fever + altered consciousness or confusion",
+    immediateAction: "EMERGENCY: Immediate hospital referral for CNS infection. Monitor airway and breathing during transport.",
+    check: (input) =>
+      input.fever === true &&
+      (input.alteredConsciousness === true || input.confusion === true),
+    severity: "critical",
+    category: "neurological"
+  }
+];
+
+// Obstetric emergency rules
+const obstetricRules: RedFlagRule[] = [
+  {
+    id: "obstetric-1",
+    name: "Obstetric Emergency - Heavy Vaginal Bleeding",
+    description: "Heavy vaginal bleeding in pregnancy",
+    immediateAction: "EMERGENCY: Immediate referral to facility with surgical capability. Place patient in left lateral position, elevate legs.",
+    check: (input) =>
+      input.pregnancy === true &&
+      input.vaginalBleeding === true,
+    severity: "critical",
+    category: "obstetric"
+  },
+  {
+    id: "obstetric-2",
+    name: "Obstetric Emergency - Seizures in Pregnancy",
+    description: "Fitting or seizures during pregnancy (eclampsia)",
+    immediateAction: "EMERGENCY: Immediate hospital referral for suspected eclampsia. Monitor blood pressure, administer magnesium sulfate if available.",
+    check: (input) =>
+      input.pregnancy === true &&
+      (input.fitting === true || input.seizures === true),
+    severity: "critical",
+    category: "obstetric"
+  },
+  {
+    id: "obstetric-3",
+    name: "Obstetric Emergency - Third Trimester with Severe Symptoms",
+    description: "Pregnancy (third trimester) with headache, vision changes, or swelling",
+    immediateAction: "EMERGENCY: Immediate referral for suspected pre-eclampsia. Monitor blood pressure and fetal movements.",
+    check: (input) =>
+      input.pregnancy === true &&
+      input.pregnantTrimester === 3 &&
+      (input.severeHeadache === true || input.visionChanges === true || input.edema === true),
+    severity: "critical",
+    category: "obstetric"
+  }
+];
+
+// Stroke detection rules
+const strokeRules: RedFlagRule[] = [
+  {
+    id: "stroke-1",
+    name: "Stroke - FAST: Facial Droop",
+    description: "Facial droop or asymmetry",
+    immediateAction: "EMERGENCY: Immediate hospital referral for suspected stroke. Note time of onset - clot-buster therapy time-critical (<4.5 hours).",
+    check: (input) => input.facialDroop === true,
+    severity: "critical",
+    category: "neurological"
+  },
+  {
+    id: "stroke-2",
+    name: "Stroke - FAST: Arm Weakness",
+    description: "Arm weakness or numbness (especially one-sided)",
+    immediateAction: "EMERGENCY: Immediate hospital referral for suspected stroke. Note time of onset - clot-buster therapy time-critical (<4.5 hours).",
+    check: (input) => input.armWeakness === true || input.numbness === true,
+    severity: "critical",
+    category: "neurological"
+  },
+  {
+    id: "stroke-3",
+    name: "Stroke - FAST: Speech Difficulties",
+    description: "Speech slurring or difficulty speaking",
+    immediateAction: "EMERGENCY: Immediate hospital referral for suspected stroke. Note time of onset - clot-buster therapy time-critical (<4.5 hours).",
+    check: (input) => input.speechSlurring === true || input.difficultySpeaking === true,
+    severity: "critical",
+    category: "neurological"
+  },
+  {
+    id: "stroke-4",
+    name: "Stroke - Sudden Onset Multiple Symptoms",
+    description: "Sudden onset of facial droop, arm weakness, or speech difficulties",
+    immediateAction: "EMERGENCY: Immediate hospital referral for suspected stroke. Act FAST - call emergency services if available.",
+    check: (input) =>
+      input.facialDroop === true ||
+      input.armWeakness === true ||
+      input.speechSlurring === true,
+    severity: "critical",
+    category: "neurological"
+  }
+];
+
+// Severe dehydration rules
+const dehydrationRules: RedFlagRule[] = [
+  {
+    id: "dehydration-1",
+    name: "Severe Dehydration - Classic Signs",
+    description: "Sunken eyes, no urine >6 hours, unable to drink",
+    immediateAction: "EMERGENCY: Immediate referral for severe dehydration. Start oral rehydration solution if able to drink, otherwise IV fluids needed.",
+    check: (input) =>
+      input.sunkenEyes === true &&
+      (input.noUrine === true || (input.noUrineDuration !== undefined && input.noUrineDuration > 6)) &&
+      input.unableToDrink === true,
+    severity: "critical",
+    category: "metabolic"
+  },
+  {
+    id: "dehydration-2",
+    name: "Severe Dehydration - Prolonged No Output",
+    description: "No urine for >12 hours with other dehydration signs",
+    immediateAction: "EMERGENCY: Immediate referral for severe dehydration. Patient may require intravenous fluids.",
+    check: (input) =>
+      (input.noUrineDuration !== undefined && input.noUrineDuration > 12) &&
+      (input.sunkenEyes === true || input.dryMouth === true || input.thirst === true),
+    severity: "critical",
+    category: "metabolic"
+  }
+];
+
+// Diabetic emergency rules
+const diabeticRules: RedFlagRule[] = [
+  {
+    id: "diabetic-1",
+    name: "Diabetic Emergency - Very High Blood Sugar",
+    description: "Blood sugar ≥400 mg/dL with altered consciousness",
+    immediateAction: "EMERGENCY: Immediate referral for hyperglycemic emergency. Do not administer insulin without blood glucose monitoring.",
+    check: (input) =>
+      (input.bloodSugar !== undefined && input.bloodSugar >= 400) &&
+      (input.alteredConsciousness === true || input.confusion === true),
+    severity: "critical",
+    category: "metabolic"
+  },
+  {
+    id: "diabetic-2",
+    name: "Diabetic Emergency - DKA Signs",
+    description: "High blood sugar + dehydration + altered consciousness",
+    immediateAction: "EMERGENCY: Immediate referral for suspected diabetic ketoacidosis. This is life-threatening and requires hospital care.",
+    check: (input) =>
+      (input.highBloodSugar === true || (input.bloodSugar !== undefined && input.bloodSugar >= 250)) &&
+      (input.sunkenEyes === true || input.dryMouth === true) &&
+      (input.alteredConsciousness === true || input.confusion === true),
+    severity: "critical",
+    category: "metabolic"
+  },
+  {
+    id: "diabetic-3",
+    name: "Diabetic Emergency - Severe Hypoglycemia",
+    description: "Low blood sugar with altered consciousness or fitting",
+    immediateAction: "EMERGENCY: Immediate referral for severe hypoglycemia. Administer oral glucose if conscious, otherwise IV dextrose needed.",
+    check: (input) =>
+      input.lowBloodSugar === true &&
+      (input.alteredConsciousness === true || input.confusion === true || input.fitting === true || input.seizures === true),
+    severity: "critical",
+    category: "metabolic"
+  }
+];
+
+// Severe malnutrition rules
+const malnutritionRules: RedFlagRule[] = [
+  {
+    id: "malnutrition-1",
+    name: "Severe Malnutrition with Complications",
+    description: "Severe weight loss + muscle wasting + edema (Kwashiorkor)",
+    immediateAction: "EMERGENCY: Immediate referral for severe acute malnutrition with complications. Requires therapeutic feeding and medical management.",
+    check: (input) =>
+      input.severeWeightLoss === true &&
+      input.muscleWasting === true &&
+      input.edema === true,
+    severity: "critical",
+    category: "nutritional"
+  },
+  {
+    id: "malnutrition-2",
+    name: "Severe Malnutrition - Marasmus with Infection Signs",
+    description: "Severe weight loss + muscle wasting + fever",
+    immediateAction: "EMERGENCY: Immediate referral for severe acute malnutrition with infection. High risk of mortality without urgent treatment.",
+    check: (input) =>
+      input.severeWeightLoss === true &&
+      input.muscleWasting === true &&
+      input.fever === true,
+    severity: "critical",
+    category: "nutritional"
+  },
+  {
+    id: "malnutrition-3",
+    name: "Severe Malnutrition - Visible Wasting",
+    description: "Visible severe wasting in children",
+    immediateAction: "URGENT: Immediate referral for severe acute malnutrition. Use WHO growth chart for confirmation if available.",
+    check: (input) =>
+      input.marasmus === true ||
+      (input.severeWeightLoss === true && input.muscleWasting === true),
+    severity: "severe",
+    category: "nutritional"
+  }
+];
+
+// Cardiovascular emergency rules
+const cardiovascularRules: RedFlagRule[] = [
+  {
+    id: "cardio-1",
+    name: "Cardiac Emergency - Chest Pain with Breathing Difficulty",
+    description: "Chest pain + shortness of breath",
+    immediateAction: "EMERGENCY: Immediate referral for suspected heart attack. Keep patient calm, provide aspirin if not allergic, monitor vital signs.",
+    check: (input) =>
+      input.chestPain === true &&
+      (input.shortnessOfBreath === true || input.difficultyBreathing === true),
+    severity: "critical",
+    category: "cardiovascular"
+  },
+  {
+    id: "cardio-2",
+    name: "Cardiac Emergency - Signs of Shock",
+    description: "Blue lips or blue skin with weakness or altered consciousness",
+    immediateAction: "EMERGENCY: Immediate referral for suspected shock. Keep patient warm, elevate legs, provide oxygen if available.",
+    check: (input) =>
+      (input.blueLips === true || input.blueSkin === true) &&
+      (input.weakness === true || input.alteredConsciousness === true),
+    severity: "critical",
+    category: "cardiovascular"
+  },
+  {
+    id: "cardio-3",
+    name: "Respiratory Emergency - Severe Breathing Difficulty",
+    description: "Severe difficulty breathing with blue lips or skin",
+    immediateAction: "EMERGENCY: Immediate referral for respiratory distress. Sit patient upright, provide oxygen if available.",
+    check: (input) =>
+      (input.difficultyBreathing === true || input.shortnessOfBreath === true) &&
+      (input.blueLips === true || input.blueSkin === true),
+    severity: "critical",
+    category: "cardiovascular"
+  }
+];
+
+// Gastrointestinal emergency rules
+const gastrointestinalRules: RedFlagRule[] = [
+  {
+    id: "gi-1",
+    name: "GI Emergency - Vomiting Blood",
+    description: "Vomiting blood or coffee-ground material",
+    immediateAction: "EMERGENCY: Immediate referral for upper GI bleeding. Monitor vital signs, keep patient NPO (nothing by mouth).",
+    check: (input) => input.vomitingBlood === true,
+    severity: "critical",
+    category: "other"
+  },
+  {
+    id: "gi-2",
+    name: "GI Emergency - Black Tarry Stool",
+    description: "Black, tarry stool (melena)",
+    immediateAction: "EMERGENCY: Immediate referral for upper GI bleeding. This indicates significant blood loss requiring urgent care.",
+    check: (input) => input.blackStool === true,
+    severity: "critical",
+    category: "other"
+  },
+  {
+    id: "gi-3",
+    name: "GI Emergency - Severe Abdominal Pain with Distension",
+    description: "Severe abdominal pain with abdominal distension",
+    immediateAction: "EMERGENCY: Immediate referral for suspected bowel obstruction or surgical emergency. Nothing by mouth.",
+    check: (input) =>
+      input.severeAbdominalPain === true &&
+      input.abdominalDistension === true,
+    severity: "critical",
+    category: "other"
+  }
+];
+
+// Combine all rules
+const ALL_RED_FLAG_RULES: RedFlagRule[] = [
+  ...sepsisRules,
+  ...meningitisRules,
+  ...obstetricRules,
+  ...strokeRules,
+  ...dehydrationRules,
+  ...diabeticRules,
+  ...malnutritionRules,
+  ...cardiovascularRules,
+  ...gastrointestinalRules
+];
+
+/**
+ * Check input against all red flag rules
+ * Runs synchronously before AI inference
+ */
+export function checkRedFlags(input: SymptomInput): RedFlagResult {
+  const triggeredFlags: RedFlagDetection[] = [];
+  const timestamp = new Date();
+
+  for (const rule of ALL_RED_FLAG_RULES) {
+    if (rule.check(input)) {
+      triggeredFlags.push({
+        rule,
+        triggered: true,
+        timestamp,
+        input
+      });
+    }
+  }
+
+  const detected = triggeredFlags.length > 0;
+
+  // Get the most critical flag for emergency action
+  const criticalFlags = triggeredFlags.filter(f => f.rule.severity === "critical");
+  const emergencyAction = criticalFlags.length > 0 
+    ? criticalFlags[0].rule.immediateAction 
+    : (triggeredFlags.length > 0 ? triggeredFlags[0].rule.immediateAction : "");
+
+  return {
+    detected,
+    flags: triggeredFlags,
+    emergencyAction,
+    nearestFacility: undefined // TODO: Integrate with geolocation/facility data
   };
-  symptomDescription?: string;
-  presentationType?: string;
-  age?: number;
-  sex?: string;
 }
 
-const SEPSIS_KEYWORDS = [
-  "fever", "hot", "chills", "rigors", "confusion", "lethargic",
-  "unconscious", "unresponsive", "fast breathing", "rapid breathing",
-  "shortness of breath", "difficulty breathing", "sob", "dyspnoea",
-  "dyspnea", "low blood pressure", "dizziness", "lightheaded",
-  "not passing urine", "low urine output", "oliguria",
-];
-
-const MENINGISM_KEYWORDS = [
-  "stiff neck", "neck stiffness", "nuchal rigidity",
-  "photophobia", "light sensitivity", "headache severe",
-  "vomiting", "rash", "purpura", "petechiae",
-  "bulging fontanelle", "high pitched cry",
-  "seizure", "convulsion", "fitting",
-];
-
-const OBSTETRIC_KEYWORDS = [
-  "pregnant", "pregnancy", "vaginal bleeding", "heavy bleeding",
-  "fitting in pregnancy", "seizure in pregnancy", "eclampsia",
-  "pre-eclampsia", "swollen face", "swollen hands",
-  "severe headache pregnant", "blurred vision pregnant",
-  "abdominal pain pregnant", "contractions", "water broken",
-  "membrane rupture", "decreased fetal movement",
-];
-
-const STROKE_KEYWORDS = [
-  "facial droop", "face drooping", "face numb",
-  "arm weakness", "arm numb", "one sided weakness",
-  "hemiparesis", "hemiplegia", "speech slurred",
-  "slurred speech", "dysarthria", "difficulty speaking",
-  "aphasia", "cannot speak", "confusion sudden",
-  "balance loss", "vertigo sudden", "vision loss",
-  "diplopia", "double vision",
-];
-
-const DEHYDRATION_KEYWORDS = [
-  "sunken eyes", "dry mouth", "thirst excessive",
-  "no urine", "not urinating", "dark urine",
-  "weak", "lethargic", "unable to drink",
-  "drinking poorly", "vomiting everything",
-  "diarrhoea severe", "diarrhea severe", " watery stool",
-];
-
-const DIABETIC_KEYWORDS = [
-  "diabetic", "diabetes", "high blood sugar", "hyperglycaemia",
-  "hyperglycemia", "low blood sugar", "hypoglycaemia",
-  "hypoglycemia", "fruity breath", "acetone breath",
-  "deep breathing", "kussmaul", "confusion diabetic",
-  "unconscious diabetic", "insulin",
-];
-
-const MALNUTRITION_KEYWORDS = [
-  "severe malnutrition", "sam", "mam", "wasting",
-  "muscle wasting", "visible ribs", "severe thin",
-  "underweight severe", "failure to thrive",
-  "kwashiorkor", "marasmus", "oedema feet",
-  "swollen feet", "bilateral pitting oedema",
-];
-
-export function checkRedFlags(input: RedFlagInput): RedFlag[] {
-  const flags: RedFlag[] = [];
-  const symptoms = (input.symptomDescription || "").toLowerCase();
-  const vs = input.vitalSigns;
-  const temp = vs?.temperature;
-  const hr = vs?.heartRate;
-  const rr = vs?.respiratoryRate;
-  const spo2 = vs?.oxygenSaturation;
-  const sbp = vs?.systolicBP;
-  const muac = vs?.muac;
-
-  if (hasKeywords(symptoms, SEPSIS_KEYWORDS)) {
-    flags.push({
-      id: "sepsis",
-      title: "Signs of Sepsis",
-      suspectedCondition: "Sepsis / Systemic Infection",
-      description: "Fever with altered consciousness or rapid breathing detected.",
-      action: "Immediate referral to hospital. Administer broad-spectrum antibiotics if available. IV fluids if shock suspected.",
-    });
-  }
-
-  if (hasKeywords(symptoms, MENINGISM_KEYWORDS)) {
-    flags.push({
-      id: "meningitis",
-      title: "Meningism Indicators",
-      suspectedCondition: "Meningitis / Encephalitis",
-      description: "Neck stiffness with fever and photophobia or neurological signs.",
-      action: "Emergency referral. Lumbar puncture at hospital. IV antibiotics and anticonvulsants if fitting.",
-    });
-  }
-
-  if (hasKeywords(symptoms, OBSTETRIC_KEYWORDS)) {
-    flags.push({
-      id: "obstetric_emergency",
-      title: "Obstetric Emergency",
-      suspectedCondition: "Obstetric Complication",
-      description: "Signs of obstetric emergency detected: vaginal bleeding, fitting, or severe headache in pregnancy.",
-      action: "Immediate emergency transport to maternity facility. Do not wait. Lie patient on left side during transport.",
-    });
-  }
-
-  if (hasKeywords(symptoms, STROKE_KEYWORDS)) {
-    flags.push({
-      id: "stroke",
-      title: "Stroke Signs",
-      suspectedCondition: "Cerebrovascular Accident (Stroke)",
-      description: "Facial droop, arm weakness, or speech disturbance detected.",
-      action: "Emergency referral to stroke-capable facility. Note time of symptom onset. Keep nil by mouth. Position head elevated 30°.",
-    });
-  }
-
-  if (hasKeywords(symptoms, DEHYDRATION_KEYWORDS)) {
-    flags.push({
-      id: "severe_dehydration",
-      title: "Severe Dehydration",
-      suspectedCondition: "Severe Dehydration / Hypovolaemic Shock",
-      description: "Sunken eyes, no urine output, unable to drink — signs of severe dehydration.",
-      action: "Urgent IV fluid resuscitation. Refer to facility capable of paediatric IV access if child. Give ORS sips if able to drink.",
-    });
-  }
-
-  if (hasKeywords(symptoms, DIABETIC_KEYWORDS)) {
-    flags.push({
-      id: "diabetic_emergency",
-      title: "Diabetic Emergency",
-      suspectedCondition: "Diabetic Ketoacidosis / Severe Hypoglycaemia",
-      description: "Signs of diabetic emergency: altered consciousness, fruity breath, or known diabetic with acute deterioration.",
-      action: "Check blood glucose if available. If hypoglycaemic: oral glucose or IM glucagon. If DKA suspected: emergency referral for IV insulin and fluids.",
-    });
-  }
-
-  if (hasKeywords(symptoms, MALNUTRITION_KEYWORDS)) {
-    flags.push({
-      id: "severe_malnutrition",
-      title: "Severe Malnutrition with Complications",
-      suspectedCondition: "Severe Acute Malnutrition (SAM) with Medical Complication",
-      description: "Signs of severe malnutrition with complications detected.",
-      action: "Refer to therapeutic feeding centre. Admit for complicated SAM management. Start F-75 therapeutic milk. Treat complications before refeeding.",
-    });
-  }
-
-  if (temp !== undefined && temp !== null && temp >= 39.5) {
-    flags.push({
-      id: "high_fever",
-      title: "High Fever (≥39.5°C)",
-      suspectedCondition: "Severe Febrile Illness",
-      description: `Temperature ${temp}°C indicates severe infection.`,
-      action: "Assess for source of infection. Consider malaria, typhoid, UTI. Antipyretic (paracetamol). Refer if no clear source or if <3 months old.",
-    });
-  }
-
-  if (spo2 !== undefined && spo2 !== null && spo2 < 90) {
-    flags.push({
-      id: "hypoxia",
-      title: "Severe Hypoxia (SpO₂ < 90%)",
-      suspectedCondition: "Severe Respiratory Distress / Hypoxaemia",
-      description: `Oxygen saturation ${spo2}% is critically low.`,
-      action: "Emergency referral. Position upright. Administer oxygen if available. Keep airway clear.",
-    });
-  }
-
-  if (rr !== undefined && rr !== null && rr > 30) {
-    flags.push({
-      id: "tachypnoea",
-      title: "Severe Tachypnoea (RR > 30/min)",
-      suspectedCondition: "Severe Respiratory Distress",
-      description: `Respiratory rate ${rr}/min indicates respiratory distress.`,
-      action: "Emergency assessment. Look for chest indrawing, grunting, nasal flaring. Refer for oxygen and respiratory support.",
-    });
-  }
-
-  if (hr !== undefined && hr !== null && hr > 130) {
-    flags.push({
-      id: "tachycardia",
-      title: "Severe Tachycardia (HR > 130 bpm)",
-      suspectedCondition: "Shock / Severe Decompensation",
-      description: `Heart rate ${hr} bpm may indicate shock or decompensation.`,
-      action: "Assess for signs of shock: cold peripheries, prolonged capillary refill, weak pulse. IV fluids if shock confirmed. Urgent referral.",
-    });
-  }
-
-  if (sbp !== undefined && sbp !== null && sbp < 90) {
-    flags.push({
-      id: "hypotension",
-      title: "Hypotension (SBP < 90 mmHg)",
-      suspectedCondition: "Shock / Severe Dehydration / Haemorrhage",
-      description: `Systolic BP ${sbp} mmHg is below threshold.`,
-      action: "Sign of decompensated shock. Lie flat. IV fluids rapidly. Urgent referral to hospital.",
-    });
-  }
-
-  if (muac !== undefined && muac !== null && muac < 11.5) {
-    flags.push({
-      id: "sam_muac",
-      title: "Severe Acute Malnutrition (MUAC < 11.5 cm)",
-      suspectedCondition: "Severe Acute Malnutrition",
-      description: `MUAC ${muac} cm indicates severe acute malnutrition.`,
-      action: "Refer to therapeutic feeding programme. Assess for complications before refeeding. Start F-75 or therapeutic milk.",
-    });
-  }
-
-  return flags;
+/**
+ * Get all red flag rules (for configuration/display)
+ */
+export function getAllRedFlagRules(): RedFlagRule[] {
+  return [...ALL_RED_FLAG_RULES];
 }
 
-function hasKeywords(text: string, keywords: string[]): boolean {
-  return keywords.some((kw) => text.includes(kw));
+/**
+ * Get rules by category
+ */
+export function getRulesByCategory(category: RedFlagRule["category"]): RedFlagRule[] {
+  return ALL_RED_FLAG_RULES.filter(rule => rule.category === category);
+}
+
+/**
+ * Check if a specific rule is triggered
+ */
+export function checkSpecificRule(ruleId: string, input: SymptomInput): boolean {
+  const rule = ALL_RED_FLAG_RULES.find(r => r.id === ruleId);
+  return rule ? rule.check(input) : false;
+}
+
+/**
+ * Enable/disable specific rules (for supervisor configuration)
+ * This would be integrated with settings in a full implementation
+ */
+const DISABLED_RULES = new Set<string>();
+
+export function enableRule(ruleId: string): void {
+  DISABLED_RULES.delete(ruleId);
+}
+
+export function disableRule(ruleId: string): void {
+  DISABLED_RULES.add(ruleId);
+}
+
+export function isRuleEnabled(ruleId: string): boolean {
+  return !DISABLED_RULES.has(ruleId);
+}
+
+/**
+ * Check red flags with supervisor-configured rules disabled
+ */
+export function checkRedFlagsWithConfig(input: SymptomInput): RedFlagResult {
+  const enabledRules = ALL_RED_FLAG_RULES.filter(rule => isRuleEnabled(rule.id));
+  const triggeredFlags: RedFlagDetection[] = [];
+  const timestamp = new Date();
+
+  for (const rule of enabledRules) {
+    if (rule.check(input)) {
+      triggeredFlags.push({
+        rule,
+        triggered: true,
+        timestamp,
+        input
+      });
+    }
+  }
+
+  const detected = triggeredFlags.length > 0;
+  const criticalFlags = triggeredFlags.filter(f => f.rule.severity === "critical");
+  const emergencyAction = criticalFlags.length > 0 
+    ? criticalFlags[0].rule.immediateAction 
+    : (triggeredFlags.length > 0 ? triggeredFlags[0].rule.immediateAction : "");
+
+  return {
+    detected,
+    flags: triggeredFlags,
+    emergencyAction,
+    nearestFacility: undefined
+  };
 }

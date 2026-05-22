@@ -33,7 +33,7 @@ import {
 } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { TriageResult, Patient, Assessment, VitalSigns, ConsentRecord } from "@/types/trij";
-import { checkRedFlags, type RedFlag } from "@/lib/red-flags";
+import { checkRedFlags, type RedFlagResult, type SymptomInput } from "@/lib/red-flags";
 import { evaluateVitalSigns } from "@/lib/vital-signs";
 import { checkForNotifiableConditions } from "@/lib/outbreak-flags";
 import { VitalSignsInput } from "@/components/VitalSignsInput";
@@ -190,7 +190,7 @@ function TriagePage() {
   const [patientId, setPatientId] = useState<string | null>(null);
   const [aiFailureKind, setAiFailureKind] = useState<AiFailureKind | null>(null);
   const [pendingCapture, setPendingCapture] = useState<string | null>(null);
-  const [redFlags, setRedFlags] = useState<RedFlag[]>([]);
+  const [redFlagResult, setRedFlagResult] = useState<RedFlagResult | null>(null);
   const [showRedFlagAlert, setShowRedFlagAlert] = useState(false);
   const [notifiableFlags, setNotifiableFlags] = useState<Array<{ condition: string; matchedKeyword: string }>>([]);
   const [imciActive, setImciActive] = useState(false);
@@ -526,22 +526,22 @@ function TriagePage() {
       const r = await triageImage(dataUrl, language, kind, ollamaUrl, presentationType, symptomDescription);
 
       const vs = buildVitalSigns();
-      const flags = checkRedFlags({
-        vitalSigns: vs,
-        symptomDescription,
-        presentationType,
-        age: age ? Number(age) : undefined,
-        sex,
-      });
-      if (flags.length > 0) {
+      const symptomInput = mapToSymptomInput(vs, symptomDescription, presentationType, age ? Number(age) : undefined, sex);
+      const redFlagCheck = checkRedFlags(symptomInput);
+      if (redFlagCheck.detected) {
         const overridden = { ...r, urgency: "red" as const };
         setResult(overridden);
-        setRedFlags(flags);
+        setRedFlagResult(redFlagCheck);
         setShowRedFlagAlert(true);
         log("red_flag:triggered", {
           resourceType: "assessment",
           resourceId: "",
-          details: JSON.stringify(flags.map((f) => ({ id: f.id, condition: f.suspectedCondition }))),
+          details: JSON.stringify(redFlagCheck.flags.map((f) => ({ 
+            id: f.rule.id, 
+            condition: f.rule.name,
+            severity: f.rule.severity,
+            category: f.rule.category 
+          }))),
         });
       } else {
         setResult(r);
@@ -597,22 +597,22 @@ function TriagePage() {
       const r = await triageImage("", language, kind, ollamaUrl, presentationType, symptomDescription);
 
       const vs = buildVitalSigns();
-      const flags = checkRedFlags({
-        vitalSigns: vs,
-        symptomDescription,
-        presentationType,
-        age: age ? Number(age) : undefined,
-        sex,
-      });
-      if (flags.length > 0) {
+      const symptomInput = mapToSymptomInput(vs, symptomDescription, presentationType, age ? Number(age) : undefined, sex);
+      const redFlagCheck = checkRedFlags(symptomInput);
+      if (redFlagCheck.detected) {
         const overridden = { ...r, urgency: "red" as const };
         setResult(overridden);
-        setRedFlags(flags);
+        setRedFlagResult(redFlagCheck);
         setShowRedFlagAlert(true);
         log("red_flag:triggered", {
           resourceType: "assessment",
           resourceId: "",
-          details: JSON.stringify(flags.map((f) => ({ id: f.id, condition: f.suspectedCondition }))),
+          details: JSON.stringify(redFlagCheck.flags.map((f) => ({ 
+            id: f.rule.id, 
+            condition: f.rule.name,
+            severity: f.rule.severity,
+            category: f.rule.category 
+          }))),
         });
       } else {
         setResult(r);
@@ -655,6 +655,175 @@ function TriagePage() {
     /* Only include vitals if at least one field has a value */
     const hasAny = Object.values(parsed).some((v) => v !== undefined);
     return hasAny ? (parsed as VitalSigns) : undefined;
+  };
+
+  /**
+   * Map triage data to SymptomInput format for red flag detection
+   * Converts vital signs, symptom description, and presentation type into structured symptom fields
+   */
+  const mapToSymptomInput = (vitals: VitalSigns | undefined, description: string, presentation: string, patientAge?: number, patientSex?: "M" | "F" | "other"): SymptomInput => {
+    const input: SymptomInput = {
+      age: patientAge,
+    };
+
+    // Map vital signs to SymptomInput fields
+    if (vitals) {
+      if (vitals.temperature && vitals.temperature >= 38) {
+        input.fever = true;
+        input.feverTemperature = vitals.temperature;
+      }
+      if (vitals.respiratoryRate) {
+        input.respiratoryRate = vitals.respiratoryRate;
+        if (vitals.respiratoryRate > 30) {
+          input.rapidBreathing = true;
+        }
+      }
+      if (vitals.oxygenSaturation && vitals.oxygenSaturation < 90) {
+        input.blueLips = true;
+        input.blueSkin = true;
+        input.shortnessOfBreath = true;
+      }
+      if (vitals.heartRate && vitals.heartRate > 120) {
+        input.chestPain = true;
+      }
+    }
+
+    // Parse symptom description for key phrases
+    const desc = description.toLowerCase();
+    
+    // Neurological symptoms
+    if (desc.includes("confus") || desc.includes("disorient")) {
+      input.confusion = true;
+      input.alteredConsciousness = true;
+    }
+    if (desc.includes("unconscious") || desc.includes("faint") || desc.includes("collapse")) {
+      input.alteredConsciousness = true;
+    }
+    if (desc.includes("headache") && (desc.includes("severe") || desc.includes("bad"))) {
+      input.severeHeadache = true;
+    }
+    if (desc.includes("stiff neck") || desc.includes("neck pain") || desc.includes("neck stiff")) {
+      input.stiffNeck = true;
+    }
+    if (desc.includes("light sensitiv") || desc.includes("photophobia") || desc.includes("bright light")) {
+      input.photophobia = true;
+    }
+    if (desc.includes("face droop") || desc.includes("facial droop") || desc.includes("face uneven")) {
+      input.facialDroop = true;
+    }
+    if (desc.includes("arm weak") || desc.includes("weak arm") || desc.includes("numb arm")) {
+      input.armWeakness = true;
+    }
+    if (desc.includes("slurr") || desc.includes("speech difficult") || desc.includes("hard to speak")) {
+      input.speechSlurring = true;
+      input.difficultySpeaking = true;
+    }
+    if (desc.includes("weak") || desc.includes("numb")) {
+      input.weakness = true;
+      input.numbness = true;
+    }
+    if (desc.includes("vision") && (desc.includes("blur") || desc.includes("change") || desc.includes("double"))) {
+      input.visionChanges = true;
+    }
+
+    // Cardiovascular symptoms
+    if (desc.includes("chest pain") || desc.includes("chest tight") || desc.includes("heart attack")) {
+      input.chestPain = true;
+    }
+    if (desc.includes("short of breath") || desc.includes("breathless") || desc.includes("difficulty breath")) {
+      input.shortnessOfBreath = true;
+      input.difficultyBreathing = true;
+    }
+    if (desc.includes("blue lip") || desc.includes("blue skin") || desc.includes("cyanosis")) {
+      input.blueLips = true;
+      input.blueSkin = true;
+    }
+
+    // Gastrointestinal symptoms
+    if (desc.includes("severe abdom") || desc.includes("stomach pain") && desc.includes("severe")) {
+      input.severeAbdominalPain = true;
+    }
+    if (desc.includes("vomit blood") || desc.includes("coffee ground") || desc.includes("hematemesis")) {
+      input.vomitingBlood = true;
+    }
+    if (desc.includes("black stool") || desc.includes("tarry stool") || desc.includes("melena")) {
+      input.blackStool = true;
+    }
+    if (desc.includes("abdominal") && (desc.includes("distend") || desc.includes("swollen") || desc.includes("bloated"))) {
+      input.abdominalDistension = true;
+    }
+
+    // Dehydration symptoms
+    if (desc.includes("sunken eye") || desc.includes("eye sink")) {
+      input.sunkenEyes = true;
+    }
+    if (desc.includes("no urine") || desc.includes("not pass urine") || desc.includes("unable to urinate")) {
+      input.noUrine = true;
+    }
+    if (desc.includes("unable to drink") || desc.includes("cannot drink") || desc.includes("refuse drink")) {
+      input.unableToDrink = true;
+    }
+    if (desc.includes("dry mouth") || desc.includes("thirsty") || desc.includes("thirst")) {
+      input.dryMouth = true;
+      input.thirst = true;
+    }
+
+    // Obstetric symptoms
+    if (patientSex === "F") {
+      if (desc.includes("pregnant") || desc.includes("pregnancy") || presentation === "obstetrics") {
+        input.pregnancy = true;
+        if (patientAge && patientAge >= 18) {
+          input.pregnantTrimester = 3; // Default to third trimester for adults if pregnant
+        }
+      }
+      if (desc.includes("bleed") && (desc.includes("vaginal") || desc.includes("pregnant"))) {
+        input.vaginalBleeding = true;
+      }
+      if (desc.includes("fit") || desc.includes("seizure") || desc.includes("convulsion")) {
+        if (input.pregnancy) {
+          input.fitting = true;
+          input.seizures = true;
+        }
+      }
+      if (desc.includes("swelling") || desc.includes("edema")) {
+        input.edema = true;
+      }
+    }
+
+    // Malnutrition symptoms
+    if (vitals?.muac && vitals.muac < 11.5) {
+      input.severeWeightLoss = true;
+      input.muscleWasting = true;
+      input.marasmus = true;
+    }
+    if (desc.includes("weight loss") && desc.includes("severe")) {
+      input.severeWeightLoss = true;
+    }
+    if (desc.includes("muscle waste") || desc.includes("wasting")) {
+      input.muscleWasting = true;
+    }
+    if (desc.includes("kwashiorkor") || desc.includes("edema")) {
+      input.kwashiorkor = true;
+      input.edema = true;
+    }
+
+    // Diabetic symptoms
+    if (desc.includes("diabetic") || desc.includes("diabetes")) {
+      if (desc.includes("high sugar") || desc.includes("hyperglyc")) {
+        input.highBloodSugar = true;
+      }
+      if (desc.includes("low sugar") || desc.includes("hypoglyc")) {
+        input.lowBloodSugar = true;
+      }
+    }
+
+    // General emergency symptoms
+    if (desc.includes("fit") || desc.includes("seizure") || desc.includes("convulsion")) {
+      input.fitting = true;
+      input.seizures = true;
+    }
+
+    return input;
   };
 
   const save = async () => {
@@ -846,14 +1015,26 @@ function TriagePage() {
           }}
         />
       )}
-      {showRedFlagAlert && redFlags.length > 0 && (
+      {showRedFlagAlert && redFlagResult && (
         <RedFlagAlert
-          flags={redFlags}
+          redFlagResult={redFlagResult}
           onDismiss={() => {
             setShowRedFlagAlert(false);
-            setRedFlags([]);
+            setRedFlagResult(null);
+            log("red_flag:dismissed", {
+              resourceType: "assessment",
+              resourceId: "",
+              details: "User dismissed red flag alert",
+            });
           }}
-          onProceedToResult={() => setShowRedFlagAlert(false)}
+          onContinueToFacility={() => {
+            setShowRedFlagAlert(false);
+            log("red_flag:acknowledged", {
+              resourceType: "assessment",
+              resourceId: "",
+              details: "User acknowledged red flag and will continue to facility",
+            });
+          }}
         />
       )}
       <AppHeader title={t("newTriage")} subtitle={t("stepByStep")} />
