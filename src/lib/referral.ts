@@ -65,7 +65,10 @@ export async function generateReferralPdfBlob(patient: Patient, a: Assessment): 
   doc.text("Assessment", 40, y);
   y += 14;
   doc.setFont("helvetica", "normal");
-  const cond = `${a.condition ?? "—"}  (${Math.round(a.confidence ?? 0)}%)`;
+  const confValue = typeof a.confidence === 'number' 
+    ? Math.round(a.confidence) 
+    : Math.round(a.confidence?.confidence_point ?? 0);
+  const cond = `${a.condition ?? "—"}  (${confValue}%)`;
   doc.text(cond, 40, y);
   y += 14;
   if (a.icd10Code) {
