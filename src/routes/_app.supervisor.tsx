@@ -9,6 +9,7 @@ import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { detectOutbreaks, type Outbreak, type OutbreakAssessment, type OutbreakAlert } from "@/lib/outbreak";
+import { checkForNotifiableConditions } from "@/lib/outbreak-flags";
 import {
   Loader2,
   MapPin,
@@ -164,6 +165,16 @@ function Supervisor() {
   const [outbreaks, setOutbreaks] = useState<Outbreak[]>([]);
   const [outbreakAlerts, setOutbreakAlerts] = useState<OutbreakAlert[]>([]);
   const { unseen, count: alertCount, markAllAsSeen, markAsSeen } = useReferralAlerts();
+
+  const notifiableMatches = useMemo(() => {
+    const matches: Set<string> = new Set();
+    for (const a of items) {
+      if (!a.condition) continue;
+      const result = checkForNotifiableConditions(a.condition);
+      for (const m of result) matches.add(m.condition.name);
+    }
+    return Array.from(matches);
+  }, [items]);
 
   useEffect(() => {
     if (!online) {
@@ -449,6 +460,26 @@ function Supervisor() {
                   </li>
                 ))}
               </ul>
+            </div>
+          </div>
+        )}
+
+        {notifiableMatches.length > 0 && (
+          <div className="rounded-2xl border border-red-300 bg-red-50 p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
+              <div>
+                <p className="text-sm font-medium text-red-800">{t("outbreakBanner")}</p>
+                <p className="mt-1 text-xs text-red-700/80">{t("outbreakBannerDesc")}</p>
+                <ul className="mt-2 space-y-1">
+                  {notifiableMatches.map((name) => (
+                    <li key={name} className="flex items-center gap-2 text-xs font-medium text-red-700">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                      {name.charAt(0).toUpperCase() + name.slice(1).replace(/_/g, " ")}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         )}
