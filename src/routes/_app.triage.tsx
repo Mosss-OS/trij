@@ -51,6 +51,8 @@ import { saveVoiceDraft, getVoiceDraft, clearVoiceDraft, listVoiceDrafts } from 
 import { getCurrentPosition } from "@/lib/geolocation";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useWellBeingCheckIn } from "@/hooks/useWellBeingCheckIn";
+import { WellBeingCheckIn } from "@/components/WellBeingCheckIn";
 import { VoiceAssistant } from "@/lib/voice";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
@@ -136,6 +138,7 @@ function TriagePage() {
   const malariaEndemic = useSettingsStore((s) => s.malariaEndemic);
   const navigate = useNavigate();
   const voice = useVoiceGuidance();
+  const wellBeing = useWellBeingCheckIn();
   const [step, setStep] = useState<Step>("patient");
   const [patient, setPatient] = useState<Patient | null>(null);
   const [identifier, setIdentifier] = useState("");
@@ -697,6 +700,10 @@ function TriagePage() {
     clearDraft();
     voice.narrate(t("voiceGuideSaved"));
     toast.success(t("savedOffline"));
+    
+    // Trigger well-being check-in after work session
+    wellBeing.triggerCheckIn();
+    
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
   };
 
@@ -1608,6 +1615,12 @@ function Stepper({ step, progress, progressText }: { step: Step; progress?: numb
       {step === "analyzing" && progressText && (
         <p className="mt-2 text-center text-xs text-muted-foreground">{progressText}</p>
       )}
+      <WellBeingCheckIn
+        isOpen={wellBeing.showCheckIn}
+        onClose={() => wellBeing.handleSkip()}
+        onSubmit={wellBeing.handleSubmit}
+        onSkip={() => wellBeing.handleSkip()}
+      />
     </nav>
   );
 }
