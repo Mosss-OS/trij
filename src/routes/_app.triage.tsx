@@ -32,11 +32,12 @@ import {
   type EngineKind,
 } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
-import type { TriageResult, Patient, Assessment, VitalSigns } from "@/types/trij";
+import type { TriageResult, Patient, Assessment, VitalSigns, ConsentRecord } from "@/types/trij";
 import { checkRedFlags, type RedFlag } from "@/lib/red-flags";
 import { evaluateVitalSigns } from "@/lib/vital-signs";
 import { checkForNotifiableConditions } from "@/lib/outbreak-flags";
 import { VitalSignsInput } from "@/components/VitalSignsInput";
+import { ConsentCapture } from "@/components/ConsentCapture";
 import { RedFlagAlert } from "@/components/RedFlagAlert";
 import { assessImci, getOverallUrgency, getClassificationLabel, getImciAction, type ImciClassification, type ImciDangerSign } from "@/lib/imci";
 import { getDB } from "@/lib/db";
@@ -163,7 +164,7 @@ function TriagePage() {
   });
   const [image, setImage] = useState<string | null>(null);
   const [imageSource, setImageSource] = useState<"camera" | "gallery">("camera");
-  const [consent, setConsent] = useState(false);
+  const [consent, setConsent] = useState<ConsentRecord | null>(null);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
   const [result, setResult] = useState<TriageResult | null>(null);
@@ -319,7 +320,7 @@ function TriagePage() {
     qa: QAPair[],
     currentQ: string,
     msgs: ConvMessage[],
-    consentVal: boolean,
+    consentVal: boolean | ConsentRecord | null,
   ) => {
     try {
       await saveVoiceDraft({
@@ -639,8 +640,9 @@ function TriagePage() {
       followUpQuestions: result.follow_up_questions,
       referralAdvised: result.referral_advised,
       referralStatus: result.referral_advised ? "pending" : "none",
-      patientConsent: consent,
-      consentTimestamp: new Date().toISOString(),
+      patientConsent: !!consent,
+      consentTimestamp: consent?.capturedAt ?? new Date().toISOString(),
+      consentRecord: consent ?? undefined,
       voiceLog:
         voiceHistory.length > 0
           ? voiceHistory.map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`).join("\n")
@@ -974,12 +976,7 @@ function TriagePage() {
                 )}
               </div>
             </div>
-            <label className="flex items-start gap-3 rounded-xl border bg-secondary/20 p-4">
-              <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
-              <span className="text-xs leading-relaxed text-muted-foreground">
-                {t("consentDesc")}
-              </span>
-            </label>
+            <ConsentCapture onConsent={setConsent} disabled={capturingLocation} />
             {voice.active && !consent && (
               <Button
                 variant="outline"
