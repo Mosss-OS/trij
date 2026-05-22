@@ -10,6 +10,7 @@ import { NetworkStatusBar } from "@/components/NetworkStatusBar";
 import { TutorialOverlay } from "@/components/TutorialOverlay";
 import { LockScreen } from "@/components/LockScreen";
 import { useInactivityLock } from "@/hooks/useInactivityLock";
+import { useTheme } from "@/hooks/useTheme";
 import { Loader2, ShieldAlert, X, Beaker } from "lucide-react";
 
 export const Route = createFileRoute("/_app")({
@@ -85,6 +86,7 @@ function DisclaimerBanner() {
 
 function AppLayout() {
   useAuthSession();
+  useTheme();
   const { session, offlineUser, loading, screenLocked } = useSessionStore();
   const disclaimerAccepted = useSettingsStore((s) => s.disclaimerAccepted);
   const engineKind = useSettingsStore((s) => s.engineKind);

@@ -245,6 +245,7 @@
 @layer base {
   * {
     border-color: var(--color-border);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
   html,
   body {
@@ -252,6 +253,7 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   h1,
   h2,
