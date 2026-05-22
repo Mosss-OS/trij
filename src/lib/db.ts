@@ -35,6 +35,18 @@ export interface PinAuthRecord {
   updatedAt: string;
 }
 
+export interface DeadLetterItem {
+  id?: number;
+  table: string;
+  action: string;
+  recordId: string;
+  payload: unknown;
+  createdAt: string;
+  attempts: number;
+  lastError: string;
+  movedAt?: string;
+}
+
 export class TrijDB extends Dexie {
   patients!: Table<Patient, string>;
   assessments!: Table<Assessment, string>;
@@ -46,6 +58,7 @@ export class TrijDB extends Dexie {
   syncConflicts!: Table<SyncConflict, number>;
   notifications!: Table<InAppNotification, string>;
   auditLogs!: Table<AuditEvent, number>;
+  deadLetterQueue!: Table<DeadLetterItem, number>;
 
   constructor() {
     super("TrijDB");
@@ -105,6 +118,19 @@ export class TrijDB extends Dexie {
       syncConflicts: "++id, table, recordId, createdAt",
       notifications: "id, kind, read, createdAt",
       auditLogs: "++id, action, userId, patientId, resourceType, timestamp, synced",
+    });
+    this.version(9).stores({
+      patients: "id, chwUserId, identifier, createdAt, syncedAt",
+      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
+      followUps: "id, patientId, chwUserId, status, scheduledFor, createdAt, syncedAt",
+      syncQueue: "++id, table, action, recordId, createdAt",
+      errorLogs: "++id, timestamp",
+      pinAuth: "userId, email",
+      voiceDrafts: "patientId, chwUserId, updatedAt",
+      syncConflicts: "++id, table, recordId, createdAt",
+      notifications: "id, kind, read, createdAt",
+      auditLogs: "++id, action, userId, patientId, resourceType, timestamp, synced",
+      deadLetterQueue: "++id, table, recordId, movedAt",
     });
   }
 }

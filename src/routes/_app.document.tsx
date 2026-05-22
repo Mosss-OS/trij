@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { I18nErrorBoundary } from "@/components/ErrorBoundary";
 import { CameraCapture } from "@/components/CameraCapture";
@@ -11,8 +11,9 @@ import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { DocumentResult } from "@/types/trij";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { Loader2, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { AiFailureOverlay, classifyAiError } from "@/components/AiFailureOverlay";
+import type { AiFailureKind } from "@/components/AiFailureOverlay";
 
 export const Route = createFileRoute("/_app/document")({
   head: () => ({
@@ -68,6 +69,8 @@ function DocumentScan() {
   const [result, setResult] = useState<DocumentResult | null>(null);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
+  const [aiFailureKind, setAiFailureKind] = useState<AiFailureKind | null>(null);
+  const pendingImageRef = useRef<string | null>(null);
 
   const onCapture = (dataUrl: string) => {
     setImage(dataUrl);
@@ -85,7 +88,8 @@ function DocumentScan() {
       setResult(r);
       setStep("result");
     } catch (err) {
-      toast.error(t("failedPrefix") + (err as Error).message);
+      setAiFailureKind(classifyAiError(err));
+      pendingImageRef.current = dataUrl;
       setStep("capture");
     }
   };
@@ -164,6 +168,52 @@ function DocumentScan() {
           </div>
         )}
       </div>
+
+      {aiFailureKind && (
+        <AiFailureOverlay
+          kind={aiFailureKind}
+          onRetry={() => {
+            setAiFailureKind(null);
+            const data = pendingImageRef.current;
+            pendingImageRef.current = null;
+            if (!data) return;
+            setStep("analyzing");
+            setProgressText(t("readingDocument"));
+            setProgress(100);
+            const k = engineKind === "auto" ? detectEngine() : Promise.resolve(engineKind);
+            k.then((kind) =>
+              analyzeDocument(data, language, kind, ollamaUrl),
+            ).then((r) => {
+              setResult(r);
+              setStep("result");
+            }).catch((err) => {
+              setAiFailureKind(classifyAiError(err));
+              pendingImageRef.current = data;
+              setStep("capture");
+            });
+          }}
+          onUseDemo={() => {
+            setAiFailureKind(null);
+            const data = pendingImageRef.current;
+            pendingImageRef.current = null;
+            if (!data) return;
+            setStep("analyzing");
+            setProgressText(t("readingDocument"));
+            setProgress(100);
+            analyzeDocument(data, language, "demo", ollamaUrl).then((r) => {
+              setResult(r);
+              setStep("result");
+            }).catch(() => {
+              setStep("capture");
+            });
+          }}
+          onDismiss={() => {
+            setAiFailureKind(null);
+            pendingImageRef.current = null;
+            setStep("capture");
+          }}
+        />
+      )}
     </>
   );
 }
