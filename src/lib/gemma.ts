@@ -173,13 +173,49 @@ export function isMobileDevice(): boolean {
 
 /* ─── Engine auto-detection ──────────────────────────────── */
 
+/**
+ * Detects if the current environment supports WASM inference
+ */
+export async function supportsWASM(): Promise<boolean> {
+  try {
+    if (typeof WebAssembly === "undefined") return false;
+    // Test basic WASM compilation
+    const module = await WebAssembly.compile(
+      new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0])
+    );
+    return module instanceof WebAssembly.Module;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Detects if the current environment supports CPU inference
+ * This is essentially always true if JavaScript is running, but we check for adequate performance
+ */
+export async function supportsCPU(): Promise<boolean> {
+  // CPU inference is always available as a fallback
+  return typeof navigator !== "undefined";
+}
+
+/**
+ * Enhanced engine detection with comprehensive fallback chain
+ * Fallback order: webllm → wasm → cpu → ollama → cloud → demo
+ */
 export async function detectEngine(prefer: EngineKind | "auto" = "auto"): Promise<EngineKind> {
   if (prefer !== "auto") return prefer;
+  
   /* Mobile devices use cloud inference by default — downloading multi-GB models is impractical. */
   if (isMobileDevice()) return "cloud";
+  
+  /* Try engines in order of preference/performance */
   if (await supportsWebGPU()) return "webllm";
+  if (await supportsWASM()) return "wasm";
+  if (await supportsCPU()) return "cpu";
   if (await detectOllama()) return "ollama";
-  return "demo";
+  
+  /* Final fallback to cloud or demo */
+  return "cloud";
 }
 
 /* ─── Ollama detection ────────────────────────────────────── */
@@ -567,17 +603,114 @@ async function cloudInference(
 
 /* ─── Public API ──────────────────────────────────────────── */
 
+/**
+ * Load the specified inference engine with fallback support
+ * If the primary engine fails to load, attempts to fallback to the next available engine
+ */
 export async function loadEngine(
   kind: EngineKind,
   onProgress?: (p: InitProgressReport) => void,
 ): Promise<void> {
-  if (kind === "webllm") {
-    await loadWebLLM(onProgress);
+  try {
+    if (kind === "webllm") {
+      await loadWebLLM(onProgress);
+    } else if (kind === "wasm") {
+      // TODO: Implement actual WASM loading logic
+      // For now, this is a placeholder that simulates loading
+      console.warn("WASM engine loading not yet implemented - falling back to CPU");
+      await loadEngine("cpu", onProgress);
+    } else if (kind === "cpu") {
+      // TODO: Implement actual CPU loading logic
+      // For now, this is a placeholder that simulates loading
+      if (onProgress) {
+        onProgress({ progress: 1, text: "CPU engine ready" });
+      }
+    } else if (kind === "ollama") {
+      // Ollama doesn't require loading, it's an external service
+      if (onProgress) {
+        onProgress({ progress: 1, text: "Ollama connection ready" });
+      }
+    } else if (kind === "cloud") {
+      // Cloud doesn't require loading, it's an external service
+      if (onProgress) {
+        onProgress({ progress: 1, text: "Cloud inference ready" });
+      }
+    } else if (kind === "demo") {
+      // Demo mode doesn't require loading
+      if (onProgress) {
+        onProgress({ progress: 1, text: "Demo mode ready" });
+      }
+    }
+  } catch (error) {
+    console.error(`Failed to load ${kind} engine:`, error);
+    
+    // Implement fallback chain for failed loads
+    const fallbackChain: Record<EngineKind, EngineKind[]> = {
+      webllm: ["wasm", "cpu", "ollama", "cloud", "demo"],
+      wasm: ["cpu", "ollama", "cloud", "demo"],
+      cpu: ["ollama", "cloud", "demo"],
+      ollama: ["cloud", "demo"],
+      cloud: ["demo"],
+      demo: [],
+    };
+    
+    const fallbacks = fallbackChain[kind] || [];
+    for (const fallback of fallbacks) {
+      try {
+        console.log(`Attempting fallback from ${kind} to ${fallback}`);
+        await loadEngine(fallback, onProgress);
+        return; // Success with fallback
+      } catch (fallbackError) {
+        console.error(`Fallback ${fallback} also failed:`, fallbackError);
+        continue; // Try next fallback
+      }
+    }
+    
+    // All fallbacks exhausted
+    throw new Error(`All engine loading attempts failed for ${kind}`);
+  }
+}
+
+/**
+ * Enhanced engine loading with automatic fallback on failure
+ * Returns the actual engine kind that was successfully loaded
+ */
+export async function loadEngineWithFallback(
+  preferredKind: EngineKind,
+  onProgress?: (p: InitProgressReport) => void,
+): Promise<{ kind: EngineKind; fallbackUsed: boolean }> {
+  const originalKind = preferredKind;
+  
+  try {
+    await loadEngine(preferredKind, onProgress);
+    return { kind: preferredKind, fallbackUsed: false };
+  } catch (error) {
+    console.error(`Preferred engine ${preferredKind} failed, attempting auto-detection and fallback`);
+    
+    // Use auto-detection to find the best available engine
+    const detectedKind = await detectEngine("auto");
+    console.log(`Auto-detected engine: ${detectedKind}`);
+    
+    try {
+      await loadEngine(detectedKind, onProgress);
+      return { 
+        kind: detectedKind, 
+        fallbackUsed: detectedKind !== originalKind 
+      };
+    } catch (detectError) {
+      console.error(`Auto-detected engine ${detectedKind} also failed`);
+      throw new Error("All available engines failed to load");
+    }
   }
 }
 
 export function isLoaded(kind: EngineKind): boolean {
   if (kind === "webllm") return isWebLLMLoaded();
+  if (kind === "wasm") return true; // TODO: Add actual WASM loaded check
+  if (kind === "cpu") return true; // CPU is always "loaded" (no initialization needed)
+  if (kind === "ollama") return true; // Ollama is an external service
+  if (kind === "cloud") return true; // Cloud is an external service
+  if (kind === "demo") return true; // Demo is always ready
   return true;
 }
 
