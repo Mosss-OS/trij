@@ -9,8 +9,10 @@ import { SyncStatusIndicator } from "@/components/SyncStatusIndicator";
 import { NetworkStatusBar } from "@/components/NetworkStatusBar";
 import { TutorialOverlay } from "@/components/TutorialOverlay";
 import { LockScreen } from "@/components/LockScreen";
+import { KeyboardShortcutsHelp } from "@/components/KeyboardShortcutsHelp";
 import { useInactivityLock } from "@/hooks/useInactivityLock";
 import { useTheme } from "@/hooks/useTheme";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { Loader2, ShieldAlert, X, Beaker } from "lucide-react";
 
 export const Route = createFileRoute("/_app")({
@@ -87,6 +89,7 @@ function DisclaimerBanner() {
 function AppLayout() {
   useAuthSession();
   useTheme();
+  useKeyboardShortcuts();
   const { session, offlineUser, loading, screenLocked } = useSessionStore();
   const disclaimerAccepted = useSettingsStore((s) => s.disclaimerAccepted);
   const engineKind = useSettingsStore((s) => s.engineKind);
@@ -131,6 +134,7 @@ function AppLayout() {
     <>
       {screenLocked && <LockScreen />}
       {showTutorial && !screenLocked && <TutorialOverlay onComplete={() => setShowTutorial(false)} />}
+      <KeyboardShortcutsHelp />
       <div className={`min-h-screen pb-24 pt-[73px] ${kioskMode ? "text-lg" : ""} ${fieldMode ? "text-lg [&_button]:min-h-[48px] [&_a]:min-h-[48px] [&_input]:text-base" : ""}`}>
       <a
         href="#main-content"
