@@ -527,6 +527,20 @@ function SettingsPage() {
 
         <Section title={t("display")}>
           <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>{t("theme")}</Label>
+              <Select value={s.theme} onValueChange={(value: "light" | "dark" | "system") => s.setTheme(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="system">{t("systemDefault")}</SelectItem>
+                  <SelectItem value="light">{t("light")}</SelectItem>
+                  <SelectItem value="dark">{t("dark")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">{t("themeDesc")}</p>
+            </div>
             <div className="flex items-center justify-between">
               <div>
                 <Label htmlFor="sunlight-mode">{t("sunlightMode")}</Label>
