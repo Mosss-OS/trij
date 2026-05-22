@@ -79,10 +79,23 @@ export interface Assessment {
   followUpQuestions?: string[];
   patientConsent?: boolean;
   consentTimestamp?: string;
+  consentRecord?: ConsentRecord;
   aiFeedback?: AiFeedback;
   createdAt: string;
   syncedAt?: string;
   version: number;
+}
+
+export interface ConsentRecord {
+  version: number;
+  method: "verbal" | "thumbprint" | "signature" | "voice";
+  capturedAt: string;
+  capturedBy: string;
+  items: Array<{
+    id: string;
+    agreed: boolean;
+  }>;
+  policyVersion: number;
 }
 
 export interface FollowUp {
