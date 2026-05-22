@@ -113,6 +113,7 @@ export interface Assessment {
     source: string;
     sourceUrl?: string;
   };
+  nutrition?: NutritionRecord;
   recommendation?: string;
   voiceLog?: string;
   language: string;
@@ -140,6 +141,19 @@ export interface ConsentRecord {
     agreed: boolean;
   }>;
   policyVersion: number;
+}
+
+export type NutritionClassification = "sam" | "mam" | "normal" | "overweight" | "obese";
+
+export interface NutritionRecord {
+  muacCm: number;
+  classification: NutritionClassification;
+  oedema: "none" | "bilateral_mild" | "bilateral_moderate" | "bilateral_severe";
+  visibleWasting: boolean;
+  hairChanges: boolean;
+  skinChanges: boolean;
+  samTriggered: boolean;
+  urgency: "green" | "yellow" | "red";
 }
 
 export interface FollowUp {
