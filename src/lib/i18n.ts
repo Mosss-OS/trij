@@ -578,6 +578,13 @@ export const translations = {
     localProtocol: "Local antibiotic protocol",
     localProtocolDesc: "Reference for antibiotic therapy guidelines used in this region",
     setLocalProtocol: "Set local protocol reference",
+    outbreakAlert: "Possible notifiable condition detected",
+    outbreakAlertDesc: "This condition may require public health notification — contact your supervisor immediately",
+    outbreakAlertTitle: "Public Health Alert",
+    outbreakBanner: "Outbreak-Potential Conditions",
+    outbreakBannerDesc: "The following conditions with outbreak potential have been detected in recent assessments",
+    outbreakConfidenceLabel: "Min. confidence for outbreak alerts",
+    outbreakNone: "No outbreak-potential conditions detected",
   },
   "fr-FR": {
     dashboard: "Tableau de bord",

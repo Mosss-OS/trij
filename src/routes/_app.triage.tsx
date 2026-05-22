@@ -35,6 +35,7 @@ import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { TriageResult, Patient, Assessment, VitalSigns } from "@/types/trij";
 import { checkRedFlags, type RedFlag } from "@/lib/red-flags";
 import { evaluateVitalSigns } from "@/lib/vital-signs";
+import { checkForNotifiableConditions } from "@/lib/outbreak-flags";
 import { VitalSignsInput } from "@/components/VitalSignsInput";
 import { RedFlagAlert } from "@/components/RedFlagAlert";
 import { assessImci, getOverallUrgency, getClassificationLabel, getImciAction, type ImciClassification, type ImciDangerSign } from "@/lib/imci";
@@ -181,6 +182,7 @@ function TriagePage() {
   const [pendingCapture, setPendingCapture] = useState<string | null>(null);
   const [redFlags, setRedFlags] = useState<RedFlag[]>([]);
   const [showRedFlagAlert, setShowRedFlagAlert] = useState(false);
+  const [notifiableFlags, setNotifiableFlags] = useState<Array<{ condition: string; matchedKeyword: string }>>([]);
   const [imciActive, setImciActive] = useState(false);
   const [imciAgeMonths, setImciAgeMonths] = useState("");
   const [imciDangerSigns, setImciDangerSigns] = useState<ImciDangerSign[]>([]);
@@ -504,6 +506,21 @@ function TriagePage() {
       } else {
         setResult(r);
       }
+
+      const outbreakMatches = checkForNotifiableConditions(
+        r.condition,
+        r.possible_conditions,
+      );
+      setNotifiableFlags(outbreakMatches);
+      if (outbreakMatches.length > 0) {
+        toast.warning(t("outbreakAlert"), { duration: 8000 });
+        log("alert:outbreak_condition", {
+          resourceType: "assessment",
+          resourceId: "",
+          details: JSON.stringify(outbreakMatches.map((m) => ({ condition: m.condition.name, keyword: m.matchedKeyword }))),
+        });
+      }
+
       setStep("result");
     } catch (err) {
       setAiFailureKind(classifyAiError(err));
@@ -560,6 +577,21 @@ function TriagePage() {
       } else {
         setResult(r);
       }
+
+      const outbreakMatches = checkForNotifiableConditions(
+        r.condition,
+        r.possible_conditions,
+      );
+      setNotifiableFlags(outbreakMatches);
+      if (outbreakMatches.length > 0) {
+        toast.warning(t("outbreakAlert"), { duration: 8000 });
+        log("alert:outbreak_condition", {
+          resourceType: "assessment",
+          resourceId: "",
+          details: JSON.stringify(outbreakMatches.map((m) => ({ condition: m.condition.name, keyword: m.matchedKeyword }))),
+        });
+      }
+
       setStep("result");
     } catch (err) {
       setAiFailureKind(classifyAiError(err));
@@ -1281,6 +1313,24 @@ function TriagePage() {
                 alt="Captured wound or skin condition photo assessment result"
                 className="aspect-video w-full rounded-2xl object-cover"
               />
+            )}
+            {notifiableFlags.length > 0 && (
+              <div className="flex items-start gap-3 rounded-2xl border border-red-400/30 bg-red-50 p-4">
+                <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
+                <div>
+                  <p className="text-sm font-medium text-red-700">{t("outbreakAlertTitle")}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-red-700/80">
+                    {t("outbreakAlertDesc")}
+                  </p>
+                  <ul className="mt-2 space-y-1">
+                    {notifiableFlags.map((nf, i) => (
+                      <li key={i} className="text-xs font-medium text-red-700">
+                        {nf.condition} — {nf.matchedKeyword}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             )}
             <AssessmentResult
               result={result}
