@@ -31,6 +31,7 @@ interface SettingsState {
   encryptionEnabled: boolean;
   encryptionSalt: string;
   localAntibioticProtocol: string;
+  theme: "light" | "dark" | "system";
   completeTutorial: () => void;
   skipTutorial: () => void;
   resetTutorial: () => void;
@@ -57,6 +58,7 @@ interface SettingsState {
   setBiometricEnabled: (enabled: boolean) => void;
   setEncryptionEnabled: (enabled: boolean) => void;
   setLocalAntibioticProtocol: (protocol: string) => void;
+  setTheme: (theme: "light" | "dark" | "system") => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -89,6 +91,7 @@ export const useSettingsStore = create<SettingsState>()(
       encryptionEnabled: false,
       encryptionSalt: typeof window !== "undefined" ? generateSalt() : "",
       localAntibioticProtocol: "",
+      theme: "system",
       completeTutorial: () => set({ tutorialCompleted: true }),
       skipTutorial: () => set({ tutorialSkipped: true }),
       resetTutorial: () => set({ tutorialCompleted: false, tutorialSkipped: false }),
@@ -120,6 +123,7 @@ export const useSettingsStore = create<SettingsState>()(
       setBiometricEnabled: (biometricEnabled) => set({ biometricEnabled }),
       setEncryptionEnabled: (encryptionEnabled) => set({ encryptionEnabled }),
       setLocalAntibioticProtocol: (localAntibioticProtocol) => set({ localAntibioticProtocol }),
+      setTheme: (theme) => set({ theme }),
     }),
     {
       name: "trij-settings",
