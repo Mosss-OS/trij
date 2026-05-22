@@ -6,6 +6,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { BottomNav } from "@/components/BottomNav";
 import { DisclaimerDialog } from "@/components/DisclaimerDialog";
 import { SyncStatusIndicator } from "@/components/SyncStatusIndicator";
+import { NetworkStatusBar } from "@/components/NetworkStatusBar";
 import { TutorialOverlay } from "@/components/TutorialOverlay";
 import { LockScreen } from "@/components/LockScreen";
 import { useInactivityLock } from "@/hooks/useInactivityLock";
@@ -135,6 +136,7 @@ function AppLayout() {
       >
         Skip to main content
       </a>
+      <NetworkStatusBar />
       <DisclaimerBanner />
       {engineKind === "demo" && (
         <div className="flex items-center gap-2 bg-urgency-red/15 px-4 py-2 text-xs font-medium text-urgency-red">
