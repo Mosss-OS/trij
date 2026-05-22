@@ -29,6 +29,7 @@ interface SettingsState {
   biometricEnabled: boolean;
   encryptionEnabled: boolean;
   encryptionSalt: string;
+  localAntibioticProtocol: string;
   completeTutorial: () => void;
   skipTutorial: () => void;
   resetTutorial: () => void;
@@ -53,6 +54,7 @@ interface SettingsState {
   setLockTimeoutMinutes: (minutes: number) => void;
   setBiometricEnabled: (enabled: boolean) => void;
   setEncryptionEnabled: (enabled: boolean) => void;
+  setLocalAntibioticProtocol: (protocol: string) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -83,6 +85,7 @@ export const useSettingsStore = create<SettingsState>()(
       biometricEnabled: false,
       encryptionEnabled: false,
       encryptionSalt: typeof window !== "undefined" ? generateSalt() : "",
+      localAntibioticProtocol: "",
       completeTutorial: () => set({ tutorialCompleted: true }),
       skipTutorial: () => set({ tutorialSkipped: true }),
       resetTutorial: () => set({ tutorialCompleted: false, tutorialSkipped: false }),
@@ -112,6 +115,7 @@ export const useSettingsStore = create<SettingsState>()(
       setLockTimeoutMinutes: (lockTimeoutMinutes) => set({ lockTimeoutMinutes }),
       setBiometricEnabled: (biometricEnabled) => set({ biometricEnabled }),
       setEncryptionEnabled: (encryptionEnabled) => set({ encryptionEnabled }),
+      setLocalAntibioticProtocol: (localAntibioticProtocol) => set({ localAntibioticProtocol }),
     }),
     {
       name: "trij-settings",
