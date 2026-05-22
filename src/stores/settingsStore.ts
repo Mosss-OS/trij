@@ -21,6 +21,7 @@ interface SettingsState {
   thinkingMode: boolean;
   kioskMode: boolean;
   fieldMode: boolean;
+  pictogramMode: boolean;
   lockTimeoutMinutes: number;
   tutorialCompleted: boolean;
   tutorialSkipped: boolean;
@@ -51,6 +52,7 @@ interface SettingsState {
   setThinkingMode: (enabled: boolean) => void;
   setKioskMode: (enabled: boolean) => void;
   setFieldMode: (enabled: boolean) => void;
+  setPictogramMode: (enabled: boolean) => void;
   setLockTimeoutMinutes: (minutes: number) => void;
   setBiometricEnabled: (enabled: boolean) => void;
   setEncryptionEnabled: (enabled: boolean) => void;
@@ -77,6 +79,7 @@ export const useSettingsStore = create<SettingsState>()(
       thinkingMode: false,
       kioskMode: false,
       fieldMode: false,
+      pictogramMode: false,
       lockTimeoutMinutes: 5,
       tutorialCompleted: false,
       tutorialSkipped: false,
@@ -112,6 +115,7 @@ export const useSettingsStore = create<SettingsState>()(
       setThinkingMode: (enabled: boolean) => set({ thinkingMode: enabled }),
       setKioskMode: (enabled: boolean) => set({ kioskMode: enabled }),
       setFieldMode: (enabled: boolean) => set({ fieldMode: enabled }),
+      setPictogramMode: (enabled: boolean) => set({ pictogramMode: enabled }),
       setLockTimeoutMinutes: (lockTimeoutMinutes) => set({ lockTimeoutMinutes }),
       setBiometricEnabled: (biometricEnabled) => set({ biometricEnabled }),
       setEncryptionEnabled: (encryptionEnabled) => set({ encryptionEnabled }),
