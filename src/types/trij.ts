@@ -309,3 +309,49 @@ export interface AuditEvent {
   timestamp: number;
   synced: boolean;
 }
+
+// Well-being check-in types for CHW burnout monitoring
+export interface WellBeingCheckIn {
+  id: string;
+  chwUserId: string;
+  weekStartDate: string; // ISO date string for the start of the week
+  responses: [number, number, number]; // 3 questions on 1-5 scale (WHO-5 adapted)
+  score: number; // Calculated well-being score (0-100)
+  timestamp: string;
+  createdAt: string;
+  syncedAt?: string;
+}
+
+export interface WellBeingTrend {
+  chwUserId: string;
+  chwName: string;
+  currentScore: number;
+  previousScore: number;
+  trend: "improving" | "stable" | "declining";
+  weeksTracked: number;
+  lastCheckIn: string;
+}
+
+export interface SupportResource {
+  id: string;
+  title: string;
+  description: string;
+  contact?: string;
+  url?: string;
+  category: "peer_support" | "counseling" | "self_care" | "emergency";
+  language: string;
+}
+
+export interface WellBeingAggregate {
+  totalCheckIns: number;
+  averageScore: number;
+  distribution: {
+    high: number; // score >= 75
+    medium: number; // score 50-74
+    low: number; // score < 50
+  };
+  weekOverWeek: {
+    week: string;
+    averageScore: number;
+  }[];
+}
