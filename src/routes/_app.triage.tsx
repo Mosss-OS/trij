@@ -26,6 +26,7 @@ import {
   detectEngine,
   isLoaded,
   loadEngine,
+  loadEngineWithFallback,
   initVoiceConversation,
   nextVoiceTurn,
   type ConvMessage,
@@ -506,14 +507,24 @@ function TriagePage() {
       let kind = engineKind === "auto" ? await detectEngine() : engineKind;
       kindRef.current = kind;
 
-      if (kind === "webllm" && !isLoaded(kind)) {
+      if (!isLoaded(kind)) {
         try {
-          await loadEngine(kind, (r) => {
+          const loadResult = await loadEngineWithFallback(kind, (r) => {
             setProgress(Math.round((r.progress || 0) * 100));
             setProgressText(r.text || t("preparing") + "...");
           });
+          
+          // Update the kind if fallback was used
+          if (loadResult.fallbackUsed) {
+            console.log(`Engine fallback used: ${kind} → ${loadResult.kind}`);
+            kindRef.current = loadResult.kind;
+            kind = loadResult.kind;
+            
+            // Show a toast notification about the fallback
+            toast.info(`Using ${loadResult.kind.toUpperCase()} engine instead of requested ${engineKind.toUpperCase()}`, { duration: 3000 });
+          }
         } catch (err) {
-          console.error("WebLLM load failed", err);
+          console.error("Engine load failed", err);
           setAiFailureKind("model_not_ready");
           setPendingCapture(dataUrl);
           setStep("capture");
@@ -577,14 +588,24 @@ function TriagePage() {
       let kind = engineKind === "auto" ? await detectEngine() : engineKind;
       kindRef.current = kind;
 
-      if (kind === "webllm" && !isLoaded(kind)) {
+      if (!isLoaded(kind)) {
         try {
-          await loadEngine(kind, (r) => {
+          const loadResult = await loadEngineWithFallback(kind, (r) => {
             setProgress(Math.round((r.progress || 0) * 100));
             setProgressText(r.text || t("preparing") + "...");
           });
+          
+          // Update the kind if fallback was used
+          if (loadResult.fallbackUsed) {
+            console.log(`Engine fallback used: ${kind} → ${loadResult.kind}`);
+            kindRef.current = loadResult.kind;
+            kind = loadResult.kind;
+            
+            // Show a toast notification about the fallback
+            toast.info(`Using ${loadResult.kind.toUpperCase()} engine instead of requested ${engineKind.toUpperCase()}`, { duration: 3000 });
+          }
         } catch (err) {
-          console.error("WebLLM load failed", err);
+          console.error("Engine load failed", err);
           setAiFailureKind("model_not_ready");
           setPendingCapture("");
           setStep("capture");
