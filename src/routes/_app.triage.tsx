@@ -37,6 +37,8 @@ import { checkRedFlags, type RedFlag } from "@/lib/red-flags";
 import { evaluateVitalSigns } from "@/lib/vital-signs";
 import { checkForNotifiableConditions } from "@/lib/outbreak-flags";
 import { VitalSignsInput } from "@/components/VitalSignsInput";
+import { NutritionAssessment } from "@/components/NutritionAssessment";
+import type { NutritionAssessmentResult } from "@/lib/nutrition";
 import { ConsentCapture } from "@/components/ConsentCapture";
 import { RedFlagAlert } from "@/components/RedFlagAlert";
 import { assessImci, getOverallUrgency, getClassificationLabel, getImciAction, type ImciClassification, type ImciDangerSign } from "@/lib/imci";
@@ -100,7 +102,7 @@ export const Route = createFileRoute("/_app/triage")({
   ),
 });
 
-type Step = "patient" | "presentation" | "vitals" | "capture" | "analyzing" | "result" | "voice" | "imci";
+type Step = "patient" | "presentation" | "vitals" | "nutrition" | "capture" | "analyzing" | "result" | "voice" | "imci";
 
 const DANGER_SIGN_ITEMS = [
   { value: "unable_to_drink", key: "imciUnableToDrink" },
@@ -162,6 +164,7 @@ function TriagePage() {
     weight: "",
     painScale: "",
   });
+  const [nutritionResult, setNutritionResult] = useState<NutritionAssessmentResult | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [imageSource, setImageSource] = useState<"camera" | "gallery">("camera");
   const [consent, setConsent] = useState<ConsentRecord | null>(null);
@@ -279,6 +282,9 @@ function TriagePage() {
         break;
       case "vitals":
         voice.narrate(t("captureVitals") + ". " + t("vitalsDesc"));
+        break;
+      case "nutrition":
+        voice.narrate(t("nutritionAssessment") + ". " + t("nutritionVoiceGuide"));
         break;
       case "capture":
         voice.narrate(t("voiceGuideCapture"));
@@ -398,7 +404,7 @@ function TriagePage() {
         toast.info(t("vitalSignsAbnormal"), { duration: 4000 });
       }
     }
-    setStep("capture");
+    setStep("nutrition");
   };
 
   const skipVitals = () => {
@@ -413,6 +419,16 @@ function TriagePage() {
       weight: "",
       painScale: "",
     });
+    setStep("nutrition");
+  };
+
+  const onNutritionComplete = (result: NutritionAssessmentResult) => {
+    setNutritionResult(result);
+    setStep("capture");
+  };
+
+  const skipNutrition = () => {
+    setNutritionResult(null);
     setStep("capture");
   };
 
@@ -648,6 +664,7 @@ function TriagePage() {
           ? voiceHistory.map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`).join("\n")
           : undefined,
       aiFeedback: aiFeedbackRef.current,
+      nutrition: nutritionResult ?? undefined,
       language,
       imageSource,
       version: 0,
@@ -1243,6 +1260,14 @@ function TriagePage() {
             onChange={setVitalSigns}
             onContinue={onVitalsComplete}
             onSkip={skipVitals}
+          />
+        )}
+
+        {step === "nutrition" && age && (
+          <NutritionAssessment
+            ageYears={Number(age)}
+            onComplete={onNutritionComplete}
+            onSkip={skipNutrition}
           />
         )}
 
