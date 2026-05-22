@@ -4,18 +4,23 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { assessNutrition, getClassificationLabel, getClassificationColor, getOedemaLabel, type NutritionAssessmentResult } from "@/lib/nutrition";
-import { AlertTriangle, CheckCircle2, ChevronRight, Ruler, Droplets, Eye } from "lucide-react";
+import { calculateWHOScores, getZScoreLabel, getZScoreColor, type ZScoreResult, BOYS_WFA, GIRLS_WFA, BOYS_HFA, GIRLS_HFA } from "@/lib/who-standards";
+import { AlertTriangle, CheckCircle2, ChevronRight, Ruler, Droplets, Eye, Scale, Activity } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { WHOGrowthChart } from "./WHO GrowthChart";
 
 interface Props {
   ageYears: number;
+  sex?: "male" | "female";
   onComplete: (result: NutritionAssessmentResult) => void;
   onSkip: () => void;
 }
 
-export function NutritionAssessment({ ageYears, onComplete, onSkip }: Props) {
+export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props) {
   const { t } = useI18n();
   const [muacCm, setMuacCm] = useState("");
+  const [weightKg, setWeightKg] = useState("");
+  const [heightCm, setHeightCm] = useState("");
   const [oedema, setOedema] = useState<NutritionAssessmentResult["oedema"]>("none");
   const [visibleWasting, setVisibleWasting] = useState(false);
   const [hairChanges, setHairChanges] = useState(false);
@@ -24,8 +29,40 @@ export function NutritionAssessment({ ageYears, onComplete, onSkip }: Props) {
   const result = useMemo<NutritionAssessmentResult | null>(() => {
     const val = parseFloat(muacCm);
     if (isNaN(val) || val <= 0) return null;
-    return assessNutrition(val, ageYears, oedema, visibleWasting, hairChanges, skinChanges);
-  }, [muacCm, ageYears, oedema, visibleWasting, hairChanges, skinChanges]);
+    
+    const muacResult = assessNutrition(val, ageYears, oedema, visibleWasting, hairChanges, skinChanges);
+    
+    // Combine with WHO Z-score classification if available
+    if (zScoreResult) {
+      // WHO classification takes precedence for SAM/MAM determination
+      // as it's more specific for acute malnutrition
+      const whoClassification = zScoreResult.classification;
+      
+      // If WHO indicates SAM or MAM, use that classification
+      if (whoClassification === "sam" || whoClassification === "mam") {
+        return {
+          ...muacResult,
+          classification: whoClassification,
+          samTriggered: whoClassification === "sam" || oedema !== "none",
+          urgency: whoClassification === "sam" ? "red" : "yellow",
+        };
+      }
+    }
+    
+    return muacResult;
+  }, [muacCm, ageYears, oedema, visibleWasting, hairChanges, skinChanges, zScoreResult]);
+
+  const zScoreResult = useMemo<ZScoreResult | null>(() => {
+    const weight = parseFloat(weightKg);
+    const height = parseFloat(heightCm);
+    const ageMonths = ageYears * 12;
+    
+    if (!sex || isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0 || ageMonths < 0 || ageMonths > 60) {
+      return null;
+    }
+    
+    return calculateWHOScores(weight, height, ageMonths, sex);
+  }, [weightKg, heightCm, ageYears, sex]);
 
   const isChild = ageYears < 18;
 
@@ -38,6 +75,56 @@ export function NutritionAssessment({ ageYears, onComplete, onSkip }: Props) {
         </p>
 
         <div className="mt-4 space-y-4">
+          {isChild && (
+            <>
+              <div>
+                <Label className="flex items-center gap-1.5 text-sm font-medium">
+                  <Scale className="h-4 w-4 text-primary" />
+                  {t("weightForAge")}
+                </Label>
+                <p className="mb-1.5 text-xs text-muted-foreground">
+                  {t("whoZScoreDescription")}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    max={50}
+                    value={weightKg}
+                    onChange={(e) => setWeightKg(e.target.value)}
+                    placeholder="e.g. 12.5"
+                    className="w-32"
+                  />
+                  <span className="text-xs text-muted-foreground">kg</span>
+                </div>
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-1.5 text-sm font-medium">
+                  <Activity className="h-4 w-4 text-primary" />
+                  {t("heightForAge")}
+                </Label>
+                <p className="mb-1.5 text-xs text-muted-foreground">
+                  {t("whoZScoreDescription")}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    max={150}
+                    value={heightCm}
+                    onChange={(e) => setHeightCm(e.target.value)}
+                    placeholder="e.g. 85.5"
+                    className="w-32"
+                  />
+                  <span className="text-xs text-muted-foreground">cm</span>
+                </div>
+              </div>
+            </>
+          )}
+
           <div>
             <Label className="flex items-center gap-1.5 text-sm font-medium">
               <Ruler className="h-4 w-4 text-primary" />
@@ -185,6 +272,83 @@ export function NutritionAssessment({ ageYears, onComplete, onSkip }: Props) {
             </div>
           )}
         </div>
+      )}
+
+      {zScoreResult && sex && (
+        <>
+          <div className="rounded-2xl border bg-card p-5">
+            <h4 className="mb-3 font-display text-sm font-semibold">{t("whoGrowthStandards")}</h4>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("weightForAge")}</span>
+                <span className={`font-mono font-semibold ${getZScoreColor(zScoreResult.waz)}`}>
+                  {zScoreResult.waz.toFixed(2)} ({getZScoreLabel(zScoreResult.waz)})
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("heightForAge")}</span>
+                <span className={`font-mono font-semibold ${getZScoreColor(zScoreResult.haz)}`}>
+                  {zScoreResult.haz.toFixed(2)} ({getZScoreLabel(zScoreResult.haz)})
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("weightForHeight")}</span>
+                <span className={`font-mono font-semibold ${getZScoreColor(zScoreResult.whz)}`}>
+                  {zScoreResult.whz.toFixed(2)} ({getZScoreLabel(zScoreResult.whz)})
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t("bmiForAge")}</span>
+                <span className={`font-mono font-semibold ${getZScoreColor(zScoreResult.bmiForAge)}`}>
+                  {zScoreResult.bmiForAge.toFixed(2)} ({getZScoreLabel(zScoreResult.bmiForAge)})
+                </span>
+              </div>
+            </div>
+
+            {zScoreResult.classification === "sam" && (
+              <div className="mt-4 flex items-start gap-2 rounded-xl border border-urgency-red/30 bg-urgency-red/10 p-3">
+                <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-red" />
+                <div>
+                  <p className="text-sm font-medium text-urgency-red">{t("whoSAM")}</p>
+                  <p className="mt-1 text-xs text-urgency-red/80">{t("whoSAMGuidance")}</p>
+                </div>
+              </div>
+            )}
+
+            {zScoreResult.classification === "mam" && (
+              <div className="mt-4 flex items-start gap-2 rounded-xl border border-urgency-yellow/30 bg-urgency-yellow/10 p-3">
+                <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-yellow" />
+                <div>
+                  <p className="text-sm font-medium text-urgency-yellow">{t("whoMAM")}</p>
+                  <p className="mt-1 text-xs text-urgency-yellow/80">{t("whoMAMGuidance")}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Growth Charts */}
+          <div className="space-y-4">
+            <WHOGrowthChart
+              standards={sex === "male" ? BOYS_WFA : GIRLS_WFA}
+              value={parseFloat(weightKg)}
+              valueType="weight"
+              ageMonths={ageYears * 12}
+              title="Weight-for-Age Growth Chart"
+            />
+            
+            <WHOGrowthChart
+              standards={sex === "male" ? BOYS_HFA : GIRLS_HFA}
+              value={parseFloat(heightCm)}
+              valueType="height"
+              ageMonths={ageYears * 12}
+              title="Height-for-Age Growth Chart"
+            />
+          </div>
+        </>
       )}
 
       <div className="flex gap-2">
