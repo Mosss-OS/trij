@@ -184,7 +184,8 @@ export type AuditAction =
   | "assessment:list"
   | "followup:read"
   | "referral:read"
-  | "supervisor:read";
+  | "supervisor:read"
+  | "red_flag:triggered";
 
 export interface AuditEvent {
   id?: number;

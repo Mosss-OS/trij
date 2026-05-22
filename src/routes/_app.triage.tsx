@@ -33,6 +33,8 @@ import {
 } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { TriageResult, Patient, Assessment, VitalSigns } from "@/types/trij";
+import { checkRedFlags, type RedFlag } from "@/lib/red-flags";
+import { RedFlagAlert } from "@/components/RedFlagAlert";
 import { getDB } from "@/lib/db";
 import { queuePatient, queueAssessment } from "@/lib/sync";
 import { useAuditLog } from "@/hooks/useAuditLog";
@@ -156,6 +158,8 @@ function TriagePage() {
   const [patientId, setPatientId] = useState<string | null>(null);
   const [aiFailureKind, setAiFailureKind] = useState<AiFailureKind | null>(null);
   const [pendingCapture, setPendingCapture] = useState<string | null>(null);
+  const [redFlags, setRedFlags] = useState<RedFlag[]>([]);
+  const [showRedFlagAlert, setShowRedFlagAlert] = useState(false);
   const pendingTextRef = useRef(false);
 
   /* Auto-save triage draft every 30 seconds */
@@ -381,7 +385,28 @@ function TriagePage() {
       setProgressText(t("analyzing") + "...");
       setProgress(100);
       const r = await triageImage(dataUrl, language, kind, ollamaUrl, presentationType, symptomDescription);
-      setResult(r);
+
+      const vs = buildVitalSigns();
+      const flags = checkRedFlags({
+        vitalSigns: vs,
+        symptomDescription,
+        presentationType,
+        age: age ? Number(age) : undefined,
+        sex,
+      });
+      if (flags.length > 0) {
+        const overridden = { ...r, urgency: "red" as const };
+        setResult(overridden);
+        setRedFlags(flags);
+        setShowRedFlagAlert(true);
+        log("red_flag:triggered", {
+          resourceType: "assessment",
+          resourceId: "",
+          details: JSON.stringify(flags.map((f) => ({ id: f.id, condition: f.suspectedCondition }))),
+        });
+      } else {
+        setResult(r);
+      }
       setStep("result");
     } catch (err) {
       setAiFailureKind(classifyAiError(err));
@@ -415,9 +440,29 @@ function TriagePage() {
 
       setProgressText(t("analyzing") + "...");
       setProgress(100);
-      /* Pass an empty placeholder image — the model will rely on symptom description */
       const r = await triageImage("", language, kind, ollamaUrl, presentationType, symptomDescription);
-      setResult(r);
+
+      const vs = buildVitalSigns();
+      const flags = checkRedFlags({
+        vitalSigns: vs,
+        symptomDescription,
+        presentationType,
+        age: age ? Number(age) : undefined,
+        sex,
+      });
+      if (flags.length > 0) {
+        const overridden = { ...r, urgency: "red" as const };
+        setResult(overridden);
+        setRedFlags(flags);
+        setShowRedFlagAlert(true);
+        log("red_flag:triggered", {
+          resourceType: "assessment",
+          resourceId: "",
+          details: JSON.stringify(flags.map((f) => ({ id: f.id, condition: f.suspectedCondition }))),
+        });
+      } else {
+        setResult(r);
+      }
       setStep("result");
     } catch (err) {
       setAiFailureKind(classifyAiError(err));
@@ -623,6 +668,16 @@ function TriagePage() {
             setPendingCapture(null);
             pendingTextRef.current = false;
           }}
+        />
+      )}
+      {showRedFlagAlert && redFlags.length > 0 && (
+        <RedFlagAlert
+          flags={redFlags}
+          onDismiss={() => {
+            setShowRedFlagAlert(false);
+            setRedFlags([]);
+          }}
+          onProceedToResult={() => setShowRedFlagAlert(false)}
         />
       )}
       <AppHeader title={t("newTriage")} subtitle={t("stepByStep")} />
