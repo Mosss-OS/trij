@@ -102,6 +102,17 @@ export interface Assessment {
       distinguishingQuestions: string[];
     }>;
   };
+  clinicalScale?: {
+    scaleName: string;
+    scaleId: string;
+    score: number;
+    maxScore: number;
+    grade: string;
+    interpretation: string;
+    managementGuidance: string;
+    source: string;
+    sourceUrl?: string;
+  };
   recommendation?: string;
   voiceLog?: string;
   language: string;
@@ -195,6 +206,17 @@ export interface TriageResult {
       confidence: number;
       distinguishing_questions: string[];
     }>;
+  };
+  clinical_scale?: {
+    scaleName: string;
+    scaleId: string;
+    score: number;
+    maxScore: number;
+    grade: string;
+    interpretation: string;
+    managementGuidance: string;
+    source: string;
+    sourceUrl?: string;
   };
 }
 

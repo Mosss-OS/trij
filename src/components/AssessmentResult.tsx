@@ -3,6 +3,8 @@ import type { TriageResult, PossibleCondition } from "@/types/trij";
 import { UrgencyPill } from "./UrgencyPill";
 import { EducationPanel } from "./EducationPanel";
 import { analyzeForAntibiotics } from "@/lib/antibiotic-filter";
+import { ClinicalScaleDisplay } from "./ClinicalScaleDisplay";
+import { getScaleForCondition, applyWagnerScale, autoAssignWagnerFromCondition } from "@/lib/clinical-scales";
 import {
   Volume2,
   AlertTriangle,
@@ -487,6 +489,12 @@ export function AssessmentResult({
               </div>
             )}
           </>
+        )}
+
+        {result.clinical_scale && (
+          <div className="mt-4">
+            <ClinicalScaleDisplay scale={result.clinical_scale} scaleId={result.clinical_scale.scaleId} />
+          </div>
         )}
 
         {result.recommendation && analyzeForAntibiotics(
