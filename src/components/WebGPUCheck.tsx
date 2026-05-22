@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { checkWebGPUCompatibility, type WebGPUCompatibility } from "@/lib/gemma";
 import { detectOllama, type EngineKind } from "@/lib/gemma";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { Cpu, ExternalLink, AlertTriangle, CheckCircle2, Rabbit, FlaskConical } from "lucide-react";
+import { Cloud, Cpu, ExternalLink, AlertTriangle, CheckCircle2, Rabbit, FlaskConical } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
@@ -16,6 +16,7 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
   const [compat, setCompat] = useState<WebGPUCompatibility | null>(null);
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
   const setEngineKind = useSettingsStore((s) => s.setEngineKind);
+  const cloudFallbackConsent = useSettingsStore((s) => s.cloudFallbackConsent);
 
   useEffect(() => {
     checkWebGPUCompatibility().then(setCompat);
@@ -103,38 +104,50 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             {t("alternativeEngines")}
           </p>
-          <div className="mt-3 space-y-2">
-            <button
-              onClick={() => setEngineKind("ollama")}
-              className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left text-sm transition-colors hover:bg-accent ${
-                ollamaOk === true ? "border-emerald-500/30" : ""
-              }`}
-            >
-              <Rabbit
-                className={`h-4 w-4 ${ollamaOk === true ? "text-emerald-600" : "text-muted-foreground"}`}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="font-medium">{t("ollamaLocalServer")}</p>
-                <p className="text-xs text-muted-foreground">
-                  {ollamaOk === null
-                    ? t("checking")
-                    : ollamaOk
-                      ? t("ollamaDetected")
-                      : t("ollamaNotDetected")}
-                </p>
-              </div>
-            </button>
-            <button
-              onClick={() => setEngineKind("demo")}
-              className="flex w-full items-center gap-3 rounded-xl border p-3 text-left text-sm transition-colors hover:bg-accent"
-            >
-              <FlaskConical className="h-4 w-4 text-muted-foreground" />
-              <div className="min-w-0 flex-1">
-                <p className="font-medium">{t("demoMode")}</p>
-                <p className="text-xs text-muted-foreground">{t("mockDataNoModel")}</p>
-              </div>
-            </button>
-          </div>
+            <div className="mt-3 space-y-2">
+              <button
+                onClick={() => setEngineKind("ollama")}
+                className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left text-sm transition-colors hover:bg-accent ${
+                  ollamaOk === true ? "border-emerald-500/30" : ""
+                }`}
+              >
+                <Rabbit
+                  className={`h-4 w-4 ${ollamaOk === true ? "text-emerald-600" : "text-muted-foreground"}`}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium">{t("ollamaLocalServer")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {ollamaOk === null
+                      ? t("checking")
+                      : ollamaOk
+                        ? t("ollamaDetected")
+                        : t("ollamaNotDetected")}
+                  </p>
+                </div>
+              </button>
+              {cloudFallbackConsent && (
+                <button
+                  onClick={() => setEngineKind("cloud")}
+                  className="flex w-full items-center gap-3 rounded-xl border p-3 text-left text-sm transition-colors hover:bg-accent"
+                >
+                  <Cloud className="h-4 w-4 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium">{t("cloudMode")}</p>
+                    <p className="text-xs text-muted-foreground">{t("cloudFallbackAvailable")}</p>
+                  </div>
+                </button>
+              )}
+              <button
+                onClick={() => setEngineKind("demo")}
+                className="flex w-full items-center gap-3 rounded-xl border p-3 text-left text-sm transition-colors hover:bg-accent"
+              >
+                <FlaskConical className="h-4 w-4 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium">{t("demoMode")}</p>
+                  <p className="text-xs text-muted-foreground">{t("mockDataNoModel")}</p>
+                </div>
+              </button>
+            </div>
         </div>
       )}
     </div>

@@ -24,6 +24,14 @@ import {
 import { format } from "date-fns";
 import { useI18n } from "@/lib/i18n";
 import {
+  anonymiseAssessments,
+  buildAnonymisedCsvRows,
+  stripIdentifiers,
+  meetsThreshold,
+  groupCondition,
+  kAnonymityCheck,
+} from "@/lib/anonymisation";
+import {
   BarChart,
   Bar,
   XAxis,
@@ -254,10 +262,15 @@ function Supervisor() {
 
   const conditionData = useMemo(() => {
     const freq: Record<string, number> = {};
+    const k = 5;
     for (const a of rangeFiltered) {
-      if (a.condition) freq[a.condition] = (freq[a.condition] || 0) + 1;
+      const grouped = groupCondition(a.condition);
+      if (grouped !== "other" || a.condition) {
+        freq[grouped] = (freq[grouped] || 0) + 1;
+      }
     }
     return Object.entries(freq)
+      .filter(([, count]) => meetsThreshold(count, k))
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .map(([name, count]) => ({
@@ -312,38 +325,31 @@ function Supervisor() {
   }, [items]);
 
   const exportAllCsv = () => {
+    const k = 5;
+    const cohort = kAnonymityCheck(items, k);
+    if (cohort.length === 0) {
+      toast.error(t("insufficientDataForExport"));
+      return;
+    }
+    const anonymised = anonymiseAssessments(cohort);
+    const aggregated = buildAnonymisedCsvRows(anonymised);
     const headers: string[] = [
-      "Patient", "Condition", "ICD-10", "Urgency", "Referral Status",
-      "BP Systolic", "BP Diastolic", "HR", "RR", "Temp", "SpO2", "MUAC", "Weight", "Pain",
-      "Created",
+      "Condition Group", "Urgency", "Age Group", "Region",
+      "Count", "Date",
     ];
-    const rows: string[][] = items.map((a) => {
-      const v = (a as unknown as Record<string, unknown>).vitals as Record<string, unknown> | null;
-      return [
-        a.patients?.identifier ?? "",
-        a.condition ?? "",
-        (a as unknown as Record<string, unknown>).icd10_code as string ?? "",
-        a.urgency ?? "",
-        a.referral_status ?? "",
-        String(v?.systolicBP ?? ""),
-        String(v?.diastolicBP ?? ""),
-        String(v?.heartRate ?? ""),
-        String(v?.respiratoryRate ?? ""),
-        String(v?.temperature ?? ""),
-        String(v?.oxygenSaturation ?? ""),
-        String(v?.muac ?? ""),
-        String(v?.weight ?? ""),
-        String(v?.painScale ?? ""),
-        format(new Date(a.created_at), "yyyy-MM-dd HH:mm"),
-      ];
-    });
-    csvDownload(`trij-assessments-${format(new Date(), "yyyy-MM-dd")}.csv`, headers, rows);
+    const rows: string[][] = aggregated.map((r) => [
+      r[0], r[1], r[2], r[3], r[4], r[5],
+    ]);
+    csvDownload(`trij-assessments-anonymised-${format(new Date(), "yyyy-MM-dd")}.csv`, headers, rows);
   };
 
   const exportConditionsCsv = () => {
-    const headers = ["Condition", "Count"];
-    const rows = conditionData.map((c) => [c.name, String(c.count)]);
-    csvDownload(`trij-conditions-${format(new Date(), "yyyy-MM-dd")}.csv`, headers, rows);
+    const k = 5;
+    const headers = ["Condition Group", "Count"];
+    const rows = conditionData
+      .filter((c) => meetsThreshold(c.count, k))
+      .map((c) => [groupCondition(c.name), String(c.count)]);
+    csvDownload(`trij-conditions-anonymised-${format(new Date(), "yyyy-MM-dd")}.csv`, headers, rows);
   };
 
   const exportTrendCsv = () => {
@@ -353,9 +359,12 @@ function Supervisor() {
   };
 
   const exportChwCsv = () => {
-    const headers = ["CHW ID", "Assessments", "Unsynced"];
-    const rows = chwPerformance.map((c) => [c.name, String(c.count), String(c.unsynced)]);
-    csvDownload(`trij-chw-${format(new Date(), "yyyy-MM-dd")}.csv`, headers, rows);
+    const k = 5;
+    const rows = chwPerformance
+      .filter((c) => meetsThreshold(c.count, k))
+      .map((c) => ["[REDACTED]", String(c.count), String(c.unsynced)]);
+    const headers = ["CHW", "Assessments", "Unsynced"];
+    csvDownload(`trij-chw-anonymised-${format(new Date(), "yyyy-MM-dd")}.csv`, headers, rows);
   };
 
   return (

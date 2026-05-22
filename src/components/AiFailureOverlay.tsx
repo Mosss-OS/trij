@@ -36,7 +36,7 @@ interface AiFailureOverlayProps {
   kind: AiFailureKind;
   onRetry: () => void;
   onUseDemo: () => void;
-  onManualAssessment: (result: TriageResult) => void;
+  onManualAssessment?: (result: TriageResult) => void;
   onDismiss: () => void;
 }
 
@@ -64,28 +64,28 @@ export function AiFailureOverlay({
     }
   };
 
-  const handleManualSubmit = () => {
-    setSubmitting(true);
-    const result: TriageResult = {
-      condition: manualCondition || "Unspecified condition",
-      confidence: 0,
-      urgency: manualUrgency,
-      possible_conditions: manualCondition ? [{ name: manualCondition, probability: 100 }] : [],
-      key_visual_features: [],
-      recommendation:
-        manualUrgency === "red"
-          ? "Immediate referral required."
-          : manualUrgency === "yellow"
-            ? "Refer to clinic within 24 hours."
-            : "Home care with monitoring. Refer if symptoms worsen.",
-      referral_advised: manualUrgency !== "green",
-      follow_up_questions: [],
+    const handleManualSubmit = () => {
+      setSubmitting(true);
+      const result: TriageResult = {
+        condition: manualCondition || "Unspecified condition",
+        confidence: 0,
+        urgency: manualUrgency,
+        possible_conditions: manualCondition ? [{ name: manualCondition, probability: 100 }] : [],
+        key_visual_features: [],
+        recommendation:
+          manualUrgency === "red"
+            ? "Immediate referral required."
+            : manualUrgency === "yellow"
+              ? "Refer to clinic within 24 hours."
+              : "Home care with monitoring. Refer if symptoms worsen.",
+        referral_advised: manualUrgency !== "green",
+        follow_up_questions: [],
+      };
+      setTimeout(() => {
+        setSubmitting(false);
+        onManualAssessment?.(result);
+      }, 300);
     };
-    setTimeout(() => {
-      setSubmitting(false);
-      onManualAssessment(result);
-    }, 300);
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
@@ -102,7 +102,7 @@ export function AiFailureOverlay({
           </button>
         </div>
 
-        {!showManual ? (
+        {!showManual || !onManualAssessment ? (
           <>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
               {t(failureKey(kind))}
@@ -124,14 +124,16 @@ export function AiFailureOverlay({
                 <MousePointerClick className="h-4 w-4" />
                 {t("aiFailureUseDemo")}
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowManual(true)}
-                className="w-full gap-2"
-              >
-                <AlertTriangle className="h-4 w-4" />
-                {t("aiFailureManual")}
-              </Button>
+              {onManualAssessment && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowManual(true)}
+                  className="w-full gap-2"
+                >
+                  <AlertTriangle className="h-4 w-4" />
+                  {t("aiFailureManual")}
+                </Button>
+              )}
             </div>
           </>
         ) : (

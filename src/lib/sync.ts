@@ -1,4 +1,4 @@
-import { getDB } from "./db";
+import { getDB, type DeadLetterItem } from "./db";
 import { supabase } from "@/integrations/supabase/client";
 import type { Patient, Assessment, FollowUp, ReferralFeedback, SyncQueueItem, SyncConflict } from "@/types/trij";
 import { registerBackgroundSync } from "./sw-register";
@@ -6,11 +6,30 @@ import { registerBackgroundSync } from "./sw-register";
 export const MAX_RETRIES = 3;
 export const RETRY_BACKOFF_MS = [5_000, 30_000, 120_000];
 
+async function moveToDeadLetter(item: SyncQueueItem) {
+  const db = getDB();
+  const now = new Date().toISOString();
+  
+  const deadLetterItem: DeadLetterItem = {
+    table: item.table,
+    action: item.action,
+    recordId: item.recordId,
+    payload: item.payload,
+    createdAt: item.createdAt,
+    attempts: item.attempts ?? 0,
+    lastError: item.lastError ?? "Max retries exceeded",
+    movedAt: now,
+  };
+  
+  await db.deadLetterQueue.add(deadLetterItem);
+  await db.syncQueue.delete(item.id!);
+}
+
 export interface SyncProgressItem {
   id: number;
   table: string;
   recordId: string;
-  status: "pending" | "syncing" | "ok" | "failed";
+  status: "pending" | "syncing" | "ok" | "failed" | "dead_letter";
   error?: string;
 }
 
@@ -123,7 +142,7 @@ function threeWayMerge(
 
 export async function processSyncQueue(
   onProgress?: SyncProgressCallback,
-): Promise<{ ok: number; failed: number }> {
+): Promise<{ ok: number; failed: number; deadLetter: number }> {
   if (typeof navigator !== "undefined" && !navigator.onLine) return { ok: 0, failed: 0 };
 
   const {
@@ -134,7 +153,8 @@ export async function processSyncQueue(
   const db = getDB();
   const items = await db.syncQueue.toArray();
   let ok = 0,
-    failed = 0;
+    failed = 0,
+    deadLetter = 0;
   for (const item of items) {
     const progress: SyncProgressItem = {
       id: item.id!,
@@ -253,23 +273,25 @@ export async function processSyncQueue(
       await db.syncQueue.delete(item.id!);
       ok++;
       onProgress?.({ ...progress, status: "ok" });
-    } catch (err) {
-      const attempts = (item.attempts ?? 0) + 1;
-      failed++;
-      await db.syncQueue.update(item.id!, {
-        attempts,
-        lastError: (err as Error).message,
-      });
-      if (attempts >= MAX_RETRIES) {
-        console.warn(
-          `Sync failed after ${attempts} attempts for ${item.table}/${item.recordId}:`,
-          (err as Error).message,
-        );
+} catch (err) {
+        const attempts = (item.attempts ?? 0) + 1;
+        
+        // If we've exceeded max retries, move to dead letter queue
+        if (attempts >= MAX_RETRIES) {
+          await moveToDeadLetter(item);
+          deadLetter++;
+          onProgress?.({ ...progress, status: "dead_letter", error: (err as Error).message });
+        } else {
+          failed++;
+          await db.syncQueue.update(item.id!, {
+            attempts,
+            lastError: (err as Error).message,
+          });
+          onProgress?.({ ...progress, status: "failed", error: (err as Error).message });
+        }
       }
-      onProgress?.({ ...progress, status: "failed", error: (err as Error).message });
-    }
   }
-  return { ok, failed };
+   return { ok, failed, deadLetter };
 }
 
 export async function getConflicts(): Promise<SyncConflict[]> {
@@ -350,6 +372,31 @@ export async function retryFailedSyncItems(): Promise<number> {
 
   if (retried > 0) registerBackgroundSync().catch(() => {});
   return retried;
+}
+
+export async function getDeadLetterItems(): Promise<DeadLetterItem[]> {
+  return getDB().deadLetterQueue.toArray();
+}
+
+export async function retryDeadLetterItem(id: number): Promise<void> {
+  const db = getDB();
+  const item = await db.deadLetterQueue.get(id);
+  if (!item) return;
+
+  await db.deadLetterQueue.delete(id);
+  await db.syncQueue.add({
+    table: item.table,
+    action: item.action,
+    recordId: item.recordId,
+    payload: item.payload,
+    createdAt: new Date().toISOString(),
+    attempts: 0,
+  });
+  registerBackgroundSync().catch(() => {});
+}
+
+export async function deleteDeadLetterItem(id: number): Promise<void> {
+  await getDB().deadLetterQueue.delete(id);
 }
 
 export async function queueFollowUp(followUp: FollowUp) {

@@ -47,7 +47,7 @@ function LandingPage() {
   const authed = !!(session || offlineUser);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[oklch(0.98_0.008_85)] text-[oklch(0.18_0.02_240)] antialiased">
+    <div className="min-h-screen overflow-x-hidden bg-[oklch(0.98_0.008_85)] text-[oklch(0.18_0.02_240)] antialiased pt-20 pb-16">
       <BackgroundOrbs />
       <Nav authed={authed} />
       <Hero authed={authed} />
@@ -92,7 +92,7 @@ function Nav({ authed }: { authed: boolean }) {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="sticky top-3 z-40 mx-auto mt-3 flex max-w-6xl items-center justify-between rounded-full border border-white/30 bg-white/40 px-4 py-2.5 backdrop-blur-xl backdrop-saturate-150 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_8px_24px_-12px_rgba(15,42,60,0.15)] sm:px-6"
+      className="sticky top-0 left-0 right-0 z-40 mx-auto max-w-6xl flex items-center justify-between rounded-full border border-white/30 bg-white/40 px-4 py-2.5 backdrop-blur-xl backdrop-saturate-150 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_8px_24px_-12px_rgba(15,42,60,0.15)] sm:px-6"
     >
       <Link to="/" className="flex items-center gap-2">
         <img
