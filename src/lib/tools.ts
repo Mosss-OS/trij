@@ -23,10 +23,37 @@ export const TRIAGE_TOOL: ToolDefinition = {
           description: "Clinical name of the most likely condition",
         },
         confidence: {
-          type: "number",
-          description: "Confidence score 0-100",
-          minimum: 0,
-          maximum: 100,
+          type: "object",
+          description: "Confidence with uncertainty quantification",
+          properties: {
+            confidence_point: {
+              type: "number",
+              description: "Point estimate of confidence 0-100",
+              minimum: 0,
+              maximum: 100,
+            },
+            confidence_interval: {
+              type: "array",
+              description: "95% confidence interval [lower, upper]",
+              items: {
+                type: "number",
+                minimum: 0,
+                maximum: 100,
+              },
+              minItems: 2,
+              maxItems: 2,
+            },
+            uncertainty_source: {
+              type: "string",
+              enum: ["image_quality", "model_knowledge", "both"],
+              description: "Primary source of uncertainty",
+            },
+            uncertainty_reason: {
+              type: "string",
+              description: "Human-readable explanation of uncertainty source",
+            },
+          },
+          required: ["confidence_point", "confidence_interval", "uncertainty_source", "uncertainty_reason"],
         },
         urgency: {
           type: "string",

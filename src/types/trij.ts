@@ -200,7 +200,12 @@ export interface TriageResult {
   icd10_code?: string;
   presentation_type?: PresentationType;
   description?: string; /* free-text symptom description for non-dermatology presentations */
-  confidence: number;
+  confidence: {
+    confidence_point: number; // 0-100
+    confidence_interval: [number, number]; // [lower, upper] 0-100
+    uncertainty_source: "image_quality" | "model_knowledge" | "both";
+    uncertainty_reason: string;
+  };
   urgency: Urgency;
   possible_conditions: PossibleCondition[];
   key_visual_features: string[];
@@ -233,6 +238,8 @@ export interface TriageResult {
     source: string;
     sourceUrl?: string;
   };
+  nutrition?: NutritionRecord;
+  symptoms?: string[];
 }
 
 export type AiFeedbackRating = "correct" | "partial" | "incorrect";
