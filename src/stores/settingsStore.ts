@@ -25,6 +25,7 @@ interface SettingsState {
   tutorialCompleted: boolean;
   tutorialSkipped: boolean;
   sunlightMode: boolean;
+  malariaEndemic: boolean;
   biometricEnabled: boolean;
   encryptionEnabled: boolean;
   encryptionSalt: string;
@@ -32,6 +33,7 @@ interface SettingsState {
   skipTutorial: () => void;
   resetTutorial: () => void;
   setSunlightMode: (enabled: boolean) => void;
+  setMalariaEndemic: (endemic: boolean) => void;
   setLanguage: (l: string) => void;
   setModelId: (id: string) => void;
     setVoiceEnabled: (b: boolean) => void;
@@ -77,6 +79,7 @@ export const useSettingsStore = create<SettingsState>()(
       tutorialCompleted: false,
       tutorialSkipped: false,
       sunlightMode: false,
+      malariaEndemic: false,
       biometricEnabled: false,
       encryptionEnabled: false,
       encryptionSalt: typeof window !== "undefined" ? generateSalt() : "",
@@ -84,6 +87,7 @@ export const useSettingsStore = create<SettingsState>()(
       skipTutorial: () => set({ tutorialSkipped: true }),
       resetTutorial: () => set({ tutorialCompleted: false, tutorialSkipped: false }),
       setSunlightMode: (sunlightMode) => set({ sunlightMode }),
+      setMalariaEndemic: (malariaEndemic) => set({ malariaEndemic }),
       setLanguage: (language) => set({ language }),
       setModelId: (modelId) => set({ modelId }),
       setVoiceEnabled: (voiceEnabled) => set({ voiceEnabled }),
