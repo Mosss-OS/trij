@@ -243,6 +243,19 @@ function SettingsPage() {
                 }}
               />
             </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>{t("pictogramMode")}</Label>
+                <p className="text-xs text-muted-foreground">{t("pictogramModeDesc")}</p>
+              </div>
+              <Switch
+                checked={s.pictogramMode}
+                onCheckedChange={(enabled) => {
+                  s.setPictogramMode(enabled);
+                  if (enabled) toast.success(t("pictogramModeActive"));
+                }}
+              />
+            </div>
           </div>
         </Section>
 

@@ -22,6 +22,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useI18n } from "@/lib/i18n";
+import { useSettingsStore } from "@/stores/settingsStore";
+import {
+  FeverIcon,
+  WoundIcon,
+  BreathingIcon,
+  MalnutritionIcon,
+  MedicalCross,
+  Hospital,
+} from "./PictogramIcons";
 
 interface Props {
   result: TriageResult;
@@ -40,6 +49,25 @@ const COLORS = [
   "bg-cyan-400",
   "bg-orange-400",
 ];
+
+function getConditionPictogram(condition: string): React.ComponentType<React.SVGProps<SVGSVGElement>> {
+  const lowerCondition = condition.toLowerCase();
+  
+  if (lowerCondition.includes('fever') || lowerCondition.includes('malaria') || lowerCondition.includes('temperature')) {
+    return FeverIcon;
+  }
+  if (lowerCondition.includes('wound') || lowerCondition.includes('injur') || lowerCondition.includes('burn') || lowerCondition.includes('cut')) {
+    return WoundIcon;
+  }
+  if (lowerCondition.includes('breath') || lowerCondition.includes('respirator') || lowerCondition.includes('pneumonia') || lowerCondition.includes('lung')) {
+    return BreathingIcon;
+  }
+  if (lowerCondition.includes('malnutrition') || lowerCondition.includes('underweight') || lowerCondition.includes('wasting')) {
+    return MalnutritionIcon;
+  }
+  
+  return MedicalCross; // Default medical icon
+}
 
 function StackedBar({
   primary,
@@ -364,6 +392,7 @@ export function AssessmentResult({
   engineKind,
 }: Props) {
   const { t } = useI18n();
+  const pictogramMode = useSettingsStore((s) => s.pictogramMode);
   const confidencePoint = result.confidence.confidence_point;
   const belowThreshold = confidencePoint < minConfidenceForLocalCare;
   const veryLowConfidence = confidencePoint < 30;
@@ -409,7 +438,17 @@ export function AssessmentResult({
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
               {t("likelyCondition")}
             </p>
-            <h2 className="mt-1 font-display text-2xl font-bold">{result.condition}</h2>
+            <div className="mt-1 flex items-center gap-2">
+              {pictogramMode && (
+                <div className="flex-shrink-0">
+                  {(() => {
+                    const ConditionIcon = getConditionPictogram(result.condition);
+                    return <ConditionIcon className="h-8 w-8" />;
+                  })()}
+                </div>
+              )}
+              <h2 className="font-display text-2xl font-bold">{result.condition}</h2>
+            </div>
             {result.icd10_code && (
               <p className="mt-0.5 font-mono text-xs text-muted-foreground">
                 ICD-10: {result.icd10_code}
@@ -530,7 +569,11 @@ export function AssessmentResult({
           <>
             {effectiveReferral && (
               <div className="mt-5 flex items-start gap-3 rounded-2xl border border-urgency-red/30 bg-urgency-red/5 p-4">
-                <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-red" />
+                {pictogramMode ? (
+                  <Hospital className="mt-0.5 h-6 w-6 flex-shrink-0 text-urgency-red" />
+                ) : (
+                  <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-red" />
+                )}
                 <div>
                   <p className="text-sm font-medium text-urgency-red">{t("referralAdvised")}</p>
                   <p className="mt-1 text-sm leading-relaxed text-foreground">
