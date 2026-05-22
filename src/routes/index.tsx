@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import {
@@ -87,43 +87,73 @@ function BackgroundOrbs() {
 
 /* ---------- nav ---------- */
 function Nav({ authed }: { authed: boolean }) {
+  const [showNav, setShowNav] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const controlNavbar = () => {
+      if (window.scrollY < 50) {
+        setShowNav(true);
+      } else if (window.scrollY < lastScrollY) {
+        // scrolling UP
+        setShowNav(true);
+      } else {
+        // scrolling DOWN
+        setShowNav(false);
+      }
+
+      setLastScrollY(window.scrollY);
+    };
+
+    window.addEventListener("scroll", controlNavbar);
+
+    return () => {
+      window.removeEventListener("scroll", controlNavbar);
+    };
+  }, [lastScrollY]);
+
   return (
-    <motion.header
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="sticky top-0 left-0 right-0 z-40 mx-auto max-w-6xl flex items-center justify-between rounded-full border border-white/30 bg-white/40 px-4 py-2.5 backdrop-blur-xl backdrop-saturate-150 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_8px_24px_-12px_rgba(15,42,60,0.15)] sm:px-6"
-    >
-      <Link to="/" className="flex items-center gap-2">
-        <img
-          src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
-          alt="Trij logo — free offline AI medical triage app"
-          className="h-8 w-8 rounded-lg object-contain"
-        />
-        <span className="font-sans text-base font-semibold tracking-tight">Trij</span>
-      </Link>
-      <nav className="hidden items-center gap-7 font-sans text-sm text-foreground/70 md:flex">
-        <a href="#features" className="transition-colors hover:text-foreground">
-          Features
-        </a>
-        <a href="#flow" className="transition-colors hover:text-foreground">
-          How it works
-        </a>
-        <a href="#privacy" className="transition-colors hover:text-foreground">
-          Privacy
-        </a>
-      </nav>
-      <Link
-        to={authed ? "/dashboard" : "/login"}
-        className="group inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 font-sans text-sm font-medium text-background transition-all hover:opacity-90"
-      >
-        {authed ? "Open app" : "Sign in"}
-        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-      </Link>
-    </motion.header>
+    <header className="fixed top-4 left-1/2 z-50 w-full max-w-6xl -translate-x-1/2 px-4">
+      <motion.div className="flex items-center justify-between rounded-full border border-white/30 bg-white/40 px-4 py-2.5 backdrop-blur-xl sm:px-6">
+
+        <Link to="/" className="flex items-center gap-2">
+          <img
+            src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
+            alt="Trij logo — free offline AI medical triage app"
+            className="h-8 w-8 rounded-lg object-contain"
+          />
+
+          <span className="font-sans text-base font-semibold tracking-tight">
+            Trij
+          </span>
+        </Link>
+
+        <nav className="hidden items-center gap-7 font-sans text-sm text-foreground/70 md:flex">
+          <a href="#features" className="transition-colors hover:text-foreground">
+            Features
+          </a>
+
+          <a href="#flow" className="transition-colors hover:text-foreground">
+            How it works
+          </a>
+
+          <a href="#privacy" className="transition-colors hover:text-foreground">
+            Privacy
+          </a>
+        </nav>
+
+        <Link
+          to={authed ? "/dashboard" : "/login"}
+          className="group inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 font-sans text-sm font-medium text-background transition-all hover:opacity-90"
+        >
+          {authed ? "Open app" : "Sign in"}
+
+          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      </motion.div>
+    </header>
   );
 }
-
 /* ---------- hero ---------- */
 function Hero({ authed }: { authed: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
