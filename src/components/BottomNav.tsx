@@ -5,11 +5,18 @@ import type { translations } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useNotifications } from "@/hooks/useNotifications";
+import {
+  HomeIcon,
+  CameraLarge,
+  Person,
+  NotificationIcon,
+} from "@/components/PictogramIcons";
 
 type NavItem = {
   to: string;
   labelKey: keyof (typeof translations)["en-US"];
   icon: typeof LayoutGrid;
+  pictogramIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   primary?: boolean;
 };
 
@@ -19,18 +26,19 @@ export function BottomNav() {
   const current = router.state.location.pathname;
   const kioskMode = useSettingsStore((s) => s.kioskMode);
   const fieldMode = useSettingsStore((s) => s.fieldMode);
+  const pictogramMode = useSettingsStore((s) => s.pictogramMode);
   const { unreadCount } = useNotifications();
 
   const items: NavItem[] = fieldMode
     ? [
-        { to: "/triage", labelKey: "newTriage", icon: Camera, primary: true },
-        { to: "/patients", labelKey: "patients", icon: Users },
+        { to: "/triage", labelKey: "newTriage", icon: Camera, pictogramIcon: CameraLarge, primary: true },
+        { to: "/patients", labelKey: "patients", icon: Users, pictogramIcon: Person },
       ]
     : [
-        { to: "/dashboard", labelKey: "home", icon: LayoutGrid },
-        { to: "/triage", labelKey: "newTriage", icon: Camera, primary: true },
-        { to: "/patients", labelKey: "patients", icon: Users },
-        { to: "/notifications", labelKey: "notifications", icon: Bell },
+        { to: "/dashboard", labelKey: "home", icon: LayoutGrid, pictogramIcon: HomeIcon },
+        { to: "/triage", labelKey: "newTriage", icon: Camera, pictogramIcon: CameraLarge, primary: true },
+        { to: "/patients", labelKey: "patients", icon: Users, pictogramIcon: Person },
+        { to: "/notifications", labelKey: "notifications", icon: Bell, pictogramIcon: NotificationIcon },
       ];
 
   return (
@@ -39,9 +47,14 @@ export function BottomNav() {
       className={`fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur safe-area-bottom ${kioskMode || fieldMode ? "pb-2 pt-1" : ""}`}
     >
       <div className={`mx-auto grid max-w-4xl ${fieldMode ? "grid-cols-2" : "grid-cols-4"}`}>
-        {items.map(({ to, labelKey, icon: Icon, primary }) => {
+        {items.map(({ to, labelKey, icon: Icon, pictogramIcon: PictogramIcon, primary }) => {
           const active = current === to || current.startsWith(to + "/");
           const isBell = labelKey === "notifications";
+          const usePictogram = pictogramMode && PictogramIcon;
+          
+          // Extract single word from label for pictogram mode
+          const singleWordLabel = t(labelKey).split(' ')[0];
+          
           return (
             <Link
               key={to}
@@ -69,9 +82,15 @@ export function BottomNav() {
                       : "h-7 w-7",
                 )}
               >
-                <Icon className={kioskMode ? "h-7 w-7" : primary ? "h-5 w-5" : "h-5 w-5"} />
+                {usePictogram ? (
+                  <PictogramIcon className={kioskMode ? "h-7 w-7" : primary ? "h-5 w-5" : "h-5 w-5"} />
+                ) : (
+                  <Icon className={kioskMode ? "h-7 w-7" : primary ? "h-5 w-5" : "h-5 w-5"} />
+                )}
               </span>
-              <span className={primary ? (kioskMode ? "-mt-3" : "-mt-2") : ""}>{t(labelKey)}</span>
+              <span className={primary ? (kioskMode ? "-mt-3" : "-mt-2") : ""}>
+                {usePictogram ? singleWordLabel : t(labelKey)}
+              </span>
             </Link>
           );
         })}

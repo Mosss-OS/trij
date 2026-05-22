@@ -4,12 +4,18 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Thermometer, ChevronRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { useSettingsStore } from "@/stores/settingsStore";
 import {
   evaluateVitalSigns,
   getNormalRanges,
   getAgeGroup,
   type VitalSignsEvaluation,
 } from "@/lib/vital-signs";
+import {
+  ForeheadMeasurement,
+  ArmMeasurement,
+  ChestMeasurement,
+} from "./PictogramIcons";
 
 type TempUnit = "celsius" | "fahrenheit";
 
@@ -49,6 +55,7 @@ export function VitalSignsInput({
   disabled,
 }: VitalSignsInputProps) {
   const { t } = useI18n();
+  const pictogramMode = useSettingsStore((s) => s.pictogramMode);
   const [tempUnit, setTempUnit] = useState<TempUnit>("celsius");
   const ageGroup = getAgeGroup(ageYears);
   const ranges = useMemo(() => getNormalRanges(ageYears), [ageYears]);
@@ -129,7 +136,10 @@ export function VitalSignsInput({
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
-          <Label>{t("bp")}</Label>
+          <div className="flex items-center gap-2">
+            <Label>{t("bp")}</Label>
+            {pictogramMode && <ArmMeasurement className="h-5 w-5 text-muted-foreground" />}
+          </div>
           <span className="ml-1 text-[10px] text-muted-foreground">{ranges.systolicBP}</span>
           <div className="flex gap-1">
             <Input
@@ -182,7 +192,10 @@ export function VitalSignsInput({
         </div>
 
         <div className="space-y-1.5">
-          <Label>{t("respiratoryRate")}</Label>
+          <div className="flex items-center gap-2">
+            <Label>{t("respiratoryRate")}</Label>
+            {pictogramMode && <ChestMeasurement className="h-5 w-5 text-muted-foreground" />}
+          </div>
           <span className="ml-1 text-[10px] text-muted-foreground">{ranges.respiratoryRate}</span>
           <Input
             value={values.respiratoryRate}
@@ -203,7 +216,10 @@ export function VitalSignsInput({
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label>{t("temperature")}</Label>
+            <div className="flex items-center gap-2">
+              <Label>{t("temperature")}</Label>
+              {pictogramMode && <ForeheadMeasurement className="h-5 w-5 text-muted-foreground" />}
+            </div>
             <span className="text-[10px] text-muted-foreground">{ranges.temperature}</span>
           </div>
           <div className="flex gap-1">
