@@ -31,6 +31,7 @@ import {
   Check,
   Loader2,
   Play,
+  ChevronRight,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -619,6 +620,25 @@ function SettingsPage() {
             >
               {t("help")}
             </Link>
+          </div>
+        </Section>
+
+        <Section title={t("modelBiasAudit")}>
+          <div className="flex items-start gap-3 rounded-2xl border bg-card p-4">
+            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500" />
+            <div className="text-sm">
+              <p className="font-medium">{t("biasAuditStatus")} <span className="text-amber-500">{t("biasAuditPending")}</span></p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("biasAuditDesc")}</p>
+              <a
+                href="/BIAS_AUDIT.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                {t("biasAuditReadMore")}
+                <ChevronRight className="h-3 w-3" />
+              </a>
+            </div>
           </div>
         </Section>
 
