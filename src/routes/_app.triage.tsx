@@ -303,7 +303,9 @@ function TriagePage() {
           const txt = [
             t("voiceGuideResult"),
             t("likelyCondition") + ": " + result.condition,
-            t("voiceGuideConfidence").replace("{pct}", String(Math.round(result.confidence.confidence_point))),
+            t("voiceGuideConfidence").replace("{pct}", String(Math.round(
+              typeof result.confidence === 'number' ? result.confidence : result.confidence?.confidence_point ?? 0
+            ))),
             t("voiceGuideUrgency").replace("{level}", result.urgency),
             t("voiceGuideRecommended") + " " + (result.recommendation ?? ""),
           ].join(". ");
@@ -1507,7 +1509,9 @@ function TriagePage() {
                     capture: t("voiceGuideCapture"),
                     analyzing: t("analyzing") + "...",
                     result: result
-                      ? `${t("voiceGuideResult")}. ${t("likelyCondition")}: ${result.condition}. ${t("voiceGuideConfidence").replace("{pct}", String(Math.round(result.confidence)))}. ${t("voiceGuideUrgency").replace("{level}", result.urgency)}.`
+                      ? `${t("voiceGuideResult")}. ${t("likelyCondition")}: ${result.condition}. ${t("voiceGuideConfidence").replace("{pct}", String(Math.round(
+                        typeof result.confidence === 'number' ? result.confidence : result.confidence?.confidence_point ?? 0
+                      )))}. ${t("voiceGuideUrgency").replace("{level}", result.urgency)}.`
                       : "",
                     voice: currentQuestion,
                   }[step];
