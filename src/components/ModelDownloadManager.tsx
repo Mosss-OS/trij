@@ -1,20 +1,21 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import {
-  getStorageInfo,
-  getModelStatus,
-  clearModelCache,
-  formatBytes,
-  hasEnoughStorage,
-  type StorageInfo,
-  type ModelStatus,
-} from "@/lib/model-cache";
-import { supportsWebGPU, loadEngine, isLoaded, type EngineKind } from "@/lib/gemma";
-import { useSettingsStore } from "@/stores/settingsStore";
+import { ResumableDownload } from "@/components/ResumableDownload";
 import { Download, Trash2, HardDrive, AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+
+interface DownloadableModel {
+  url: string;
+  totalBytes: number;
+  fileName: string;
+}
+
+const MODEL_DOWNLOADS: Record<string, DownloadableModel | null> = {
+  // WebLLM models are handled internally; add direct-download GGUF models here.
+  // "gguf-model-id": { url: "https://...", totalBytes: 2_000_000_000, fileName: "model.gguf" },
+};
 
 export function ModelDownloadManager() {
   const { t } = useI18n();
@@ -25,10 +26,13 @@ export function ModelDownloadManager() {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [engineLoaded, setEngineLoaded] = useState(false);
   const [hasWebGPU, setHasWebGPU] = useState<boolean | null>(null);
+  const mountRef = useRef(true);
 
   useEffect(() => {
+    mountRef.current = true;
     supportsWebGPU().then(setHasWebGPU);
     getStorageInfo().then(setStorage);
+    return () => { mountRef.current = false; };
   }, []);
 
   useEffect(() => {
@@ -48,11 +52,11 @@ export function ModelDownloadManager() {
       });
       setEngineLoaded(true);
       setModel({ ...model, downloaded: true, downloadDate: new Date().toISOString() });
-      toast.success(t("loaded"));
+      if (mountRef.current) toast.success(t("loaded"));
     } catch (err) {
-      toast.error(t("failedPrefix") + (err as Error).message);
+      if (mountRef.current) toast.error(t("failedPrefix") + (err as Error).message);
     } finally {
-      setDownloading(false);
+      if (mountRef.current) setDownloading(false);
     }
   }, [model, t]);
 
@@ -61,7 +65,7 @@ export function ModelDownloadManager() {
     setModel(getModelStatus());
     setEngineLoaded(false);
     setDownloadProgress(0);
-    toast.success(t("clearCache"));
+    if (mountRef.current) toast.success(t("clearCache"));
   }, [t]);
 
   const refreshing = async () => {
@@ -72,6 +76,7 @@ export function ModelDownloadManager() {
 
   const insufficient = storage && !hasEnoughStorage(storage);
   const show = engineKind === "auto" || engineKind === "webllm";
+  const directModel = MODEL_DOWNLOADS[model.modelId];
 
   if (!show) return null;
 
@@ -159,6 +164,19 @@ export function ModelDownloadManager() {
           </div>
           <Progress value={downloadProgress} className="h-2" />
           <p className="text-xs text-muted-foreground">{t("loadingWeights")}</p>
+        </div>
+      )}
+
+      {directModel && (
+        <div className="rounded-xl border bg-muted/30 p-4">
+          <p className="mb-2 text-xs font-medium text-muted-foreground">{t("resumableDownload")}</p>
+          <ResumableDownload
+            jobId="trij-model"
+            url={directModel.url}
+            totalBytes={directModel.totalBytes}
+            fileName={directModel.fileName}
+            onComplete={() => setModel(getModelStatus())}
+          />
         </div>
       )}
 
