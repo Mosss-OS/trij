@@ -566,6 +566,13 @@ export const translations = {
     assess: "Assess",
     cm: "cm",
     phase: "Phase",
+    modelBiasAudit: "Model Bias Audit",
+    biasAuditStatus: "Bias audit status",
+    biasAuditPending: "Pending — audit in progress",
+    biasAuditPassed: "Passed — no significant performance gap detected",
+    biasAuditGapDetected: "Known limitation — performance gap documented",
+    biasAuditDesc: "We evaluate model performance across all Fitzpatrick skin types (I-VI) to ensure equitable accuracy regardless of skin tone.",
+    biasAuditReadMore: "Read the full bias audit report",
   },
   "fr-FR": {
     dashboard: "Tableau de bord",
