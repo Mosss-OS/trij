@@ -24,6 +24,7 @@ import { Route as AppDocumentRouteImport } from './routes/_app.document'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppAuditRouteImport } from './routes/_app.audit'
 import { Route as AppPatientsIndexRouteImport } from './routes/_app.patients.index'
+import { Route as AppPatientsBatchRegisterRouteImport } from './routes/_app.patients.batch-register'
 import { Route as AppPatientsPatientIdRouteImport } from './routes/_app.patients.$patientId'
 
 const LoginRoute = LoginRouteImport.update({
@@ -100,6 +101,12 @@ const AppPatientsIndexRoute = AppPatientsIndexRouteImport.update({
   path: '/patients/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPatientsBatchRegisterRoute =
+  AppPatientsBatchRegisterRouteImport.update({
+    id: '/patients/batch-register',
+    path: '/patients/batch-register',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppPatientsPatientIdRoute = AppPatientsPatientIdRouteImport.update({
   id: '/patients/$patientId',
   path: '/patients/$patientId',
@@ -121,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
   '/patients/$patientId': typeof AppPatientsPatientIdRoute
+  '/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/patients/': typeof AppPatientsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -138,6 +146,7 @@ export interface FileRoutesByTo {
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
   '/patients/$patientId': typeof AppPatientsPatientIdRoute
+  '/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/patients': typeof AppPatientsIndexRoute
 }
 export interface FileRoutesById {
@@ -157,6 +166,7 @@ export interface FileRoutesById {
   '/_app/supervisor': typeof AppSupervisorRoute
   '/_app/triage': typeof AppTriageRoute
   '/_app/patients/$patientId': typeof AppPatientsPatientIdRoute
+  '/_app/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/_app/patients/': typeof AppPatientsIndexRoute
 }
 export interface FileRouteTypes {
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/supervisor'
     | '/triage'
     | '/patients/$patientId'
+    | '/patients/batch-register'
     | '/patients/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/supervisor'
     | '/triage'
     | '/patients/$patientId'
+    | '/patients/batch-register'
     | '/patients'
   id:
     | '__root__'
@@ -211,6 +223,7 @@ export interface FileRouteTypes {
     | '/_app/supervisor'
     | '/_app/triage'
     | '/_app/patients/$patientId'
+    | '/_app/patients/batch-register'
     | '/_app/patients/'
   fileRoutesById: FileRoutesById
 }
@@ -327,6 +340,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPatientsIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/patients/batch-register': {
+      id: '/_app/patients/batch-register'
+      path: '/patients/batch-register'
+      fullPath: '/patients/batch-register'
+      preLoaderRoute: typeof AppPatientsBatchRegisterRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/patients/$patientId': {
       id: '/_app/patients/$patientId'
       path: '/patients/$patientId'
@@ -350,6 +370,7 @@ interface AppRouteChildren {
   AppSupervisorRoute: typeof AppSupervisorRoute
   AppTriageRoute: typeof AppTriageRoute
   AppPatientsPatientIdRoute: typeof AppPatientsPatientIdRoute
+  AppPatientsBatchRegisterRoute: typeof AppPatientsBatchRegisterRoute
   AppPatientsIndexRoute: typeof AppPatientsIndexRoute
 }
 
@@ -366,6 +387,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSupervisorRoute: AppSupervisorRoute,
   AppTriageRoute: AppTriageRoute,
   AppPatientsPatientIdRoute: AppPatientsPatientIdRoute,
+  AppPatientsBatchRegisterRoute: AppPatientsBatchRegisterRoute,
   AppPatientsIndexRoute: AppPatientsIndexRoute,
 }
 

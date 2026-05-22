@@ -9,7 +9,7 @@ import { useI18n } from "@/lib/i18n";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { BadgeInfo, Search, UserRound, Plus, GitMerge, Lock, Unlock, Loader2 } from "lucide-react";
+import { BadgeInfo, Search, UserRound, Plus, GitMerge, Lock, Unlock, Loader2, Users } from "lucide-react";
 import { MergeDialog } from "@/components/MergeDialog";
 import { toast } from "sonner";
 import { findPotentialDuplicates, runDedup, type MatchScore } from "@/lib/dedup";
@@ -108,14 +108,21 @@ function PatientsList() {
     <>
       <AppHeader title={t("patients")} />
       <div className="mx-auto max-w-4xl px-5 py-6">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={t("searchPlaceholder")}
-            className="pl-9"
-          />
+        <div className="mb-4 flex gap-2">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={t("searchPlaceholder")}
+              className="pl-9"
+            />
+          </div>
+          <Link to="/patients/batch-register">
+            <Button variant="outline" className="gap-2">
+              <Users className="h-4 w-4" /> {t("batchRegister")}
+            </Button>
+          </Link>
         </div>
 
         {matches.length > 0 && (
