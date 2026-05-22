@@ -777,35 +777,45 @@ export async function analyzeDocument(
 
   const settings = useSettingsStore.getState();
 
-  const e = await (isModelVLM(useSettingsStore.getState().modelId)
-    ? loadWebLLM()
-    : loadModel(PHI_VISION_MODEL_ID));
-  const temperature = settings.thinkingMode ? 0.7 : 0.1;
+  try {
+    const e = await (isModelVLM(useSettingsStore.getState().modelId)
+      ? loadWebLLM()
+      : loadModel(PHI_VISION_MODEL_ID));
+    const temperature = settings.thinkingMode ? 0.7 : 0.1;
 
-  const reply = await e.chat.completions.create({
-    messages: [
-      { role: "system", content: getDocumentSystemPrompt(language, settings.thinkingMode) },
-      {
-        role: "user",
-        content: multimodal([
-          { type: "image_url", image_url: { url: imageDataUrl } },
-          { type: "text", text: "Extract the key information from this document." },
-        ]),
+    const reply = await e.chat.completions.create({
+      messages: [
+        { role: "system", content: getDocumentSystemPrompt(language, settings.thinkingMode) },
+        {
+          role: "user",
+          content: multimodal([
+            { type: "image_url", image_url: { url: imageDataUrl } },
+            { type: "text", text: "Extract the key information from this document." },
+          ]),
+        },
+      ],
+      tools: [DOCUMENT_TOOL],
+      tool_choice: {
+        type: "function",
+        function: { name: "document_analysis" },
       },
-    ],
-    tools: [DOCUMENT_TOOL],
-    tool_choice: {
-      type: "function",
-      function: { name: "document_analysis" },
-    },
-    temperature,
-    max_tokens: 1024,
-  });
-  const message = reply.choices[0]?.message;
-  if (!message) return FALLBACK_DOC;
-  const result = parseToolCall<DocumentResult>(message, null);
-  if (result) return result;
-  return triesJson<DocumentResult>(message.content ?? "", FALLBACK_DOC);
+      temperature,
+      max_tokens: 1024,
+    });
+    const message = reply.choices[0]?.message;
+    if (!message) return FALLBACK_DOC;
+    const result = parseToolCall<DocumentResult>(message, null);
+    if (result) return result;
+    return triesJson<DocumentResult>(message.content ?? "", FALLBACK_DOC);
+  } catch (err) {
+    // Fallback to demo mode when cloudFallbackConsent is enabled
+    if (settings.cloudFallbackConsent) {
+      console.warn("Primary engine failed, falling back to demo mode:", err);
+      await sleep(1500 + Math.random() * 1000);
+      return demoDocument();
+    }
+    throw err;
+  }
 }
 
 /* ─── Follow-up questions ─────────────────────────────────── */

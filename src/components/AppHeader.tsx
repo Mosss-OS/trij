@@ -1,10 +1,11 @@
 import { OfflineIndicator } from "./OfflineIndicator";
 import { SyncStatus } from "./SyncStatus";
 import { Link } from "@tanstack/react-router";
+import { Settings } from "lucide-react";
 
 export function AppHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <header className="fixed top-0 z-30 w-full border-b bg-background/85 backdrop-blur">
+    <header className="fixed top-0 left-0 right-0 z-30 w-full h-16 border-b bg-background/85 backdrop-blur">
       <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-5 py-4">
         <Link to="/dashboard" className="flex items-center gap-2.5">
           <img
@@ -20,6 +21,13 @@ export function AppHeader({ title, subtitle }: { title: string; subtitle?: strin
         <div className="flex items-center gap-2">
           <SyncStatus />
           <OfflineIndicator />
+          <Link
+            to="/settings"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            aria-label="Settings"
+          >
+            <Settings className="h-5 w-5" />
+          </Link>
         </div>
       </div>
     </header>
