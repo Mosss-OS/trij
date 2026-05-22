@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { TriageResult, PossibleCondition } from "@/types/trij";
 import { UrgencyPill } from "./UrgencyPill";
 import { EducationPanel } from "./EducationPanel";
+import { analyzeForAntibiotics } from "@/lib/antibiotic-filter";
 import {
   Volume2,
   AlertTriangle,
@@ -334,6 +335,22 @@ export function AssessmentResult({
               </div>
             )}
           </>
+        )}
+
+        {result.recommendation && analyzeForAntibiotics(
+          result.condition,
+          result.recommendation,
+          result.possible_conditions,
+        ).hasAntibioticMention && (
+          <div className="mt-3 flex items-start gap-3 rounded-2xl border border-amber-400/30 bg-amber-50 p-4">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+            <div>
+              <p className="text-sm font-medium text-amber-700">{t("amrWarning")}</p>
+              <p className="mt-1 text-xs leading-relaxed text-amber-800/80">
+                {t("amrWarningDesc")}
+              </p>
+            </div>
+          </div>
         )}
 
         {onSpeak && (

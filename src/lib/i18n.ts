@@ -573,6 +573,11 @@ export const translations = {
     biasAuditGapDetected: "Known limitation — performance gap documented",
     biasAuditDesc: "We evaluate model performance across all Fitzpatrick skin types (I-VI) to ensure equitable accuracy regardless of skin tone.",
     biasAuditReadMore: "Read the full bias audit report",
+    amrWarning: "Antimicrobial Resistance (AMR) Warning",
+    amrWarningDesc: "Antibiotic therapy should follow local protocols and guidelines. Misuse of antibiotics contributes to antimicrobial resistance. Always verify before prescribing.",
+    localProtocol: "Local antibiotic protocol",
+    localProtocolDesc: "Reference for antibiotic therapy guidelines used in this region",
+    setLocalProtocol: "Set local protocol reference",
   },
   "fr-FR": {
     dashboard: "Tableau de bord",

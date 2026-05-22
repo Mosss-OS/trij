@@ -8,6 +8,7 @@ import {
 } from "./gemma-prompt";
 import type { TriageResult, DocumentResult, Urgency } from "@/types/trij";
 import { TRIAGE_TOOL, DOCUMENT_TOOL, FOLLOW_UP_TOOL, parseToolCall, triesJson } from "./tools";
+import { analyzeForAntibiotics } from "./antibiotic-filter";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSessionStore } from "@/stores/sessionStore";
 import { retrieve, getCompactKbContext } from "./rag";
@@ -367,7 +368,7 @@ const DEMO_CONDITIONS: Array<{
     confidence: 84,
     features: ["Honey-coloured crusts", "Perioral distribution", "Erythematous base"],
     recommendation:
-      "Clean with antiseptic. Topical mupirocin TID for 5 days. Refer if no improvement in 48 hours.",
+      "Clean with antiseptic. If bacterial infection suspected, start antibiotic therapy per local protocol. Refer if no improvement in 48 hours.",
   },
   {
     condition: "Contact dermatitis",
@@ -383,7 +384,7 @@ const DEMO_CONDITIONS: Array<{
     confidence: 72,
     features: ["Diffuse swelling", "Warm to touch", "Ill-defined margin", "Red streaking"],
     recommendation:
-      "URGENT: Refer to clinic for oral antibiotics. Elevate affected limb. Paracetamol for fever.",
+      "URGENT: Refer to clinic for antibiotic therapy per local protocol. Elevate affected limb. Paracetamol for fever.",
   },
   {
     condition: "Tinea corporis (ringworm)",
@@ -719,9 +720,18 @@ export async function triageImage(
 function attachRagSources(r: TriageResult): TriageResult {
   const features = r.key_visual_features || [];
   let result = { ...r };
-  /* Attach ICD-10 code if AI provided one or we can look it up */
   const icd10 = getIcd10Code(r);
   if (icd10) result.icd10_code = icd10;
+
+  const antibioticAnalysis = analyzeForAntibiotics(
+    result.condition,
+    result.recommendation,
+    result.possible_conditions,
+  );
+  if (antibioticAnalysis.hasAntibioticMention || antibioticAnalysis.recommendation !== result.recommendation) {
+    result.recommendation = antibioticAnalysis.recommendation ?? result.recommendation;
+  }
+
   if (features.length === 0) return result;
   const { sources } = retrieve(features, 3);
   if (sources.length === 0) return result;
