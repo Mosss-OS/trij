@@ -44,6 +44,25 @@ export interface PossibleCondition {
   probability: number;
 }
 
+export interface PrimaryDiagnosis {
+  name: string;
+  confidence: number;
+  supportingFeatures: string[];
+  againstFeatures: string[];
+}
+
+export interface DifferentialOption {
+  rank: number;
+  name: string;
+  confidence: number;
+  distinguishingQuestions: string[];
+}
+
+export interface DifferentialDiagnosis {
+  primaryDiagnosis: PrimaryDiagnosis;
+  differentials: DifferentialOption[];
+}
+
 export interface ReferralFeedback {
   diagnosis?: string;
   treatment?: string;
@@ -69,6 +88,20 @@ export interface Assessment {
   urgency?: Urgency;
   possibleConditions?: PossibleCondition[];
   keyVisualFeatures?: string[];
+  differentialDiagnosis?: {
+    primaryDiagnosis: {
+      name: string;
+      confidence: number;
+      supportingFeatures: string[];
+      againstFeatures: string[];
+    };
+    differentials: Array<{
+      rank: number;
+      name: string;
+      confidence: number;
+      distinguishingQuestions: string[];
+    }>;
+  };
   recommendation?: string;
   voiceLog?: string;
   language: string;
@@ -149,6 +182,20 @@ export interface TriageResult {
   referral_advised?: boolean;
   rag_sources?: { condition: string; treatment: string; who_guideline: string }[];
   follow_up_questions?: string[];
+  differential_diagnosis?: {
+    primary_diagnosis: {
+      name: string;
+      confidence: number;
+      supporting_features: string[];
+      against_features: string[];
+    };
+    differentials: Array<{
+      rank: number;
+      name: string;
+      confidence: number;
+      distinguishing_questions: string[];
+    }>;
+  };
 }
 
 export type AiFeedbackRating = "correct" | "partial" | "incorrect";

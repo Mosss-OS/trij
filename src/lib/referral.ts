@@ -96,6 +96,33 @@ export async function generateReferralPdfBlob(patient: Patient, a: Assessment): 
     });
   }
 
+  if (a.differentialDiagnosis) {
+    const dd = a.differentialDiagnosis;
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.text("Structured Differential Diagnosis", 40, y);
+    y += 14;
+    doc.setFont("helvetica", "normal");
+    doc.text(`Primary: ${dd.primaryDiagnosis.name} (${Math.round(dd.primaryDiagnosis.confidence)}%)`, 40, y);
+    y += 12;
+    if (dd.primaryDiagnosis.supportingFeatures?.length) {
+      doc.text(`  Supporting: ${dd.primaryDiagnosis.supportingFeatures.slice(0, 3).join(", ")}`, 40, y);
+      y += 10;
+    }
+    if (dd.primaryDiagnosis.againstFeatures?.length) {
+      doc.text(`  Against: ${dd.primaryDiagnosis.againstFeatures.slice(0, 3).join(", ")}`, 40, y);
+      y += 10;
+    }
+    dd.differentials.slice(0, 3).forEach((d) => {
+      doc.text(`  Alt: ${d.name} (${Math.round(d.confidence)}%)`, 40, y);
+      y += 10;
+      if (d.distinguishingQuestions?.length) {
+        doc.text(`    Q: ${d.distinguishingQuestions[0]}`, 40, y);
+        y += 10;
+      }
+    });
+  }
+
   const qrX = W - 40 - 80;
   const qrY = doc.internal.pageSize.getHeight() - 130;
   doc.addImage(qrDataUrl, "PNG", qrX, qrY, 80, 80);
