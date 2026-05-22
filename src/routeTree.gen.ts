@@ -17,6 +17,7 @@ import { Route as AppSupervisorRouteImport } from './routes/_app.supervisor'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppReferralsRouteImport } from './routes/_app.referrals'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
+import { Route as AppMaternalRouteImport } from './routes/_app.maternal'
 import { Route as AppHelpRouteImport } from './routes/_app.help'
 import { Route as AppFaqRouteImport } from './routes/_app.faq'
 import { Route as AppDocumentRouteImport } from './routes/_app.document'
@@ -64,6 +65,11 @@ const AppNotificationsRoute = AppNotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMaternalRoute = AppMaternalRouteImport.update({
+  id: '/maternal',
+  path: '/maternal',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppHelpRoute = AppHelpRouteImport.update({
   id: '/help',
   path: '/help',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/document': typeof AppDocumentRoute
   '/faq': typeof AppFaqRoute
   '/help': typeof AppHelpRoute
+  '/maternal': typeof AppMaternalRoute
   '/notifications': typeof AppNotificationsRoute
   '/referrals': typeof AppReferralsRoute
   '/settings': typeof AppSettingsRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/document': typeof AppDocumentRoute
   '/faq': typeof AppFaqRoute
   '/help': typeof AppHelpRoute
+  '/maternal': typeof AppMaternalRoute
   '/notifications': typeof AppNotificationsRoute
   '/referrals': typeof AppReferralsRoute
   '/settings': typeof AppSettingsRoute
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/_app/document': typeof AppDocumentRoute
   '/_app/faq': typeof AppFaqRoute
   '/_app/help': typeof AppHelpRoute
+  '/_app/maternal': typeof AppMaternalRoute
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/referrals': typeof AppReferralsRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/document'
     | '/faq'
     | '/help'
+    | '/maternal'
     | '/notifications'
     | '/referrals'
     | '/settings'
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/document'
     | '/faq'
     | '/help'
+    | '/maternal'
     | '/notifications'
     | '/referrals'
     | '/settings'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/_app/document'
     | '/_app/faq'
     | '/_app/help'
+    | '/_app/maternal'
     | '/_app/notifications'
     | '/_app/referrals'
     | '/_app/settings'
@@ -266,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNotificationsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/maternal': {
+      id: '/_app/maternal'
+      path: '/maternal'
+      fullPath: '/maternal'
+      preLoaderRoute: typeof AppMaternalRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/help': {
       id: '/_app/help'
       path: '/help'
@@ -324,6 +343,7 @@ interface AppRouteChildren {
   AppDocumentRoute: typeof AppDocumentRoute
   AppFaqRoute: typeof AppFaqRoute
   AppHelpRoute: typeof AppHelpRoute
+  AppMaternalRoute: typeof AppMaternalRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppReferralsRoute: typeof AppReferralsRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -339,6 +359,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDocumentRoute: AppDocumentRoute,
   AppFaqRoute: AppFaqRoute,
   AppHelpRoute: AppHelpRoute,
+  AppMaternalRoute: AppMaternalRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppReferralsRoute: AppReferralsRoute,
   AppSettingsRoute: AppSettingsRoute,
