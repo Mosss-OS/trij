@@ -84,7 +84,12 @@ export interface Assessment {
   vitalSigns?: VitalSigns;
   condition?: string;
   icd10Code?: string;
-  confidence?: number;
+  confidence?: {
+    confidence_point: number; // 0-100
+    confidence_interval: [number, number]; // [lower, upper] 0-100
+    uncertainty_source: "image_quality" | "model_knowledge" | "both";
+    uncertainty_reason: string;
+  };
   urgency?: Urgency;
   possibleConditions?: PossibleCondition[];
   keyVisualFeatures?: string[];

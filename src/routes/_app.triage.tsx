@@ -303,7 +303,7 @@ function TriagePage() {
           const txt = [
             t("voiceGuideResult"),
             t("likelyCondition") + ": " + result.condition,
-            t("voiceGuideConfidence").replace("{pct}", String(Math.round(result.confidence))),
+            t("voiceGuideConfidence").replace("{pct}", String(Math.round(result.confidence.confidence_point))),
             t("voiceGuideUrgency").replace("{level}", result.urgency),
             t("voiceGuideRecommended") + " " + (result.recommendation ?? ""),
           ].join(". ");
@@ -477,7 +477,12 @@ function TriagePage() {
     const overallUrgency = getOverallUrgency(classifications);
     const imciTriageResult: TriageResult = {
       condition: classifications.map((c) => getClassificationLabel(c.category)).join("; "),
-      confidence: 100,
+      confidence: {
+        confidence_point: 100,
+        confidence_interval: [95, 100],
+        uncertainty_source: "model_knowledge",
+        uncertainty_reason: "IMCI algorithm-based assessment with clear diagnostic criteria",
+      },
       urgency: overallUrgency,
       possible_conditions: classifications.map((c) => ({
         name: getClassificationLabel(c.category),
