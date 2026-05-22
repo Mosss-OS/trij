@@ -81,6 +81,50 @@ export const TRIAGE_TOOL: ToolDefinition = {
           type: "string",
           description: "ICD-10 code for the primary condition (e.g. L01.0 for impetigo, L03.9 for cellulitis)",
         },
+        differential_diagnosis: {
+          type: "object",
+          description: "Structured differential diagnosis with supporting evidence",
+          properties: {
+            primary_diagnosis: {
+              type: "object",
+              description: "The most likely diagnosis with supporting evidence",
+              properties: {
+                name: { type: "string", description: "Name of the primary diagnosis" },
+                confidence: { type: "number", description: "Confidence score 0-100", minimum: 0, maximum: 100 },
+                supporting_features: {
+                  type: "array",
+                  description: "Clinical features that support this diagnosis",
+                  items: { type: "string" },
+                },
+                against_features: {
+                  type: "array",
+                  description: "Clinical features that argue against this diagnosis",
+                  items: { type: "string" },
+                },
+              },
+              required: ["name", "confidence", "supporting_features", "against_features"],
+            },
+            differentials: {
+              type: "array",
+              description: "Alternative diagnoses ranked by likelihood",
+              items: {
+                type: "object",
+                properties: {
+                  rank: { type: "number", description: "Rank order (2 = first alternative)" },
+                  name: { type: "string", description: "Condition name" },
+                  confidence: { type: "number", description: "Confidence score 0-100", minimum: 0, maximum: 100 },
+                  distinguishing_questions: {
+                    type: "array",
+                    description: "Questions a CHW can ask the patient to differentiate this from the primary diagnosis",
+                    items: { type: "string" },
+                  },
+                },
+                required: ["rank", "name", "confidence", "distinguishing_questions"],
+              },
+            },
+          },
+          required: ["primary_diagnosis", "differentials"],
+        },
       },
       required: ["condition", "confidence", "urgency", "recommendation", "referral_advised"],
     },

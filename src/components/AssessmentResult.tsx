@@ -13,6 +13,9 @@ import {
   Info,
   BookOpen,
   Beaker,
+  HelpCircle,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -166,7 +169,122 @@ function DifferentialList({
   );
 }
 
-function WhyThisDiagnosis({ features }: { features: string[] }) {
+function DifferentialDiagnosisView({
+  dd,
+}: {
+  dd: NonNullable<TriageResult["differential_diagnosis"]>;
+}) {
+  const { t } = useI18n();
+  const [showAll, setShowAll] = useState(false);
+
+  return (
+    <div className="space-y-3">
+      <div className="rounded-xl border bg-card/50 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-muted-foreground">{t("primaryDiagnosis")}</p>
+            <p className="mt-1 text-base font-bold">{dd.primary_diagnosis.name}</p>
+          </div>
+          <div className="flex-shrink-0 text-right">
+            <p className="text-xs text-muted-foreground">{t("confidence")}</p>
+            <p className="text-lg font-bold">{Math.round(dd.primary_diagnosis.confidence)}%</p>
+          </div>
+        </div>
+        {dd.primary_diagnosis.supporting_features.length > 0 && (
+          <div className="mt-3">
+            <p className="mb-1 flex items-center gap-1 text-xs font-medium text-emerald-600">
+              <ThumbsUp className="h-3 w-3" /> {t("supporting")}
+            </p>
+            <ul className="flex flex-wrap gap-1.5">
+              {dd.primary_diagnosis.supporting_features.map((f) => (
+                <li
+                  key={f}
+                  className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700"
+                >
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {dd.primary_diagnosis.against_features.length > 0 && (
+          <div className="mt-2">
+            <p className="mb-1 flex items-center gap-1 text-xs font-medium text-amber-600">
+              <ThumbsDown className="h-3 w-3" /> {t("against")}
+            </p>
+            <ul className="flex flex-wrap gap-1.5">
+              {dd.primary_diagnosis.against_features.map((f) => (
+                <li
+                  key={f}
+                  className="rounded-md bg-amber-50 px-2 py-0.5 text-xs text-amber-700"
+                >
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {t("alternatives")}
+        </p>
+        {(showAll ? dd.differentials : dd.differentials.slice(0, 2)).map((d) => (
+          <div key={d.name} className="rounded-xl border bg-card/30 p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">{d.name}</p>
+              </div>
+              <span className="flex-shrink-0 font-mono text-xs text-muted-foreground">
+                {Math.round(d.confidence)}%
+              </span>
+            </div>
+            <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full bg-primary/50"
+                style={{ width: `${Math.min(100, d.confidence)}%` }}
+              />
+            </div>
+            {d.distinguishing_questions.length > 0 && (
+              <div className="mt-2">
+                <p className="mb-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <HelpCircle className="h-3 w-3" /> {t("distinguishingQuestions")}
+                </p>
+                <ul className="space-y-0.5">
+                  {d.distinguishing_questions.map((q) => (
+                    <li key={q} className="text-xs italic text-muted-foreground">
+                      &ldquo;{q}&rdquo;
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ))}
+        {dd.differentials.length > 2 && !showAll && (
+          <button
+            onClick={() => setShowAll(true)}
+            className="flex w-full items-center justify-center gap-1 rounded-xl border border-dashed py-2 text-xs text-muted-foreground hover:bg-accent"
+          >
+            <ChevronDown className="h-3 w-3" />
+            {t("showAllN").replace("{n}", String(dd.differentials.length - 2))}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function WhyThisDiagnosis({
+  features,
+  supporting,
+  against,
+}: {
+  features: string[];
+  supporting?: string[];
+  against?: string[];
+}) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
@@ -197,6 +315,40 @@ function WhyThisDiagnosis({ features }: { features: string[] }) {
               </li>
             ))}
           </ul>
+          {supporting && supporting.length > 0 && (
+            <>
+              <p className="mb-2 mt-3 flex items-center gap-1 text-xs font-medium text-emerald-600">
+                <ThumbsUp className="h-3 w-3" /> {t("supportingFeatures")}
+              </p>
+              <ul className="flex flex-wrap gap-2">
+                {supporting.map((f) => (
+                  <li
+                    key={f}
+                    className="rounded-full bg-emerald-100 px-3 py-1 text-xs text-emerald-700"
+                  >
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {against && against.length > 0 && (
+            <>
+              <p className="mb-2 mt-3 flex items-center gap-1 text-xs font-medium text-amber-600">
+                <ThumbsDown className="h-3 w-3" /> {t("againstFeatures")}
+              </p>
+              <ul className="flex flex-wrap gap-2">
+                {against.map((f) => (
+                  <li
+                    key={f}
+                    className="rounded-full bg-amber-100 px-3 py-1 text-xs text-amber-700"
+                  >
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -378,8 +530,21 @@ export function AssessmentResult({
         </div>
       )}
 
+      {result.differential_diagnosis && (
+        <div className="rounded-3xl border bg-card p-6">
+          <h3 className="mb-3 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            {t("structuredDifferential")}
+          </h3>
+          <DifferentialDiagnosisView dd={result.differential_diagnosis} />
+        </div>
+      )}
+
       {result.key_visual_features.length > 0 && (
-        <WhyThisDiagnosis features={result.key_visual_features} />
+        <WhyThisDiagnosis
+          features={result.key_visual_features}
+          supporting={result.differential_diagnosis?.primary_diagnosis.supporting_features}
+          against={result.differential_diagnosis?.primary_diagnosis.against_features}
+        />
       )}
 
       {result.rag_sources && result.rag_sources.length > 0 && (

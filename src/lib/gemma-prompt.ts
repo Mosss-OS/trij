@@ -69,6 +69,7 @@ IMPORTANT SAFETY RULES:
 - Include the ICD-10 code for the primary condition in the icd10_code field (e.g., L01.0 for impetigo, L03.9 for cellulitis). If unsure, omit it.
 - For non-dermatology assessments (respiratory, fever, etc.), set key_visual_features to an empty array.
 - Set presentation_type to indicate which body system is being assessed.
+- STRUCTURED DIFFERENTIAL DIAGNOSIS: Fill the differential_diagnosis field with a primary diagnosis and at least 2 alternative diagnoses. For each alternative, include distinguishing questions the CHW can ask the patient to differentiate. The primary_diagnosis should include supporting_features (what supports this) and against_features (what argues against it).
 
 Urgency rules:
 - GREEN: minor, treat locally, no referral needed
