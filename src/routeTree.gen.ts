@@ -22,6 +22,7 @@ import { Route as AppHelpRouteImport } from './routes/_app.help'
 import { Route as AppFaqRouteImport } from './routes/_app.faq'
 import { Route as AppDocumentRouteImport } from './routes/_app.document'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppCalculatorRouteImport } from './routes/_app.calculator'
 import { Route as AppAuditRouteImport } from './routes/_app.audit'
 import { Route as AppPatientsIndexRouteImport } from './routes/_app.patients.index'
 import { Route as AppPatientsBatchRegisterRouteImport } from './routes/_app.patients.batch-register'
@@ -91,6 +92,11 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCalculatorRoute = AppCalculatorRouteImport.update({
+  id: '/calculator',
+  path: '/calculator',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAuditRoute = AppAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/audit': typeof AppAuditRoute
+  '/calculator': typeof AppCalculatorRoute
   '/dashboard': typeof AppDashboardRoute
   '/document': typeof AppDocumentRoute
   '/faq': typeof AppFaqRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/audit': typeof AppAuditRoute
+  '/calculator': typeof AppCalculatorRoute
   '/dashboard': typeof AppDashboardRoute
   '/document': typeof AppDocumentRoute
   '/faq': typeof AppFaqRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/audit': typeof AppAuditRoute
+  '/_app/calculator': typeof AppCalculatorRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/document': typeof AppDocumentRoute
   '/_app/faq': typeof AppFaqRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/audit'
+    | '/calculator'
     | '/dashboard'
     | '/document'
     | '/faq'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/audit'
+    | '/calculator'
     | '/dashboard'
     | '/document'
     | '/faq'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/_app/audit'
+    | '/_app/calculator'
     | '/_app/dashboard'
     | '/_app/document'
     | '/_app/faq'
@@ -326,6 +338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/calculator': {
+      id: '/_app/calculator'
+      path: '/calculator'
+      fullPath: '/calculator'
+      preLoaderRoute: typeof AppCalculatorRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/audit': {
       id: '/_app/audit'
       path: '/audit'
@@ -359,6 +378,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAuditRoute: typeof AppAuditRoute
+  AppCalculatorRoute: typeof AppCalculatorRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppDocumentRoute: typeof AppDocumentRoute
   AppFaqRoute: typeof AppFaqRoute
@@ -376,6 +396,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAuditRoute: AppAuditRoute,
+  AppCalculatorRoute: AppCalculatorRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppDocumentRoute: AppDocumentRoute,
   AppFaqRoute: AppFaqRoute,

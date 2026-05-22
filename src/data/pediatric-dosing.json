@@ -1,0 +1,279 @@
+{
+  "medications": [
+    {
+      "id": "paracetamol",
+      "name": "Paracetamol (Acetaminophen)",
+      "formulations": [
+        {
+          "form": "syrup",
+          "concentration": "120mg/5ml",
+          "dosePerKg": "15",
+          "doseUnit": "mg",
+          "frequency": "every 4-6 hours",
+          "maxDailyDosePerKg": "75",
+          "maxDailyDoseUnit": "mg",
+          "notes": "Maximum 4 doses per day. Do not exceed 5 days without medical supervision."
+        },
+        {
+          "form": "syrup",
+          "concentration": "250mg/5ml",
+          "dosePerKg": "15",
+          "doseUnit": "mg",
+          "frequency": "every 4-6 hours",
+          "maxDailyDosePerKg": "75",
+          "maxDailyDoseUnit": "mg",
+          "notes": "Maximum 4 doses per day. Do not exceed 5 days without medical supervision."
+        },
+        {
+          "form": "tablet",
+          "concentration": "500mg",
+          "minAge": 6,
+          "dosePerKg": "15",
+          "doseUnit": "mg",
+          "frequency": "every 4-6 hours",
+          "maxDailyDosePerKg": "75",
+          "maxDailyDoseUnit": "mg",
+          "notes": "For children 6+ years. Maximum 4 doses per day. Do not exceed 5 days without medical supervision."
+        }
+      ],
+      "contraindications": [
+        "Severe liver disease",
+        "Known hypersensitivity to paracetamol"
+      ],
+      "warnings": [
+        "Do not combine with other paracetamol-containing products",
+        "Seek medical attention if fever persists beyond 3 days or pain beyond 5 days"
+      ]
+    },
+    {
+      "id": "amoxicillin",
+      "name": "Amoxicillin",
+      "formulations": [
+        {
+          "form": "suspension",
+          "concentration": "125mg/5ml",
+          "dosePerKg": "25",
+          "doseUnit": "mg",
+          "frequency": "every 8 hours",
+          "maxDailyDosePerKg": "75",
+          "maxDailyDoseUnit": "mg",
+          "notes": "Typically for 5-10 days depending on infection. Complete full course even if symptoms improve."
+        },
+        {
+          "form": "suspension",
+          "concentration": "250mg/5ml",
+          "dosePerKg": "25",
+          "doseUnit": "mg",
+          "frequency": "every 8 hours",
+          "maxDailyDosePerKg": "75",
+          "maxDailyDoseUnit": "mg",
+          "notes": "Typically for 5-10 days depending on infection. Complete full course even if symptoms improve."
+        },
+        {
+          "form": "tablet",
+          "concentration": "250mg",
+          "minAge": 5,
+          "dosePerKg": "25",
+          "doseUnit": "mg",
+          "frequency": "every 8 hours",
+          "maxDailyDosePerKg": "75",
+          "maxDailyDoseUnit": "mg",
+          "notes": "For children 5+ years. Typically for 5-10 days. Complete full course."
+        }
+      ],
+      "contraindications": [
+        "Penicillin allergy",
+        "Severe renal impairment"
+      ],
+      "warnings": [
+        "Complete full course of treatment",
+        "Discontinue if severe allergic reaction occurs"
+      ]
+    },
+    {
+      "id": "artemether-lumefantrine",
+      "name": "Artemether-Lumefantrine (Coartem)",
+      "formulations": [
+        {
+          "form": "tablet",
+          "concentration": "20mg/120mg",
+          "minWeight": 5,
+          "maxWeight": 15,
+          "doses": [
+            {
+              "time": "0 hours",
+              "tablets": 1
+            },
+            {
+              "time": "8 hours",
+              "tablets": 1
+            },
+            {
+              "time": "24 hours",
+              "tablets": 1
+            },
+            {
+              "time": "36 hours",
+              "tablets": 1
+            },
+            {
+              "time": "48 hours",
+              "tablets": 1
+            },
+            {
+              "time": "60 hours",
+              "tablets": 1
+            }
+          ],
+          "notes": "6-dose regimen over 3 days. Take with food."
+        },
+        {
+          "form": "tablet",
+          "concentration": "20mg/120mg",
+          "minWeight": 15,
+          "maxWeight": 25,
+          "doses": [
+            {
+              "time": "0 hours",
+              "tablets": 2
+            },
+            {
+              "time": "8 hours",
+              "tablets": 2
+            },
+            {
+              "time": "24 hours",
+              "tablets": 2
+            },
+            {
+              "time": "36 hours",
+              "tablets": 2
+            },
+            {
+              "time": "48 hours",
+              "tablets": 2
+            },
+            {
+              "time": "60 hours",
+              "tablets": 2
+            }
+          ],
+          "notes": "6-dose regimen over 3 days. Take with food."
+        },
+        {
+          "form": "tablet",
+          "concentration": "20mg/120mg",
+          "minWeight": 25,
+          "maxWeight": 35,
+          "doses": [
+            {
+              "time": "0 hours",
+              "tablets": 3
+            },
+            {
+              "time": "8 hours",
+              "tablets": 3
+            },
+            {
+              "time": "24 hours",
+              "tablets": 3
+            },
+            {
+              "time": "36 hours",
+              "tablets": 3
+            },
+            {
+              "time": "48 hours",
+              "tablets": 3
+            },
+            {
+              "time": "60 hours",
+              "tablets": 3
+            }
+          ],
+          "notes": "6-dose regimen over 3 days. Take with food."
+        }
+      ],
+      "contraindications": [
+        "Severe hepatic impairment",
+        "Known hypersensitivity to artemisinin derivatives"
+      ],
+      "warnings": [
+        "For treatment of uncomplicated malaria only",
+        "Take with food to improve absorption",
+        "Complete full 6-dose regimen",
+        "Not for prophylaxis"
+      ]
+    },
+    {
+      "id": "ors",
+      "name": "Oral Rehydration Solution (ORS)",
+      "formulations": [
+        {
+          "form": "powder",
+          "concentration": "per liter",
+          "volumePerKg": "75",
+          "volumeUnit": "ml",
+          "frequency": "for first 4 hours, then as needed",
+          "maxDailyVolumePerKg": "200",
+          "maxDailyVolumeUnit": "ml",
+          "notes": "Reconstitute 1 packet in 1 liter of clean water. Use within 24 hours if kept cool."
+        }
+      ],
+      "contraindications": [
+        "Severe dehydration (requires IV fluids)",
+        "Unconscious patient",
+        "Intestinal obstruction"
+      ],
+      "warnings": [
+        "Use clean water for reconstitution",
+        "Do not add sugar or ORS to ORS solution",
+        "Continue breastfeeding if infant",
+        "Seek medical help if vomiting persists or no improvement"
+      ]
+    },
+    {
+      "id": "zinc",
+      "name": "Zinc Sulfate",
+      "formulations": [
+        {
+          "form": "tablet",
+          "concentration": "20mg",
+          "minAgeMonths": 6,
+          "maxAgeMonths": 59,
+          "dose": "10mg",
+          "doseUnit": "mg",
+          "frequency": "daily for 10-14 days",
+          "notes": "Dissolve tablet in small amount of water or breastmilk."
+        },
+        {
+          "form": "tablet",
+          "concentration": "20mg",
+          "minAgeMonths": 60,
+          "dose": "20mg",
+          "doseUnit": "mg",
+          "frequency": "daily for 10-14 days",
+          "notes": "Dissolve tablet in small amount of water."
+        },
+        {
+          "form": "syrup",
+          "concentration": "10mg/5ml",
+          "minAgeMonths": 6,
+          "maxAgeMonths": 59,
+          "dose": "10mg",
+          "doseUnit": "mg",
+          "frequency": "daily for 10-14 days",
+          "notes": "Can be given directly."
+        }
+      ],
+      "contraindications": [
+        "Known hypersensitivity to zinc"
+      ],
+      "warnings": [
+        "For treatment of diarrhea only",
+        "Complete 10-14 day course for full benefit",
+        "May cause mild nausea, take with food if needed"
+      ]
+    }
+  ]
+}

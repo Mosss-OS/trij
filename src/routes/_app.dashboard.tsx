@@ -19,6 +19,7 @@ import {
   ExternalLink,
   BellRing,
   Clock,
+  Calculator,
 } from "lucide-react";
 import { StorageMonitor } from "@/components/StorageMonitor";
 import { formatDistanceToNow, isPast, isToday, format } from "date-fns";
@@ -176,6 +177,7 @@ function DashboardPage() {
           <QuickTile to="/document" icon={FileText} label={t("scanDoc")} />
           <QuickTile to="/patients" icon={Stethoscope} label={t("patients")} />
           <QuickTile to="/referrals" icon={ExternalLink} label={t("referrals")} />
+          <QuickTile to="/calculator" icon={Calculator} label="Dose Calculator" />
           <QuickTile to="/supervisor" icon={MapIcon} label={t("map")} />
         </section>
 
