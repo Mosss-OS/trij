@@ -34,6 +34,8 @@ import {
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { TriageResult, Patient, Assessment, VitalSigns } from "@/types/trij";
 import { checkRedFlags, type RedFlag } from "@/lib/red-flags";
+import { evaluateVitalSigns } from "@/lib/vital-signs";
+import { VitalSignsInput } from "@/components/VitalSignsInput";
 import { RedFlagAlert } from "@/components/RedFlagAlert";
 import { assessImci, getOverallUrgency, getClassificationLabel, getImciAction, type ImciClassification, type ImciDangerSign } from "@/lib/imci";
 import { getDB } from "@/lib/db";
@@ -384,6 +386,15 @@ function TriagePage() {
   };
 
   const onVitalsComplete = () => {
+    const vs = buildVitalSigns();
+    if (vs && age) {
+      const eval_ = evaluateVitalSigns(vs, Number(age));
+      if (eval_.urgencyOverride === "red") {
+        toast.warning(t("vitalSignsCritical"), { duration: 5000 });
+      } else if (eval_.urgencyOverride === "yellow") {
+        toast.info(t("vitalSignsAbnormal"), { duration: 4000 });
+      }
+    }
     setStep("capture");
   };
 
@@ -1196,127 +1207,14 @@ function TriagePage() {
           </div>
         )}
 
-        {step === "vitals" && (
-          <div className="mt-7 space-y-5">
-            <div>
-              <h2 className="font-display text-xl font-semibold">{t("captureVitals")}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{t("vitalsDesc")}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              <div className="space-y-1.5">
-                <Label>{t("bp")}</Label>
-                <div className="flex gap-1">
-                  <Input
-                    value={vitalSigns.systolicBP}
-                    onChange={(e) => setVitalSigns((v) => ({ ...v, systolicBP: e.target.value }))}
-                    placeholder="120"
-                    type="number"
-                    min={0}
-                    max={300}
-                    className="w-full"
-                  />
-                  <span className="flex items-center text-xs text-muted-foreground">/</span>
-                  <Input
-                    value={vitalSigns.diastolicBP}
-                    onChange={(e) => setVitalSigns((v) => ({ ...v, diastolicBP: e.target.value }))}
-                    placeholder="80"
-                    type="number"
-                    min={0}
-                    max={200}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t("heartRate")}</Label>
-                <Input
-                  value={vitalSigns.heartRate}
-                  onChange={(e) => setVitalSigns((v) => ({ ...v, heartRate: e.target.value }))}
-                  placeholder={t("hrPlaceholder")}
-                  type="number"
-                  min={0}
-                  max={300}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t("respiratoryRate")}</Label>
-                <Input
-                  value={vitalSigns.respiratoryRate}
-                  onChange={(e) => setVitalSigns((v) => ({ ...v, respiratoryRate: e.target.value }))}
-                  placeholder={t("rrPlaceholder")}
-                  type="number"
-                  min={0}
-                  max={100}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t("temperature")}</Label>
-                <Input
-                  value={vitalSigns.temperature}
-                  onChange={(e) => setVitalSigns((v) => ({ ...v, temperature: e.target.value }))}
-                  placeholder={t("tempPlaceholder")}
-                  type="number"
-                  min={30}
-                  max={45}
-                  step={0.1}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t("oxygenSaturation")}</Label>
-                <Input
-                  value={vitalSigns.oxygenSaturation}
-                  onChange={(e) => setVitalSigns((v) => ({ ...v, oxygenSaturation: e.target.value }))}
-                  placeholder={t("spo2Placeholder")}
-                  type="number"
-                  min={0}
-                  max={100}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t("muac")}</Label>
-                <Input
-                  value={vitalSigns.muac}
-                  onChange={(e) => setVitalSigns((v) => ({ ...v, muac: e.target.value }))}
-                  placeholder={t("muacPlaceholder")}
-                  type="number"
-                  min={0}
-                  max={60}
-                  step={0.1}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t("weight")}</Label>
-                <Input
-                  value={vitalSigns.weight}
-                  onChange={(e) => setVitalSigns((v) => ({ ...v, weight: e.target.value }))}
-                  placeholder={t("weightPlaceholder")}
-                  type="number"
-                  min={0}
-                  max={300}
-                  step={0.1}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t("painScale")}</Label>
-                <Input
-                  value={vitalSigns.painScale}
-                  onChange={(e) => setVitalSigns((v) => ({ ...v, painScale: e.target.value }))}
-                  placeholder="0-10"
-                  type="number"
-                  min={0}
-                  max={10}
-                />
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Button onClick={onVitalsComplete} size="lg" className="flex-1 gap-2">
-                {t("continue")} <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button onClick={skipVitals} size="lg" variant="ghost" className="gap-2">
-                {t("vitalsUnknown")}
-              </Button>
-            </div>
-          </div>
+        {step === "vitals" && age && (
+          <VitalSignsInput
+            ageYears={Number(age)}
+            values={vitalSigns}
+            onChange={setVitalSigns}
+            onContinue={onVitalsComplete}
+            onSkip={skipVitals}
+          />
         )}
 
         {step === "capture" && (
