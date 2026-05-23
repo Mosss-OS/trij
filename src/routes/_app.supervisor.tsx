@@ -11,6 +11,13 @@ import { toast } from "sonner";
 import { detectOutbreaks, type Outbreak, type OutbreakAssessment, type OutbreakAlert } from "@/lib/outbreak";
 import { checkForNotifiableConditions } from "@/lib/outbreak-flags";
 import {
+  aggregateAssessments,
+  buildDhis2Payload,
+  validateCounts,
+  getCurrentDhis2Period,
+  type Dhis2Config,
+} from "@/lib/dhis2-export";
+import {
   Loader2,
   MapPin,
   BarChart3,
@@ -21,6 +28,7 @@ import {
   X,
   ExternalLink,
   ShieldAlert,
+  Database,
 } from "lucide-react";
 import { format } from "date-fns";
 import { useI18n } from "@/lib/i18n";
@@ -378,6 +386,81 @@ function Supervisor() {
     csvDownload(`trij-chw-anonymised-${format(new Date(), "yyyy-MM-dd")}.csv`, headers, rows);
   };
 
+  const exportDhis2 = async () => {
+    if (items.length === 0) {
+      toast.error(t("noDataYet"));
+      return;
+    }
+
+    const config: Dhis2Config = {
+      baseUrl: "",
+      username: "",
+      password: "",
+      orgUnit: "",
+      dataSet: "",
+      period: getCurrentDhis2Period(),
+    };
+
+    // Map remote assessments to the format aggregateAssessments expects
+    const mapped: Array<{
+      urgency: "green" | "yellow" | "red";
+      referralAdvised?: boolean;
+      referralStatus?: string;
+      presentationType?: string;
+    }> = items.map((a) => ({
+      urgency: a.urgency ?? "green",
+      referralAdvised: a.referral_advised ?? false,
+      referralStatus: a.referral_status ?? "none",
+    }));
+
+    const counts = aggregateAssessments(mapped as any);
+    const validation = validateCounts(counts);
+
+    if (validation.warnings.length > 0 && validation.totalAssessments > 0) {
+      const proceed = window.confirm(
+        `Validation warnings:\n${validation.warnings.join("\n")}\n\nProceed anyway?`,
+      );
+      if (!proceed) return;
+    }
+
+    // Prompt for DHIS2 configuration
+    const baseUrl = window.prompt("DHIS2 API URL:", config.baseUrl);
+    if (!baseUrl) return;
+    const username = window.prompt("DHIS2 Username:", config.username);
+    if (!username) return;
+    const password = window.prompt("DHIS2 Password:");
+    if (!password) return;
+    const orgUnit = window.prompt("DHIS2 Organisation Unit ID:", config.orgUnit);
+    if (!orgUnit) return;
+    const dataSet = window.prompt("DHIS2 Data Set ID:", config.dataSet);
+    if (!dataSet) return;
+
+    const fullConfig: Dhis2Config = {
+      baseUrl,
+      username,
+      password,
+      orgUnit,
+      dataSet,
+      period: config.period,
+    };
+
+    const payload = buildDhis2Payload(fullConfig, counts);
+
+    try {
+      const { pushToDhis2 } = await import("@/lib/dhis2-export");
+      const result = await pushToDhis2(fullConfig, payload);
+      if (result.ok) {
+        toast.success(
+          `DHIS2 export successful (${validation.totalAssessments} assessments, ${validation.dataElementCount} elements)`,
+        );
+      } else {
+        toast.error(`DHIS2 export failed: HTTP ${result.httpStatus}`);
+      }
+    } catch (err) {
+      toast.error(`DHIS2 export error: ${(err as Error).message}`);
+    }
+  };
+
   return (
     <>
       <AppHeader title={t("supervisor")} subtitle={t("regionOverview")} />
@@ -534,6 +617,15 @@ function Supervisor() {
               disabled={items.length === 0}
             >
               <Download className="h-3.5 w-3.5" /> {t("csvExport")}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1 text-xs"
+              onClick={exportDhis2}
+              disabled={items.length === 0}
+            >
+              <Database className="h-3.5 w-3.5" /> DHIS2
             </Button>
           </div>
         </div>
