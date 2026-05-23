@@ -32,7 +32,7 @@ Reference: 45 CFR § 164.312 — Security Standards for the Protection of Electr
 | **Audit Controls** | 164.312(b) | 11 audit event types logged to IndexedDB and synced to Supabase `audit_logs` table. RLS policies: CHW insert own, supervisor read, admin all. Viewer at `_app.audit.tsx`. | Audit logs include IP and user-agent (potential PII). No retention limit. | Add configurable retention period (default 90 days) with auto-purge. Hash IP address after 30 days. |
 | **Integrity Controls** | 164.312(c)(1) | SHA-256 chunk verification in resumable download (`src/lib/resumable-download.ts`). E2E sync with conflict detection and three-way merge. | No checksum verification on stored assessment data at rest. | Add integrity check on assessment read with automatic re-sync on mismatch. |
 | **Person or Entity Authentication** | 164.312(d) | Supabase Auth, PBKDF2 PIN, WebAuthn biometric (platform authenticator). Session persisted in localStorage with auto-refresh. | Biometric is optional and platform-dependent. | Enforce multi-factor (PIN + biometric) for supervisor/admin roles. |
-| **Transmission Security** | 164.312(e)(1) | All client-server communication over HTTPS/TLS (Supabase). Data sync via encrypted channel. | No implemented. | Verify TLS 1.2+ minimum on deployment. Document in deployment checklist. |
+| **Transmission Security** | 164.312(e)(1) | All client-server communication over HTTPS/TLS (Supabase). Data sync via encrypted channel. | TLS version enforcement not verified in deployment checklist. | Verify TLS 1.2+ minimum on deployment. Document in deployment checklist. |
 
 **Overall HIPAA assessment:** Partial compliance. Core technical safeguards are implemented but encryption should be default-on and retention policies need formalisation.
 

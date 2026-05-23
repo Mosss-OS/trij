@@ -670,6 +670,7 @@ export const translations = {
     biasAuditGapDetected: "Known limitation — performance gap documented",
     biasAuditDesc: "We evaluate model performance across all Fitzpatrick skin types (I-VI) to ensure equitable accuracy regardless of skin tone.",
     biasAuditReadMore: "Read the full bias audit report",
+    complianceReadMore: "View regulatory compliance matrix",
     clinicalValidationStatus: "Clinical Validation Status",
     validationInProgress: "In progress — collecting validation data",
     validationPassed: "Passed — meeting performance targets",
