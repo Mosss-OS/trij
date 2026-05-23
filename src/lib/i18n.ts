@@ -764,6 +764,7 @@ export const translations = {
     signature: "Signature",
     consentConfirm: "Confirm consent",
     consentConfirmed: "Consent recorded",
+    backgroundDownload: "Downloading in background — you can navigate the app",
   },
   "fr-FR": {
     dashboard: "Tableau de bord",
