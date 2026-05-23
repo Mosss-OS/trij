@@ -393,6 +393,16 @@ function SettingsPage() {
               <p className="mt-1 text-xs text-muted-foreground">{t("privacyDesc")}</p>
             </div>
           </div>
+          <a
+            href="/docs/compliance/COMPLIANCE.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 flex items-center gap-1 rounded-xl border bg-card p-3 text-sm font-medium hover:bg-muted/50"
+          >
+            <ShieldCheck className="h-4 w-4 text-primary" />
+            <span className="flex-1">{t("complianceReadMore")}</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </a>
           {gemma.kind === "webllm" && (
             <div className="flex items-center justify-between">
               <div>
