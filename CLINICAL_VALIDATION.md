@@ -145,7 +145,30 @@ Before any model update is deployed to production:
 
 ---
 
-## 6. Regulatory Notes
+## 6. Language Quality Ratings
+
+Trij supports 7 languages. Each non-English language pack undergoes medical terminology review per the [localisation review methodology](docs/localisation-review/REVIEW_METHODOLOGY.md).
+
+| Language | Locale | Medical Review Status | Rating |
+|---|---|---|---|
+| English (source) | en-US | Source language | Certified |
+| Spanish | es-ES | Pending | Draft |
+| French | fr-FR | Pending | Draft |
+| Swahili | sw-KE | Pending | Draft |
+| Hindi | hi-IN | Pending | Draft |
+| Portuguese (BR) | pt-BR | Pending | Draft |
+| Arabic | ar-SA | Pending | Draft |
+
+Ratings:
+- **Certified** — All clinical strings reviewed and accurate
+- **Conditional** — Critical strings reviewed, suitable for pilot
+- **Draft** — Not yet reviewed, available for testing only
+
+See [docs/localisation-review/](docs/localisation-review/) for detailed findings per language.
+
+---
+
+## 7. Regulatory Notes
 
 - The labelled validation dataset is stored in a separate, access-controlled repository
 - All clinician reviewers will sign confidentiality and data handling agreements
