@@ -393,7 +393,9 @@ export function AssessmentResult({
 }: Props) {
   const { t } = useI18n();
   const pictogramMode = useSettingsStore((s) => s.pictogramMode);
-  const confidencePoint = result.confidence.confidence_point;
+  const confidencePoint = typeof result.confidence === 'number'
+    ? result.confidence
+    : result.confidence?.confidence_point ?? 0;
   const belowThreshold = confidencePoint < minConfidenceForLocalCare;
   const veryLowConfidence = confidencePoint < 30;
   const lowConfidence = confidencePoint < 50 && !veryLowConfidence;
@@ -498,64 +500,66 @@ export function AssessmentResult({
           />
           
           {/* Uncertainty Quantification Display */}
-          <div className="mt-3 space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Range (95% CI)</span>
-              <span className="font-mono text-xs">
-                {Math.round(result.confidence.confidence_interval[0])}% - {Math.round(result.confidence.confidence_interval[1])}%
-              </span>
-            </div>
-            
-            {/* Visual indicator for uncertainty level based on interval width */}
-            <div className="flex items-center gap-2 text-xs">
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                <div 
-                  className={`h-full transition-all ${
-                    (result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) > 30 
-                      ? "bg-urgency-red" 
-                      : (result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) > 15 
-                        ? "bg-urgency-yellow" 
-                        : "bg-emerald-500"
-                  }`}
-                  style={{ 
-                    width: `${((result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) / 100) * 100}%`,
-                    marginLeft: `${result.confidence.confidence_interval[0]}%`
-                  }}
-                />
+          {typeof result.confidence !== 'number' && result.confidence?.confidence_interval && (
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Range (95% CI)</span>
+                <span className="font-mono text-xs">
+                  {Math.round(result.confidence.confidence_interval[0])}% - {Math.round(result.confidence.confidence_interval[1])}%
+                </span>
               </div>
-              <span className="text-xs text-muted-foreground">
-                {(result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) > 30 
-                  ? "High Uncertainty" 
-                  : (result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) > 15 
-                    ? "Moderate Uncertainty" 
-                    : "Low Uncertainty"}
-              </span>
-            </div>
-            
-            {result.confidence.uncertainty_reason && (
-              <div className={`rounded-lg p-2 ${
-                result.confidence.uncertainty_source === "both" 
-                  ? "bg-urgency-red/10 border border-urgency-red/20" 
-                  : result.confidence.uncertainty_source === "image_quality" 
-                    ? "bg-urgency-yellow/10 border border-urgency-yellow/20" 
-                    : "bg-emerald-500/10 border border-emerald-500/20"
-              }`}>
-                <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <Info className="h-3 w-3" />
-                  <span>Uncertainty Factor: {
-                    result.confidence.uncertainty_source === "image_quality" 
-                      ? "Image Quality" 
-                      : result.confidence.uncertainty_source === "model_knowledge" 
-                        ? "Model Knowledge" 
-                        : "Multiple Factors"
-                  }</span>
+              
+              {/* Visual indicator for uncertainty level based on interval width */}
+              <div className="flex items-center gap-2 text-xs">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                  <div 
+                    className={`h-full transition-all ${
+                      (result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) > 30 
+                        ? "bg-urgency-red" 
+                        : (result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) > 15 
+                          ? "bg-urgency-yellow" 
+                          : "bg-emerald-500"
+                    }`}
+                    style={{ 
+                      width: `${((result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) / 100) * 100}%`,
+                      marginLeft: `${result.confidence.confidence_interval[0]}%`
+                    }}
+                  />
                 </div>
-                <p className="text-xs text-muted-foreground/80">
-                  {result.confidence.uncertainty_reason}
-                </p>
+                <span className="text-xs text-muted-foreground">
+                  {(result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) > 30 
+                    ? "High Uncertainty" 
+                    : (result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) > 15 
+                      ? "Moderate Uncertainty" 
+                      : "Low Uncertainty"}
+                </span>
               </div>
-            )}
-          </div>
+              
+              {result.confidence.uncertainty_reason && (
+                <div className={`rounded-lg p-2 ${
+                  result.confidence.uncertainty_source === "both" 
+                    ? "bg-urgency-red/10 border border-urgency-red/20" 
+                    : result.confidence.uncertainty_source === "image_quality" 
+                      ? "bg-urgency-yellow/10 border border-urgency-yellow/20" 
+                      : "bg-emerald-500/10 border border-emerald-500/20"
+                }`}>
+                  <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <Info className="h-3 w-3" />
+                    <span>Uncertainty Factor: {
+                      result.confidence.uncertainty_source === "image_quality" 
+                        ? "Image Quality" 
+                        : result.confidence.uncertainty_source === "model_knowledge" 
+                          ? "Model Knowledge" 
+                          : "Multiple Factors"
+                    }</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground/80">
+                    {result.confidence.uncertainty_reason}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {belowThreshold && (
             <p className="mt-1.5 flex items-center gap-1 text-xs text-urgency-red">
