@@ -12,7 +12,7 @@ import {
   type DownloadJob,
   type DownloadProgress,
 } from "@/lib/resumable-download";
-import { Pause, Play, XCircle, Download, AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
+import { Pause, Play, XCircle, Download, AlertTriangle, CheckCircle2, RefreshCw, Smartphone } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
@@ -148,11 +148,19 @@ export function ResumableDownload({ jobId, url, totalBytes, fileName, onComplete
           className={`h-2 ${isFailed ? "[&>*]:bg-destructive" : ""}`}
         />
         {isActive && (
-          <div className="flex justify-between text-[11px] text-muted-foreground">
-          <span>
-            {t("downloadingModel")} &middot; {formatSpeed(speed)}
-          </span>
-            <span>{formatEta(eta)} {t("remaining")}</span>
+          <div className="space-y-1">
+            <div className="flex justify-between text-[11px] text-muted-foreground">
+              <span>
+                {t("downloadingModel")} &middot; {formatSpeed(speed)}
+              </span>
+              <span>{formatEta(eta)} {t("remaining")}</span>
+            </div>
+            {typeof window !== "undefined" && navigator.serviceWorker?.controller && (
+              <div className="flex items-center gap-1 text-[11px] text-primary/60">
+                <Smartphone className="h-3 w-3" />
+                <span>{t("backgroundDownload")}</span>
+              </div>
+            )}
           </div>
         )}
       </div>
