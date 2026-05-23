@@ -1,3 +1,11 @@
+import {
+  swDownloadStart,
+  swDownloadPause,
+  swDownloadCancel,
+  listenForDownloadMessages,
+  type SWDownloadMessage,
+} from "./sw-register";
+
 const DB_NAME = "trij-downloads";
 const DB_VERSION = 1;
 const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
@@ -34,7 +42,13 @@ export interface DownloadProgress {
   status: DownloadJob["status"];
 }
 
-type ProgressCallback = (progress: DownloadProgress) => void;
+export type ProgressCallback = (progress: DownloadProgress) => void;
+
+export type DownloadListener = (msg: SWDownloadMessage) => void;
+
+// Tracks whether we are using SW-based download
+let swDownloadActive = false;
+let swUnlisten: (() => void) | null = null;
 
 async function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -101,6 +115,75 @@ export async function removeJob(jobId: string): Promise<void> {
 const activeDownloads = new Map<string, { abort: AbortController }>();
 
 export async function startDownload(
+  job: DownloadJob,
+  onProgress: ProgressCallback,
+): Promise<void> {
+  // Prefer SW-based download for background capability
+  if (typeof window !== "undefined" && navigator.serviceWorker?.controller) {
+    swDownloadActive = true;
+    const jobId = job.id;
+
+    // Listen for SW progress messages
+    swUnlisten = listenForDownloadMessages((msg) => {
+      if (msg.jobId !== jobId) return;
+      if (msg.type === "download-progress") {
+        onProgress({
+          percent: msg.percent,
+          downloadedBytes: msg.downloadedBytes,
+          totalBytes: msg.totalBytes,
+          speedBytesPerSec: msg.speedBytesPerSec,
+          etaSec: msg.etaSec,
+          status: msg.status as DownloadJob["status"],
+        });
+        if (msg.status === "completed") {
+          job.status = "completed";
+          job.updatedAt = Date.now();
+          saveJob(job);
+          cleanupSW();
+        }
+      } else if (msg.type === "download-error") {
+        job.status = "failed";
+        job.error = msg.error;
+        job.updatedAt = Date.now();
+        saveJob(job);
+        onProgress({
+          percent: 0,
+          downloadedBytes: 0,
+          totalBytes: job.totalBytes,
+          speedBytesPerSec: 0,
+          etaSec: Infinity,
+          status: "failed",
+        });
+        cleanupSW();
+      } else if (msg.type === "download-status" && msg.status === "completed") {
+        job.status = "completed";
+        job.updatedAt = Date.now();
+        saveJob(job);
+        onProgress({
+          percent: 100,
+          downloadedBytes: job.totalBytes,
+          totalBytes: job.totalBytes,
+          speedBytesPerSec: 0,
+          etaSec: 0,
+          status: "completed",
+        });
+        cleanupSW();
+      }
+    });
+
+    job.status = "downloading";
+    job.startedAt = job.startedAt ?? Date.now();
+    await saveJob(job);
+
+    swDownloadStart(job.id, job.url, job.totalBytes, job.sha256PerChunk);
+    return;
+  }
+
+  // Fallback to main-thread download if no SW controller
+  await mainThreadDownload(job, onProgress);
+}
+
+async function mainThreadDownload(
   job: DownloadJob,
   onProgress: ProgressCallback,
 ): Promise<void> {
@@ -213,7 +296,19 @@ export async function startDownload(
   }
 }
 
+function cleanupSW(): void {
+  if (swUnlisten) {
+    swUnlisten();
+    swUnlisten = null;
+  }
+  swDownloadActive = false;
+}
+
 export function pauseDownload(jobId: string): void {
+  if (swDownloadActive) {
+    swDownloadPause(jobId);
+    return;
+  }
   const dl = activeDownloads.get(jobId);
   if (dl) {
     dl.abort.abort();
@@ -225,9 +320,62 @@ export async function resumeDownload(
   job: DownloadJob,
   onProgress: ProgressCallback,
 ): Promise<void> {
+  if (swDownloadActive || (typeof window !== "undefined" && navigator.serviceWorker?.controller)) {
+    swDownloadActive = true;
+    job.status = "downloading";
+    await saveJob(job);
+    swDownloadStart(job.id, job.url, job.totalBytes, job.sha256PerChunk);
+    swUnlisten = listenForDownloadMessages((msg) => {
+      if (msg.jobId !== job.id) return;
+      if (msg.type === "download-progress") {
+        onProgress({
+          percent: msg.percent,
+          downloadedBytes: msg.downloadedBytes,
+          totalBytes: msg.totalBytes,
+          speedBytesPerSec: msg.speedBytesPerSec,
+          etaSec: msg.etaSec,
+          status: msg.status as DownloadJob["status"],
+        });
+        if (msg.status === "completed") {
+          job.status = "completed";
+          job.updatedAt = Date.now();
+          saveJob(job);
+          cleanupSW();
+        }
+      } else if (msg.type === "download-error") {
+        job.status = "failed";
+        job.error = msg.error;
+        job.updatedAt = Date.now();
+        saveJob(job);
+        onProgress({
+          percent: 0,
+          downloadedBytes: 0,
+          totalBytes: job.totalBytes,
+          speedBytesPerSec: 0,
+          etaSec: Infinity,
+          status: "failed",
+        });
+        cleanupSW();
+      } else if (msg.type === "download-status" && msg.status === "completed") {
+        job.status = "completed";
+        job.updatedAt = Date.now();
+        saveJob(job);
+        onProgress({
+          percent: 100,
+          downloadedBytes: job.totalBytes,
+          totalBytes: job.totalBytes,
+          speedBytesPerSec: 0,
+          etaSec: 0,
+          status: "completed",
+        });
+        cleanupSW();
+      }
+    });
+    return;
+  }
   job.status = "downloading";
   await saveJob(job);
-  return startDownload(job, onProgress);
+  return mainThreadDownload(job, onProgress);
 }
 
 export function createDownloadJob(

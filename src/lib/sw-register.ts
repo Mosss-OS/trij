@@ -46,3 +46,81 @@ export function listenForSyncMessages(handler: (event: MessageEvent) => void): (
   navigator.serviceWorker.addEventListener("message", listener);
   return () => navigator.serviceWorker.removeEventListener("message", listener);
 }
+
+// Background download via Service Worker
+export function swDownloadStart(
+  jobId: string,
+  url: string,
+  totalBytes: number,
+  sha256PerChunk?: string[],
+): void {
+  if (typeof window === "undefined" || !navigator.serviceWorker?.controller) return;
+  navigator.serviceWorker.controller.postMessage({
+    type: "download-start",
+    jobId,
+    url,
+    totalBytes,
+    sha256PerChunk: sha256PerChunk ?? [],
+  });
+}
+
+export function swDownloadPause(jobId: string): void {
+  if (typeof window === "undefined" || !navigator.serviceWorker?.controller) return;
+  navigator.serviceWorker.controller.postMessage({
+    type: "download-pause",
+    jobId,
+  });
+}
+
+export function swDownloadCancel(jobId: string): void {
+  if (typeof window === "undefined" || !navigator.serviceWorker?.controller) return;
+  navigator.serviceWorker.controller.postMessage({
+    type: "download-cancel",
+    jobId,
+  });
+}
+
+export type SWDownloadProgress = {
+  type: "download-progress";
+  jobId: string;
+  percent: number;
+  downloadedBytes: number;
+  totalBytes: number;
+  speedBytesPerSec: number;
+  etaSec: number;
+  status: string;
+};
+
+export type SWDownloadError = {
+  type: "download-error";
+  jobId: string;
+  error: string;
+};
+
+export type SWDownloadStatus = {
+  type: "download-status";
+  jobId: string;
+  status: string;
+  downloadedBytes: number;
+  totalBytes: number;
+};
+
+export type SWDownloadMessage = SWDownloadProgress | SWDownloadError | SWDownloadStatus;
+
+export function listenForDownloadMessages(
+  handler: (msg: SWDownloadMessage) => void,
+): () => void {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return () => {};
+  const listener = (event: MessageEvent) => {
+    const data = event.data;
+    if (
+      data?.type === "download-progress" ||
+      data?.type === "download-error" ||
+      data?.type === "download-status"
+    ) {
+      handler(data);
+    }
+  };
+  navigator.serviceWorker.addEventListener("message", listener);
+  return () => navigator.serviceWorker.removeEventListener("message", listener);
+}
