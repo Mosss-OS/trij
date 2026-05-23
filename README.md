@@ -154,6 +154,7 @@ src/
 - **SRS**: [SRS.md](./SRS.md)
 - **Development prompt**: [DEVELOPMENT_PROMPT.md](./DEVELOPMENT_PROMPT.md)
 - **Model setup**: [scripts/download-gemma4.sh](./scripts/download-gemma4.sh)
+- **Clinical validation**: [CLINICAL_VALIDATION.md](./CLINICAL_VALIDATION.md) — validation protocol, metrics, and published results
 - **Compliance**: [docs/compliance/COMPLIANCE.md](./docs/compliance/COMPLIANCE.md) — HIPAA, GDPR, Nigeria DPA, India DPDP Act, WHO SMART
 
 ---

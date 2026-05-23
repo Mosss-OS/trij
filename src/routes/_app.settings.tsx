@@ -32,6 +32,7 @@ import {
   Loader2,
   Play,
   ChevronRight,
+  Beaker,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -663,6 +664,22 @@ function SettingsPage() {
                 className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
                 {t("biasAuditReadMore")}
+                <ChevronRight className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
+          <div className="mt-3 flex items-start gap-3 rounded-2xl border bg-card p-4">
+            <Beaker className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-500" />
+            <div className="text-sm">
+              <p className="font-medium">{t("clinicalValidationStatus")} <span className="text-blue-500">{t("validationInProgress")}</span></p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("validationDesc")}</p>
+              <a
+                href="/CLINICAL_VALIDATION.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                {t("validationReadMore")}
                 <ChevronRight className="h-3 w-3" />
               </a>
             </div>
