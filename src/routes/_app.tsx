@@ -74,6 +74,7 @@ function DisclaimerBanner() {
       <ShieldAlert className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-urgency-yellow" />
       <p className="flex-1">
         AI-assisted triage — always consult a qualified clinician before making treatment decisions.
+        {" "}<a href="/CLINICAL_VALIDATION.md" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Validation status</a>
       </p>
       <button
         onClick={() => setDismissed(true)}

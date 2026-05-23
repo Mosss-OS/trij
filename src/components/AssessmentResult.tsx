@@ -690,7 +690,10 @@ export function AssessmentResult({
 
       <div className="flex items-start gap-3 rounded-2xl border border-urgency-yellow/20 bg-urgency-yellow/5 p-4 text-xs text-muted-foreground">
         <ShieldAlert className="mt-0.5 h-4 w-4 flex-shrink-0 text-urgency-yellow" />
-        <p>{t("aiDisclaimer")}</p>
+        <div className="space-y-1">
+          <p>{t("aiDisclaimer")}</p>
+          <p className="text-foreground/40">{t("validationDisclaimer")}</p>
+        </div>
       </div>
     </div>
   );
