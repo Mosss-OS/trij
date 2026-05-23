@@ -1485,6 +1485,173 @@ function TriagePage() {
           </div>
         )}
 
+        {step === "vitals" && (
+          <div className="mt-7 space-y-5">
+>>>>>>> issue-5-imci-paediatric-pathway
+            <div>
+              <h2 className="font-display text-xl font-semibold">{t("imciPathway")}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{t("imciDesc")}</p>
+            </div>
+
+            {!imciActive ? (
+              <div className="flex gap-3">
+                <Button onClick={() => { setImciActive(true); }} size="lg" className="flex-1 gap-2">
+                  {t("start")} IMCI
+                </Button>
+                <Button onClick={() => setStep("presentation")} size="lg" variant="outline" className="flex-1">
+                  {t("skip")}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {Number(age) < 2 && (
+                  <div className="space-y-1.5">
+                    <Label>{t("imciAgeMonthsLabel")}</Label>
+                    <Input
+                      value={imciAgeMonths}
+                      onChange={(e) => setImciAgeMonths(e.target.value)}
+                      type="number"
+                      min={0}
+                      max={24}
+                      placeholder={t("imciAgeMonths")}
+                    />
+                  </div>
+                )}
+
+                <div className="rounded-2xl border bg-card p-4">
+                  <h3 className="text-sm font-semibold">{t("imciDangerSigns")}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("imciDangerSignsDesc")}</p>
+                  <div className="mt-3 space-y-2">
+                    {DANGER_SIGN_ITEMS.map((item) => (
+                      <label key={item.value} className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={imciDangerSigns.includes(item.value as ImciDangerSign)}
+                          onChange={() => {
+                            setImciDangerSigns((prev) =>
+                              prev.includes(item.value as ImciDangerSign)
+                                ? prev.filter((d) => d !== item.value)
+                                : [...prev, item.value as ImciDangerSign],
+                            );
+                          }}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                        {t(item.key)}
+                      </label>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {t("imciNoneOfThese")} — {imciDangerSigns.length === 0 ? "✓" : ""}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>{t("imciRespiratoryRate")}</Label>
+                    <Input
+                      value={imciRR}
+                      onChange={(e) => setImciRR(e.target.value)}
+                      type="number"
+                      min={0}
+                      max={200}
+                      placeholder="e.g. 45"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>{t("coughDays") || "Days with cough"}</Label>
+                    <Input
+                      value={imciCoughDays}
+                      onChange={(e) => setImciCoughDays(e.target.value)}
+                      type="number"
+                      min={0}
+                      max={90}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>{t("feverDays") || "Days with fever"}</Label>
+                    <Input
+                      value={imciFeverDays}
+                      onChange={(e) => setImciFeverDays(e.target.value)}
+                      type="number"
+                      min={0}
+                      max={90}
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border bg-card p-4">
+                  <label className="flex items-center gap-2 text-sm font-medium">
+                    <input
+                      type="checkbox"
+                      checked={imciDiarrhoea}
+                      onChange={(e) => setImciDiarrhoea(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    {t("imciDiarrhoea")}
+                  </label>
+                  {imciDiarrhoea && (
+                    <div className="mt-3 space-y-3">
+                      <div className="space-y-1.5">
+                        <Label>{t("imciDiarrhoeaDays")}</Label>
+                        <Input
+                          value={imciDiarrhoeaDays}
+                          onChange={(e) => setImciDiarrhoeaDays(e.target.value)}
+                          type="number"
+                          min={0}
+                          max={90}
+                          placeholder="0"
+                        />
+                      </div>
+                      {imciDiarrhoeaCheckboxes.map((item) => (
+                        <label key={item.key} className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={item.checked}
+                            onChange={() => item.setter(!item.checked)}
+                            className="h-4 w-4 rounded border-gray-300"
+                          />
+                          {t(item.i18nKey)}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2 rounded-2xl border bg-card p-4">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={imciOedema}
+                      onChange={(e) => setImciOedema(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    {t("imciOedema") || "Bilateral pitting oedema"}
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={imciPallor}
+                      onChange={(e) => setImciPallor(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    {t("imciPallor") || "Pallor"}
+                  </label>
+                </div>
+
+                <Button
+                  onClick={runImciAssessment}
+                  size="lg"
+                  className="w-full gap-2"
+                >
+                  {t("continue")} <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
         {step === "vitals" && age && (
           <VitalSignsInput
             ageYears={Number(age)}
