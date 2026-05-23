@@ -135,7 +135,7 @@ function AppLayout() {
       {screenLocked && <LockScreen />}
       {showTutorial && !screenLocked && <TutorialOverlay onComplete={() => setShowTutorial(false)} />}
       <KeyboardShortcutsHelp />
-      <div className={`min-h-screen pb-24 pt-[73px] ${kioskMode ? "text-lg" : ""} ${fieldMode ? "text-lg [&_button]:min-h-[48px] [&_a]:min-h-[48px] [&_input]:text-base" : ""}`}>
+      <div className={`min-h-screen ${kioskMode ? "text-lg" : ""} ${fieldMode ? "text-lg [&_button]:min-h-[48px] [&_a]:min-h-[48px] [&_input]:text-base" : ""}`}>
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
@@ -150,7 +150,7 @@ function AppLayout() {
           <span>🔴 DEMO MODE — Results are simulated, not for patient care</span>
         </div>
       )}
-      <main id="main-content" role="main">
+      <main id="main-content" role="main" className="pb-20 pt-16 md:pb-24 md:pt-20 lg:pb-32 lg:pt-24">
         <Outlet />
       </main>
       <SyncStatusIndicator />
