@@ -263,7 +263,7 @@ function PatientDetail() {
                   </p>
                 )}
                 {a.vitalSigns && (
-                  <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl border bg-muted/20 p-3 text-xs">
+                  <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl border bg-muted/20 p-3 text-xs sm:grid-cols-3">
                     {a.vitalSigns.systolicBP && (
                       <div>
                         <span className="text-muted-foreground">BP</span>

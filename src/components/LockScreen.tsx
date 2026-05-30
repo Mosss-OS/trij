@@ -36,12 +36,6 @@ export function LockScreen() {
     } else {
       setCheckingPin(false);
     }
-    if (biometricEnabled && bioAttempts < 3) {
-      authenticateBiometric().then((ok) => {
-        if (ok && mountedRef.current) setScreenLocked(false);
-        else if (mountedRef.current) setBioAttempts((a) => a + 1);
-      });
-    }
   }, [biometricEnabled]);
 
   const retryBiometric = async () => {

@@ -16,8 +16,8 @@ export function DisclaimerDialog() {
   if (submitted) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4 backdrop-blur-sm">
-      <div className="mx-auto max-w-lg space-y-6 rounded-3xl border bg-card p-8 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-background/95 p-4 backdrop-blur-sm sm:items-center">
+      <div className="mx-auto my-auto max-w-lg space-y-6 rounded-3xl border bg-card p-5 shadow-2xl sm:p-8 sm:my-0">
         <div className="flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-urgency-yellow/20">
             <ShieldAlert className="h-6 w-6 text-urgency-yellow" />

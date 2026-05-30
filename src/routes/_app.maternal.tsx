@@ -246,7 +246,7 @@ function MaternalPage() {
 
             <div>
               <h2 className="font-display text-lg font-semibold">{t("selectPhase")}</h2>
-              <div className="mt-3 grid grid-cols-3 gap-3">
+              <div className="mt-3 grid grid-cols-3 gap-2 sm:gap-3">
                 {(["antenatal", "postnatal", "neonatal"] as MaternalPhase[]).map((p) => (
                   <button
                     key={p}
@@ -287,7 +287,7 @@ function MaternalPage() {
                     <Label>{t("fetalHeartRate")}</Label>
                     <Input value={fetalHR} onChange={(e) => setFetalHR(e.target.value)} type="number" min={60} max={200} placeholder="140" />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label>{t("gravidity")}</Label>
                       <Input value={gravidity} onChange={(e) => setGravidity(e.target.value)} type="number" min={0} max={20} placeholder="2" />

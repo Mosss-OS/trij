@@ -103,16 +103,7 @@ function AppLayout() {
   const [showTutorial, setShowTutorial] = useState(false);
   const isNewUser = !tutorialCompleted && !tutorialSkipped;
   useInactivityLock();
-  if (loading) {
-    return (
-      <div className="grid min-h-screen place-items-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </div>
-    );
-  }
-  const authed = !!(session || offlineUser);
-  if (!authed) return <Navigate to="/login" />;
-  if (!disclaimerAccepted) return <DisclaimerDialog />;
+
   useEffect(() => {
     if (isNewUser) setShowTutorial(true);
   }, [isNewUser]);
@@ -131,6 +122,17 @@ function AppLayout() {
       sensor.start();
     } catch {}
   }, [setSunlightMode]);
+
+  if (loading) {
+    return (
+      <div className="grid min-h-screen place-items-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+  const authed = !!(session || offlineUser);
+  if (!authed) return <Navigate to="/login" />;
+  if (!disclaimerAccepted) return <DisclaimerDialog />;
   return (
     <>
       {screenLocked && <LockScreen />}

@@ -39,11 +39,11 @@ interface SettingsState {
   setMalariaEndemic: (endemic: boolean) => void;
   setLanguage: (l: string) => void;
   setModelId: (id: string) => void;
-    setVoiceEnabled: (b: boolean) => void;
-    setVoiceTestMode: (b: boolean) => void;
-    setVoiceGuidedMode: (b: boolean) => void;
-    setVoiceSpeed: (v: number) => void;
-    setCloudFallbackConsent: (b: boolean) => void;
+  setVoiceEnabled: (b: boolean) => void;
+  setVoiceTestMode: (b: boolean) => void;
+  setVoiceGuidedMode: (b: boolean) => void;
+  setVoiceSpeed: (v: number) => void;
+  setCloudFallbackConsent: (b: boolean) => void;
   setEngineKind: (k: EngineKind | "auto") => void;
   setOllamaUrl: (u: string) => void;
   setOllamaModel: (m: string) => void;
@@ -66,10 +66,10 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       language: "en-US",
       modelId: "Phi-3.5-vision-instruct-q4f16_1-MLC",
-  voiceEnabled: true,
-  voiceTestMode: false,
-  voiceGuidedMode: false,
-  voiceSpeed: 1.0,
+      voiceEnabled: true,
+      voiceTestMode: false,
+      voiceGuidedMode: false,
+      voiceSpeed: 1.0,
       cloudFallbackConsent: false,
       engineKind: "auto",
       ollamaUrl: "http://localhost:11434",
@@ -89,7 +89,7 @@ export const useSettingsStore = create<SettingsState>()(
       malariaEndemic: false,
       biometricEnabled: false,
       encryptionEnabled: false,
-      encryptionSalt: typeof window !== "undefined" ? generateSalt() : "",
+      encryptionSalt: "",
       localAntibioticProtocol: "",
       theme: "system",
       completeTutorial: () => set({ tutorialCompleted: true }),
@@ -100,9 +100,9 @@ export const useSettingsStore = create<SettingsState>()(
       setLanguage: (language) => set({ language }),
       setModelId: (modelId) => set({ modelId }),
       setVoiceEnabled: (voiceEnabled) => set({ voiceEnabled }),
-    setVoiceTestMode: (voiceTestMode) => set({ voiceTestMode }),
-    setVoiceGuidedMode: (voiceGuidedMode) => set({ voiceGuidedMode }),
-    setVoiceSpeed: (voiceSpeed) => set({ voiceSpeed }),
+      setVoiceTestMode: (voiceTestMode) => set({ voiceTestMode }),
+      setVoiceGuidedMode: (voiceGuidedMode) => set({ voiceGuidedMode }),
+      setVoiceSpeed: (voiceSpeed) => set({ voiceSpeed }),
       setCloudFallbackConsent: (cloudFallbackConsent) => set({ cloudFallbackConsent }),
       setEngineKind: (engineKind) => set({ engineKind }),
       setOllamaUrl: (ollamaUrl) => set({ ollamaUrl }),
@@ -121,7 +121,14 @@ export const useSettingsStore = create<SettingsState>()(
       setPictogramMode: (enabled: boolean) => set({ pictogramMode: enabled }),
       setLockTimeoutMinutes: (lockTimeoutMinutes) => set({ lockTimeoutMinutes }),
       setBiometricEnabled: (biometricEnabled) => set({ biometricEnabled }),
-      setEncryptionEnabled: (encryptionEnabled) => set({ encryptionEnabled }),
+      setEncryptionEnabled: (encryptionEnabled) =>
+        set((state) => ({
+          encryptionEnabled,
+          encryptionSalt:
+            encryptionEnabled && !state.encryptionSalt
+              ? generateSalt()
+              : state.encryptionSalt,
+        })),
       setLocalAntibioticProtocol: (localAntibioticProtocol) => set({ localAntibioticProtocol }),
       setTheme: (theme) => set({ theme }),
     }),
