@@ -13,7 +13,7 @@ interface Props {
   showPerformance?: boolean;
 }
 
-export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
+export function WebGPUCheck({ engineKind, ollamaUrl, compact, showPerformance }: Props) {
   const { t } = useI18n();
   const [compat, setCompat] = useState<WebGPUCompatibility | null>(null);
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
