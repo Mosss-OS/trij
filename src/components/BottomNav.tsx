@@ -109,8 +109,8 @@ export function BottomNav() {
                 key={to}
                 to={to as never}
                 className={cn(
-                  "relative flex flex-col items-center gap-1 px-3 py-3 font-medium transition-colors cursor-pointer",
-                  kioskMode ? "gap-2 py-4 text-sm" : "text-xs",
+                  "relative flex flex-col items-center gap-1 px-2 py-3 font-medium transition-colors cursor-pointer",
+                  kioskMode ? "gap-2 py-4 text-sm" : "text-[10px] sm:text-xs",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -121,7 +121,7 @@ export function BottomNav() {
                 )}
                 <span
                   className={cn(
-                    "grid place-items-center rounded-2xl transition-all",
+                    "grid shrink-0 place-items-center rounded-2xl transition-all",
                     primary
                       ? kioskMode
                         ? "h-16 w-16 -translate-y-4 bg-primary text-primary-foreground shadow-lg shadow-primary/30"
@@ -137,7 +137,7 @@ export function BottomNav() {
                     <Icon className={kioskMode ? "h-7 w-7" : primary ? "h-5 w-5" : "h-5 w-5"} />
                   )}
                 </span>
-                <span className={primary ? (kioskMode ? "-mt-3" : "-mt-2") : ""}>
+                <span className={cn("truncate max-w-[70px] sm:max-w-none", primary ? (kioskMode ? "-mt-3" : "-mt-2") : "")}>
                   {usePictogram ? singleWordLabel : t(labelKey)}
                 </span>
               </Link>

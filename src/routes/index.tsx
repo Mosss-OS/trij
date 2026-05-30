@@ -69,17 +69,17 @@ function BackgroundOrbs() {
       <motion.div
         animate={{ x: [0, 60, 0], y: [0, 40, 0] }}
         transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -left-32 top-10 h-[28rem] w-[28rem] rounded-full bg-[oklch(0.78_0.13_185)] opacity-30 blur-3xl"
+        className="absolute -left-32 top-10 h-[28rem] w-[28rem] max-sm:w-[60vw] rounded-full bg-[oklch(0.78_0.13_185)] opacity-30 blur-3xl max-sm:blur-2xl"
       />
       <motion.div
         animate={{ x: [0, -80, 0], y: [0, 60, 0] }}
         transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute right-[-10rem] top-40 h-[32rem] w-[32rem] rounded-full bg-[oklch(0.82_0.12_60)] opacity-25 blur-3xl"
+        className="absolute right-[-10rem] top-40 h-[32rem] w-[32rem] max-sm:w-[60vw] rounded-full bg-[oklch(0.82_0.12_60)] opacity-25 blur-3xl max-sm:blur-2xl"
       />
       <motion.div
         animate={{ x: [0, 40, 0], y: [0, -40, 0] }}
         transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-0 left-1/3 h-[24rem] w-[24rem] rounded-full bg-[oklch(0.85_0.10_300)] opacity-25 blur-3xl"
+        className="absolute bottom-0 left-1/3 h-[24rem] w-[24rem] max-sm:w-[50vw] rounded-full bg-[oklch(0.85_0.10_300)] opacity-25 blur-3xl max-sm:blur-2xl"
       />
     </div>
   );
@@ -181,7 +181,7 @@ function Hero({ authed }: { authed: boolean }) {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="font-serif text-[2.6rem] font-medium leading-[1.05] tracking-tight sm:text-6xl md:text-7xl"
+          className="font-serif text-[2rem] font-medium leading-[1.05] tracking-tight sm:text-6xl md:text-7xl"
         >
           Triage at the speed of
           <br />
@@ -236,7 +236,7 @@ function PhoneMockup() {
       viewport={{ once: true, amount: 0.3 }}
       transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
       style={{ perspective: 1200 }}
-      className="mx-auto mt-16 w-full max-w-[320px] sm:max-w-[360px]"
+      className="mx-auto mt-16 w-[85vw] max-w-[320px] sm:max-w-[360px]"
     >
       <div className="relative rounded-[3rem] border border-black/10 bg-gradient-to-b from-zinc-900 to-black p-3 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.3)]">
         {/* notch */}
@@ -322,7 +322,7 @@ function BentoFeatures() {
         subtitle="Every piece designed for low-bandwidth, low-light, high-stakes work."
       />
 
-      <div className="mt-14 grid auto-rows-[12rem] grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:auto-rows-[14rem]">
+      <div className="mt-14 grid auto-rows-auto grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 sm:auto-rows-[12rem] lg:auto-rows-[14rem]">
         <BentoCard className="lg:col-span-2 lg:row-span-2" delay={0.0}>
           <div className="flex h-full flex-col justify-between">
             <Camera className="h-7 w-7 text-[oklch(0.45_0.08_220)]" />
@@ -546,7 +546,7 @@ function StatsSection() {
   ];
   return (
     <section className="mx-auto max-w-6xl px-5 py-16">
-      <div className="grid grid-cols-2 gap-3 rounded-3xl border border-white/50 bg-white/40 p-6 backdrop-blur-xl sm:grid-cols-4 sm:p-10">
+      <div className="grid grid-cols-2 gap-3 rounded-3xl border border-white/50 bg-white/40 p-4 backdrop-blur-xl sm:grid-cols-4 sm:p-10">
         {stats.map((s, i) => (
           <motion.div
             key={s.l}

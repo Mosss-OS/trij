@@ -148,7 +148,7 @@ function DocumentScan() {
                 <ul className="mt-3 divide-y">
                   {result.key_findings.map((f, i) => (
                     <li key={i} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                      <div className="flex items-center gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
                         {f.is_abnormal && (
                           <AlertTriangle className="h-3.5 w-3.5 text-urgency-red" />
                         )}

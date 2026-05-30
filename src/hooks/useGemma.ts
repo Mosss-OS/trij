@@ -32,11 +32,15 @@ export function useGemma(): UseGemmaReturn {
   const loadAttempted = useRef(false);
 
   useEffect(() => {
-    supportsWebGPU().then(setWebgpu);
+    supportsWebGPU()
+      .then(setWebgpu)
+      .catch(() => setWebgpu(false));
   }, []);
 
   useEffect(() => {
-    detectEngine(enginePref).then(setKind);
+    detectEngine(enginePref)
+      .then(setKind)
+      .catch(() => setKind("demo"));
   }, [enginePref]);
 
   const load = useCallback(async () => {

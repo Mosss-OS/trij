@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useAuthSession } from "@/hooks/useAuthSession";
@@ -103,11 +103,34 @@ function LoginPage() {
   const [awaitingVerification, setAwaitingVerification] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const mountedRef = useRef(true);
 
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
-    return () => clearTimeout(t);
+    if (resendCooldown > 0) {
+      if (!cooldownRef.current) {
+        cooldownRef.current = setInterval(() => {
+          setResendCooldown((c) => {
+            if (c <= 1) {
+              if (cooldownRef.current) clearInterval(cooldownRef.current);
+              cooldownRef.current = null;
+            }
+            return c - 1;
+          });
+        }, 1000);
+      }
+    } else {
+      if (cooldownRef.current) {
+        clearInterval(cooldownRef.current);
+        cooldownRef.current = null;
+      }
+    }
+    return () => {
+      if (cooldownRef.current) {
+        clearInterval(cooldownRef.current);
+        cooldownRef.current = null;
+      }
+    };
   }, [resendCooldown]);
 
   const handleResendVerification = async () => {
@@ -128,6 +151,10 @@ function LoginPage() {
       setResending(false);
     }
   };
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
 
   useEffect(() => {
     if (loading) return;
@@ -202,10 +229,10 @@ function LoginPage() {
 
   const handleOnlineSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!mountedRef.current) return;
     setBusy(true);
-    let cancelled = false;
     const timer = setTimeout(() => {
-      cancelled = true;
+      if (!mountedRef.current) return;
       setBusy(false);
       toast.error("Request timed out — check your connection and try again.");
     }, AUTH_TIMEOUT);
@@ -221,7 +248,7 @@ function LoginPage() {
             data: meta,
           },
         });
-        if (cancelled) return;
+        if (!mountedRef.current) return;
         if (error) throw error;
         if (data.session?.user) {
           toast.success(t("accountCreated"));
@@ -241,7 +268,7 @@ function LoginPage() {
           email,
           password,
         });
-        if (cancelled) return;
+        if (!mountedRef.current) return;
         if (error) throw error;
         if (data.session?.user) {
           const { user } = data.session;
@@ -254,11 +281,11 @@ function LoginPage() {
         }
       }
     } catch (err) {
-      if (cancelled) return;
+      if (!mountedRef.current) return;
       toast.error((err as Error).message);
     } finally {
       clearTimeout(timer);
-      if (!cancelled) setBusy(false);
+      if (mountedRef.current) setBusy(false);
     }
   };
 
@@ -578,7 +605,7 @@ function LoginPage() {
         </div>
 
         <div className="mt-12">
-          <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">
+          <h1 className="font-display text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
             {t("fieldReadyTriage")}
             <br />
             <span className="text-primary">{t("onEveryDevice")}</span>

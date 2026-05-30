@@ -1487,7 +1487,6 @@ function TriagePage() {
 
         {step === "vitals" && (
           <div className="mt-7 space-y-5">
->>>>>>> issue-5-imci-paediatric-pathway
             <div>
               <h2 className="font-display text-xl font-semibold">{t("imciPathway")}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{t("imciDesc")}</p>

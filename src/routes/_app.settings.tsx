@@ -107,6 +107,7 @@ function SettingsPage() {
   const navigate = useNavigate();
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
   const gemma = useGemma();
+  const sessionUser = useSessionStore((s) => s.user);
   const offlineUser = useSessionStore((s) => s.offlineUser);
   const [hasPin, setHasPin] = useState(false);
   const [showPinSetup, setShowPinSetup] = useState(false);
@@ -138,11 +139,12 @@ function SettingsPage() {
 
   useEffect(() => {
     if (offlineUser) {
-      hasPinForUser(offlineUser.id).then(setHasPin);
+      hasPinForUser(offlineUser.id).then(setHasPin).catch(() => setHasPin(false));
     }
   }, [offlineUser]);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         const { data: session } = await supabase.auth.getSession();
@@ -151,17 +153,20 @@ function SettingsPage() {
           _user_id: session.session.user.id,
           _role: "supervisor",
         });
+        if (cancelled) return;
         setIsSupervisor(!!hasRole);
         if (hasRole) {
           const { data: codesData } = await (supabase.from as any)("supervisor_codes")
             .select("code, used_by_user_id, used_at, created_at")
             .order("created_at", { ascending: false });
+          if (cancelled) return;
           setCodes(codesData ?? []);
         }
-      } catch {
-        /* */
+      } catch (err) {
+        console.warn("[Trij] Failed to check supervisor role:", err);
       }
     })();
+    return () => { cancelled = true; };
   }, []);
 
   const generateCode = async () => {
@@ -597,7 +602,7 @@ function SettingsPage() {
                     import("@/lib/webauthn").then(({ registerBiometric, isBiometricAvailable }) => {
                       isBiometricAvailable().then((avail) => {
                         if (!avail) { toast.error(t("biometricNotAvailable")); return; }
-                        registerBiometric(s.chwName || "user").then((ok) => {
+                        registerBiometric(s.chwName || sessionUser?.email || "user").then((ok) => {
                           if (ok) s.setBiometricEnabled(true);
                           else toast.error(t("biometricSetupFailed"));
                         });
@@ -824,7 +829,7 @@ function SettingsPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="space-y-4 rounded-3xl border bg-card p-6">
+    <section className="space-y-4 rounded-3xl border bg-card p-4 sm:p-6">
       <h2 className="font-display text-base font-semibold">{title}</h2>
       <div className="space-y-4">{children}</div>
     </section>

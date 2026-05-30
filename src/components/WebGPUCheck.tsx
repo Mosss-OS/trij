@@ -21,7 +21,12 @@ export function WebGPUCheck({ engineKind, ollamaUrl, compact }: Props) {
   const setEngineKind = useSettingsStore((s) => s.setEngineKind);
   const cloudFallbackConsent = useSettingsStore((s) => s.cloudFallbackConsent);
 
-  const currentEngine = ((engine === "auto" && compat?.supported) ? "webllm" : engine) as EngineManagerKind;
+  let currentEngine: EngineManagerKind;
+  if (engine === "auto") {
+    currentEngine = compat?.supported ? "webllm" : "cloud";
+  } else {
+    currentEngine = engine as EngineManagerKind;
+  }
   const perf = ENGINE_CAPABILITIES[currentEngine];
 
   useEffect(() => {

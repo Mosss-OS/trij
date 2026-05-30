@@ -89,7 +89,7 @@ export function TutorialOverlay({ onComplete }: { onComplete?: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/60 backdrop-blur-sm sm:items-center">
       <div className="mx-4 w-full max-w-md rounded-3xl border bg-card p-6 shadow-2xl sm:mx-0">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">

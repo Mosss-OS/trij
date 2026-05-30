@@ -92,7 +92,7 @@ function NotificationsPage() {
                       <p className={`text-sm ${n.read ? "text-muted-foreground" : "font-medium"}`}>
                         {n.title}
                       </p>
-                      <span className="whitespace-nowrap text-[11px] text-muted-foreground">
+                      <span className="shrink-0 whitespace-nowrap text-[11px] text-muted-foreground">
                         {formatRelative(new Date(n.createdAt))}
                       </span>
                     </div>

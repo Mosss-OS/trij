@@ -205,8 +205,8 @@ function BatchRegister() {
         </div>
 
         {/* Batch registration table */}
-        <div className="rounded-2xl border bg-card">
-          <div className="grid grid-cols-12 gap-2 border-b p-3 text-xs font-medium text-muted-foreground">
+        <div className="overflow-x-auto rounded-2xl border bg-card">
+          <div className="grid min-w-[500px] grid-cols-12 gap-2 border-b p-3 text-xs font-medium text-muted-foreground">
             <div className="col-span-4">{t("patientIdentifier")}</div>
             <div className="col-span-3">{t("ageYears")}</div>
             <div className="col-span-3">{t("sex")}</div>
@@ -214,7 +214,7 @@ function BatchRegister() {
           </div>
 
           {rows.map((row, index) => (
-            <div key={row.id} className="grid grid-cols-12 gap-2 border-b p-3 last:border-b-0">
+            <div key={row.id} className="grid min-w-[500px] grid-cols-12 gap-2 border-b p-3 last:border-b-0">
               <div className="col-span-4">
                 <Input
                   value={row.identifier}
