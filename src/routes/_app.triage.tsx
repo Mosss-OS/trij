@@ -52,7 +52,8 @@ import { saveVoiceDraft, getVoiceDraft, clearVoiceDraft, listVoiceDrafts } from 
 import { getCurrentPosition } from "@/lib/geolocation";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { useWellBeingCheckIn } from "@/hooks/useWellBeingCheckIn";
+import { hasCompletedThisWeek, saveWellBeingCheckInLocally, syncWellBeingCheckIn, calculateWellBeingScore } from "@/lib/well-being";
+import type { WellBeingCheckIn as WellBeingCheckInData } from "@/types/trij";
 import { WellBeingCheckIn } from "@/components/WellBeingCheckIn";
 import { VoiceAssistant } from "@/lib/voice";
 import { toast } from "sonner";
@@ -139,7 +140,48 @@ function TriagePage() {
   const malariaEndemic = useSettingsStore((s) => s.malariaEndemic);
   const navigate = useNavigate();
   const voice = useVoiceGuidance();
-  const wellBeing = useWellBeingCheckIn();
+  const offlineUser = useSessionStore((s) => s.offlineUser);
+  const [showCheckIn, setShowCheckIn] = useState(false);
+  const [hasCheckedThisWeek, setHasCheckedThisWeek] = useState(false);
+  const [shouldShowCheckIn, setShouldShowCheckIn] = useState(false);
+
+  useEffect(() => {
+    if (!offlineUser) return;
+    const completedThisWeek = hasCompletedThisWeek(offlineUser.id);
+    setHasCheckedThisWeek(completedThisWeek);
+  }, [offlineUser]);
+
+  const triggerCheckIn = () => {
+    if (!offlineUser || hasCheckedThisWeek) return;
+    setShouldShowCheckIn(true);
+    setTimeout(() => setShowCheckIn(true), 100);
+  };
+
+  const handleWellBeingSubmit = (responses: [number, number, number]) => {
+    if (!offlineUser) return;
+    const score = calculateWellBeingScore(responses);
+    const weekStart = getWeekStart(new Date());
+    const checkIn: WellBeingCheckInData = {
+      id: `wb-${offlineUser.id}-${weekStart}-${Date.now()}`,
+      chwUserId: offlineUser.id,
+      weekStartDate: weekStart,
+      responses,
+      score,
+      timestamp: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+    saveWellBeingCheckInLocally(checkIn);
+    syncWellBeingCheckIn(checkIn).catch(console.error);
+    setHasCheckedThisWeek(true);
+    setShowCheckIn(false);
+    setShouldShowCheckIn(false);
+  };
+
+  const handleWellBeingSkip = () => {
+    setShowCheckIn(false);
+    setShouldShowCheckIn(false);
+  };
+
   const [step, setStep] = useState<Step>("patient");
   const [patient, setPatient] = useState<Patient | null>(null);
   const [identifier, setIdentifier] = useState("");
@@ -894,7 +936,7 @@ function TriagePage() {
     toast.success(t("savedOffline"));
     
     // Trigger well-being check-in after work session
-    wellBeing.triggerCheckIn();
+    triggerCheckIn();
     
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
   };
@@ -1988,10 +2030,10 @@ function Stepper({ step, progress, progressText }: { step: Step; progress?: numb
         <p className="mt-2 text-center text-xs text-muted-foreground">{progressText}</p>
       )}
       <WellBeingCheckIn
-        isOpen={wellBeing.showCheckIn}
-        onClose={() => wellBeing.handleSkip()}
-        onSubmit={wellBeing.handleSubmit}
-        onSkip={() => wellBeing.handleSkip()}
+        isOpen={shouldShowCheckIn}
+        onClose={handleWellBeingSkip}
+        onSubmit={handleWellBeingSubmit}
+        onSkip={handleWellBeingSkip}
       />
     </nav>
   );
