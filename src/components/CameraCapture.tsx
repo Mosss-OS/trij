@@ -29,10 +29,15 @@ export function CameraCapture({ onCapture, onCancel, onSource }: Props) {
   const [forceCapture, setForceCapture] = useState(false);
   const [cameraAvailable, setCameraAvailable] = useState<boolean | null>(null);
   const analysisRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-    navigator.mediaDevices
-      ?.enumerateDevices()
+    const md = navigator.mediaDevices;
+    if (!md || typeof md.enumerateDevices !== "function") {
+      setCameraAvailable(false);
+      return;
+    }
+    md.enumerateDevices()
       .then((devices) => {
         setCameraAvailable(devices.some((d) => d.kind === "videoinput"));
       })
@@ -42,11 +47,15 @@ export function CameraCapture({ onCapture, onCancel, onSource }: Props) {
   }, []);
 
   useEffect(() => {
-    if (cameraAvailable === false) return;
+    if (cameraAvailable !== true) return;
     let active = true;
     const start = async () => {
       try {
-        const s = await navigator.mediaDevices.getUserMedia({
+        const md = navigator.mediaDevices;
+        if (!md || typeof md.getUserMedia !== "function") {
+          throw new Error("Camera API unavailable. Use HTTPS or a supported browser.");
+        }
+        const s = await md.getUserMedia({
           video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
           audio: false,
         });
@@ -54,18 +63,31 @@ export function CameraCapture({ onCapture, onCancel, onSource }: Props) {
           s.getTracks().forEach((t) => t.stop());
           return;
         }
+        streamRef.current = s;
         setStream(s);
         if (videoRef.current) videoRef.current.srcObject = s;
       } catch (e) {
-        setError((e as Error).message);
+        const err = e as DOMException;
+        const msg =
+          err.name === "NotAllowedError"
+            ? "Camera permission denied. Allow camera access or upload from gallery."
+            : err.name === "NotFoundError"
+              ? "No camera found on this device."
+              : err.name === "NotReadableError"
+                ? "Camera is in use by another app."
+                : err.message || "Could not open camera.";
+        setError(msg);
       }
     };
     start();
     return () => {
       active = false;
-      stream?.getTracks().forEach((t) => t.stop());
+      const s = streamRef.current;
+      if (s) {
+        s.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [facing, cameraAvailable]);
 
   useEffect(() => {
