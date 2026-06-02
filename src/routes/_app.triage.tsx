@@ -44,7 +44,14 @@ import { SymptomChecklist } from "@/components/SymptomChecklist";
 import { getChecklistForPresentation } from "@/lib/symptom-checklists";
 import { ConsentCapture } from "@/components/ConsentCapture";
 import { RedFlagAlert } from "@/components/RedFlagAlert";
-import { assessImci, getOverallUrgency, getClassificationLabel, getImciAction, type ImciClassification, type ImciDangerSign } from "@/lib/imci";
+import {
+  assessImci,
+  getOverallUrgency,
+  getClassificationLabel,
+  getImciAction,
+  type ImciClassification,
+  type ImciDangerSign,
+} from "@/lib/imci";
 import { getDB } from "@/lib/db";
 import { queuePatient, queueAssessment } from "@/lib/sync";
 import { useAuditLog } from "@/hooks/useAuditLog";
@@ -52,7 +59,12 @@ import { saveVoiceDraft, getVoiceDraft, clearVoiceDraft, listVoiceDrafts } from 
 import { getCurrentPosition } from "@/lib/geolocation";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { hasCompletedThisWeek, saveWellBeingCheckInLocally, syncWellBeingCheckIn, calculateWellBeingScore } from "@/lib/well-being";
+import {
+  hasCompletedThisWeek,
+  saveWellBeingCheckInLocally,
+  syncWellBeingCheckIn,
+  calculateWellBeingScore,
+} from "@/lib/well-being";
 import type { WellBeingCheckIn as WellBeingCheckInData } from "@/types/trij";
 import { WellBeingCheckIn } from "@/components/WellBeingCheckIn";
 import { VoiceAssistant } from "@/lib/voice";
@@ -108,7 +120,17 @@ export const Route = createFileRoute("/_app/triage")({
   ),
 });
 
-type Step = "patient" | "presentation" | "vitals" | "nutrition" | "symptoms" | "capture" | "analyzing" | "result" | "voice" | "imci";
+type Step =
+  | "patient"
+  | "presentation"
+  | "vitals"
+  | "nutrition"
+  | "symptoms"
+  | "capture"
+  | "analyzing"
+  | "result"
+  | "voice"
+  | "imci";
 
 const DANGER_SIGN_ITEMS = [
   { value: "unable_to_drink", key: "imciUnableToDrink" },
@@ -235,7 +257,9 @@ function TriagePage() {
   const [pendingCapture, setPendingCapture] = useState<string | null>(null);
   const [redFlagResult, setRedFlagResult] = useState<RedFlagResult | null>(null);
   const [showRedFlagAlert, setShowRedFlagAlert] = useState(false);
-  const [notifiableFlags, setNotifiableFlags] = useState<Array<{ condition: string; matchedKeyword: string }>>([]);
+  const [notifiableFlags, setNotifiableFlags] = useState<
+    Array<{ condition: string; matchedKeyword: string }>
+  >([]);
   const [imciActive, setImciActive] = useState(false);
   const [imciAgeMonths, setImciAgeMonths] = useState("");
   const [imciDangerSigns, setImciDangerSigns] = useState<ImciDangerSign[]>([]);
@@ -251,9 +275,24 @@ function TriagePage() {
   const [imciPallor, setImciPallor] = useState(false);
   const [imciResult, setImciResult] = useState<ImciClassification[] | null>(null);
   const imciDiarrhoeaCheckboxes: ImciCheckboxItem[] = [
-    { key: "bloodInStool", i18nKey: "imciBloodInStool", checked: imciBloodInStool, setter: setImciBloodInStool },
-    { key: "sunkenEyes", i18nKey: "imciSunkenEyes", checked: imciSunkenEyes, setter: setImciSunkenEyes },
-    { key: "drinksPoorly", i18nKey: "imciDrinksPoorly", checked: imciDrinksPoorly, setter: setImciDrinksPoorly },
+    {
+      key: "bloodInStool",
+      i18nKey: "imciBloodInStool",
+      checked: imciBloodInStool,
+      setter: setImciBloodInStool,
+    },
+    {
+      key: "sunkenEyes",
+      i18nKey: "imciSunkenEyes",
+      checked: imciSunkenEyes,
+      setter: setImciSunkenEyes,
+    },
+    {
+      key: "drinksPoorly",
+      i18nKey: "imciDrinksPoorly",
+      checked: imciDrinksPoorly,
+      setter: setImciDrinksPoorly,
+    },
   ];
   const pendingTextRef = useRef(false);
 
@@ -280,7 +319,18 @@ function TriagePage() {
       } catch {}
     }, 30000);
     return () => clearInterval(interval);
-  }, [step, patient, identifier, age, sex, presentationType, symptomDescription, vitalSigns, image, consent]);
+  }, [
+    step,
+    patient,
+    identifier,
+    age,
+    sex,
+    presentationType,
+    symptomDescription,
+    vitalSigns,
+    image,
+    consent,
+  ]);
 
   /* Restore draft on mount */
   useEffect(() => {
@@ -307,7 +357,9 @@ function TriagePage() {
   }, []);
 
   const clearDraft = () => {
-    try { localStorage.removeItem("trij-triage-draft"); } catch {}
+    try {
+      localStorage.removeItem("trij-triage-draft");
+    } catch {}
   };
 
   useEffect(() => {
@@ -349,9 +401,16 @@ function TriagePage() {
           const txt = [
             t("voiceGuideResult"),
             t("likelyCondition") + ": " + result.condition,
-            t("voiceGuideConfidence").replace("{pct}", String(Math.round(
-              typeof result.confidence === 'number' ? result.confidence : result.confidence?.confidence_point ?? 0
-            ))),
+            t("voiceGuideConfidence").replace(
+              "{pct}",
+              String(
+                Math.round(
+                  typeof result.confidence === "number"
+                    ? result.confidence
+                    : (result.confidence?.confidence_point ?? 0),
+                ),
+              ),
+            ),
             t("voiceGuideUrgency").replace("{level}", result.urgency),
             t("voiceGuideRecommended") + " " + (result.recommendation ?? ""),
           ].join(". ");
@@ -496,7 +555,7 @@ function TriagePage() {
   };
 
   const runImciAssessment = () => {
-    const ageMonths = imciAgeMonths ? Number(imciAgeMonths) : (Number(age) * 12);
+    const ageMonths = imciAgeMonths ? Number(imciAgeMonths) : Number(age) * 12;
     const classifications = assessImci({
       ageMonths,
       dangerSigns: imciDangerSigns,
@@ -557,15 +616,18 @@ function TriagePage() {
             setProgress(Math.round((r.progress || 0) * 100));
             setProgressText(r.text || t("preparing") + "...");
           });
-          
+
           // Update the kind if fallback was used
           if (loadResult.fallbackUsed) {
             console.log(`Engine fallback used: ${kind} → ${loadResult.kind}`);
             kindRef.current = loadResult.kind;
             kind = loadResult.kind;
-            
+
             // Show a toast notification about the fallback
-            toast.info(`Using ${loadResult.kind.toUpperCase()} engine instead of requested ${engineKind.toUpperCase()}`, { duration: 3000 });
+            toast.info(
+              `Using ${loadResult.kind.toUpperCase()} engine instead of requested ${engineKind.toUpperCase()}`,
+              { duration: 3000 },
+            );
           }
         } catch (err) {
           console.error("Engine load failed", err);
@@ -578,10 +640,23 @@ function TriagePage() {
 
       setProgressText(t("analyzing") + "...");
       setProgress(100);
-      const r = await triageImage(dataUrl, language, kind, ollamaUrl, presentationType, symptomDescription);
+      const r = await triageImage(
+        dataUrl,
+        language,
+        kind,
+        ollamaUrl,
+        presentationType,
+        symptomDescription,
+      );
 
       const vs = buildVitalSigns();
-      const symptomInput = mapToSymptomInput(vs, symptomDescription, presentationType, age ? Number(age) : undefined, sex);
+      const symptomInput = mapToSymptomInput(
+        vs,
+        symptomDescription,
+        presentationType,
+        age ? Number(age) : undefined,
+        sex,
+      );
       const redFlagCheck = checkRedFlags(symptomInput);
       if (redFlagCheck.detected) {
         const overridden = { ...r, urgency: "red" as const };
@@ -591,28 +666,32 @@ function TriagePage() {
         log("red_flag:triggered", {
           resourceType: "assessment",
           resourceId: "",
-          details: JSON.stringify(redFlagCheck.flags.map((f) => ({ 
-            id: f.rule.id, 
-            condition: f.rule.name,
-            severity: f.rule.severity,
-            category: f.rule.category 
-          }))),
+          details: JSON.stringify(
+            redFlagCheck.flags.map((f) => ({
+              id: f.rule.id,
+              condition: f.rule.name,
+              severity: f.rule.severity,
+              category: f.rule.category,
+            })),
+          ),
         });
       } else {
         setResult(r);
       }
 
-      const outbreakMatches = checkForNotifiableConditions(
-        r.condition,
-        r.possible_conditions,
-      );
+      const outbreakMatches = checkForNotifiableConditions(r.condition, r.possible_conditions);
       setNotifiableFlags(outbreakMatches);
       if (outbreakMatches.length > 0) {
         toast.warning(t("outbreakAlert"), { duration: 8000 });
         log("alert:outbreak_condition", {
           resourceType: "assessment",
           resourceId: "",
-          details: JSON.stringify(outbreakMatches.map((m) => ({ condition: m.condition.name, keyword: m.matchedKeyword }))),
+          details: JSON.stringify(
+            outbreakMatches.map((m) => ({
+              condition: m.condition.name,
+              keyword: m.matchedKeyword,
+            })),
+          ),
         });
       }
 
@@ -638,15 +717,18 @@ function TriagePage() {
             setProgress(Math.round((r.progress || 0) * 100));
             setProgressText(r.text || t("preparing") + "...");
           });
-          
+
           // Update the kind if fallback was used
           if (loadResult.fallbackUsed) {
             console.log(`Engine fallback used: ${kind} → ${loadResult.kind}`);
             kindRef.current = loadResult.kind;
             kind = loadResult.kind;
-            
+
             // Show a toast notification about the fallback
-            toast.info(`Using ${loadResult.kind.toUpperCase()} engine instead of requested ${engineKind.toUpperCase()}`, { duration: 3000 });
+            toast.info(
+              `Using ${loadResult.kind.toUpperCase()} engine instead of requested ${engineKind.toUpperCase()}`,
+              { duration: 3000 },
+            );
           }
         } catch (err) {
           console.error("Engine load failed", err);
@@ -659,10 +741,23 @@ function TriagePage() {
 
       setProgressText(t("analyzing") + "...");
       setProgress(100);
-      const r = await triageImage("", language, kind, ollamaUrl, presentationType, symptomDescription);
+      const r = await triageImage(
+        "",
+        language,
+        kind,
+        ollamaUrl,
+        presentationType,
+        symptomDescription,
+      );
 
       const vs = buildVitalSigns();
-      const symptomInput = mapToSymptomInput(vs, symptomDescription, presentationType, age ? Number(age) : undefined, sex);
+      const symptomInput = mapToSymptomInput(
+        vs,
+        symptomDescription,
+        presentationType,
+        age ? Number(age) : undefined,
+        sex,
+      );
       const redFlagCheck = checkRedFlags(symptomInput);
       if (redFlagCheck.detected) {
         const overridden = { ...r, urgency: "red" as const };
@@ -672,28 +767,32 @@ function TriagePage() {
         log("red_flag:triggered", {
           resourceType: "assessment",
           resourceId: "",
-          details: JSON.stringify(redFlagCheck.flags.map((f) => ({ 
-            id: f.rule.id, 
-            condition: f.rule.name,
-            severity: f.rule.severity,
-            category: f.rule.category 
-          }))),
+          details: JSON.stringify(
+            redFlagCheck.flags.map((f) => ({
+              id: f.rule.id,
+              condition: f.rule.name,
+              severity: f.rule.severity,
+              category: f.rule.category,
+            })),
+          ),
         });
       } else {
         setResult(r);
       }
 
-      const outbreakMatches = checkForNotifiableConditions(
-        r.condition,
-        r.possible_conditions,
-      );
+      const outbreakMatches = checkForNotifiableConditions(r.condition, r.possible_conditions);
       setNotifiableFlags(outbreakMatches);
       if (outbreakMatches.length > 0) {
         toast.warning(t("outbreakAlert"), { duration: 8000 });
         log("alert:outbreak_condition", {
           resourceType: "assessment",
           resourceId: "",
-          details: JSON.stringify(outbreakMatches.map((m) => ({ condition: m.condition.name, keyword: m.matchedKeyword }))),
+          details: JSON.stringify(
+            outbreakMatches.map((m) => ({
+              condition: m.condition.name,
+              keyword: m.matchedKeyword,
+            })),
+          ),
         });
       }
 
@@ -712,7 +811,9 @@ function TriagePage() {
       heartRate: vitalSigns.heartRate ? Number(vitalSigns.heartRate) : undefined,
       respiratoryRate: vitalSigns.respiratoryRate ? Number(vitalSigns.respiratoryRate) : undefined,
       temperature: vitalSigns.temperature ? Number(vitalSigns.temperature) : undefined,
-      oxygenSaturation: vitalSigns.oxygenSaturation ? Number(vitalSigns.oxygenSaturation) : undefined,
+      oxygenSaturation: vitalSigns.oxygenSaturation
+        ? Number(vitalSigns.oxygenSaturation)
+        : undefined,
       muac: vitalSigns.muac ? Number(vitalSigns.muac) : undefined,
       weight: vitalSigns.weight ? Number(vitalSigns.weight) : undefined,
       painScale: vitalSigns.painScale ? Number(vitalSigns.painScale) : undefined,
@@ -726,7 +827,13 @@ function TriagePage() {
    * Map triage data to SymptomInput format for red flag detection
    * Converts vital signs, symptom description, and presentation type into structured symptom fields
    */
-  const mapToSymptomInput = (vitals: VitalSigns | undefined, description: string, presentation: string, patientAge?: number, patientSex?: "M" | "F" | "other"): SymptomInput => {
+  const mapToSymptomInput = (
+    vitals: VitalSigns | undefined,
+    description: string,
+    presentation: string,
+    patientAge?: number,
+    patientSex?: "M" | "F" | "other",
+  ): SymptomInput => {
     const input: SymptomInput = {
       age: patientAge,
     };
@@ -755,7 +862,7 @@ function TriagePage() {
 
     // Parse symptom description for key phrases
     const desc = description.toLowerCase();
-    
+
     // Neurological symptoms
     if (desc.includes("confus") || desc.includes("disorient")) {
       input.confusion = true;
@@ -770,16 +877,28 @@ function TriagePage() {
     if (desc.includes("stiff neck") || desc.includes("neck pain") || desc.includes("neck stiff")) {
       input.stiffNeck = true;
     }
-    if (desc.includes("light sensitiv") || desc.includes("photophobia") || desc.includes("bright light")) {
+    if (
+      desc.includes("light sensitiv") ||
+      desc.includes("photophobia") ||
+      desc.includes("bright light")
+    ) {
       input.photophobia = true;
     }
-    if (desc.includes("face droop") || desc.includes("facial droop") || desc.includes("face uneven")) {
+    if (
+      desc.includes("face droop") ||
+      desc.includes("facial droop") ||
+      desc.includes("face uneven")
+    ) {
       input.facialDroop = true;
     }
     if (desc.includes("arm weak") || desc.includes("weak arm") || desc.includes("numb arm")) {
       input.armWeakness = true;
     }
-    if (desc.includes("slurr") || desc.includes("speech difficult") || desc.includes("hard to speak")) {
+    if (
+      desc.includes("slurr") ||
+      desc.includes("speech difficult") ||
+      desc.includes("hard to speak")
+    ) {
       input.speechSlurring = true;
       input.difficultySpeaking = true;
     }
@@ -787,15 +906,26 @@ function TriagePage() {
       input.weakness = true;
       input.numbness = true;
     }
-    if (desc.includes("vision") && (desc.includes("blur") || desc.includes("change") || desc.includes("double"))) {
+    if (
+      desc.includes("vision") &&
+      (desc.includes("blur") || desc.includes("change") || desc.includes("double"))
+    ) {
       input.visionChanges = true;
     }
 
     // Cardiovascular symptoms
-    if (desc.includes("chest pain") || desc.includes("chest tight") || desc.includes("heart attack")) {
+    if (
+      desc.includes("chest pain") ||
+      desc.includes("chest tight") ||
+      desc.includes("heart attack")
+    ) {
       input.chestPain = true;
     }
-    if (desc.includes("short of breath") || desc.includes("breathless") || desc.includes("difficulty breath")) {
+    if (
+      desc.includes("short of breath") ||
+      desc.includes("breathless") ||
+      desc.includes("difficulty breath")
+    ) {
       input.shortnessOfBreath = true;
       input.difficultyBreathing = true;
     }
@@ -805,16 +935,26 @@ function TriagePage() {
     }
 
     // Gastrointestinal symptoms
-    if (desc.includes("severe abdom") || desc.includes("stomach pain") && desc.includes("severe")) {
+    if (
+      desc.includes("severe abdom") ||
+      (desc.includes("stomach pain") && desc.includes("severe"))
+    ) {
       input.severeAbdominalPain = true;
     }
-    if (desc.includes("vomit blood") || desc.includes("coffee ground") || desc.includes("hematemesis")) {
+    if (
+      desc.includes("vomit blood") ||
+      desc.includes("coffee ground") ||
+      desc.includes("hematemesis")
+    ) {
       input.vomitingBlood = true;
     }
     if (desc.includes("black stool") || desc.includes("tarry stool") || desc.includes("melena")) {
       input.blackStool = true;
     }
-    if (desc.includes("abdominal") && (desc.includes("distend") || desc.includes("swollen") || desc.includes("bloated"))) {
+    if (
+      desc.includes("abdominal") &&
+      (desc.includes("distend") || desc.includes("swollen") || desc.includes("bloated"))
+    ) {
       input.abdominalDistension = true;
     }
 
@@ -822,10 +962,18 @@ function TriagePage() {
     if (desc.includes("sunken eye") || desc.includes("eye sink")) {
       input.sunkenEyes = true;
     }
-    if (desc.includes("no urine") || desc.includes("not pass urine") || desc.includes("unable to urinate")) {
+    if (
+      desc.includes("no urine") ||
+      desc.includes("not pass urine") ||
+      desc.includes("unable to urinate")
+    ) {
       input.noUrine = true;
     }
-    if (desc.includes("unable to drink") || desc.includes("cannot drink") || desc.includes("refuse drink")) {
+    if (
+      desc.includes("unable to drink") ||
+      desc.includes("cannot drink") ||
+      desc.includes("refuse drink")
+    ) {
       input.unableToDrink = true;
     }
     if (desc.includes("dry mouth") || desc.includes("thirsty") || desc.includes("thirst")) {
@@ -835,7 +983,11 @@ function TriagePage() {
 
     // Obstetric symptoms
     if (patientSex === "F") {
-      if (desc.includes("pregnant") || desc.includes("pregnancy") || presentation === "obstetrics") {
+      if (
+        desc.includes("pregnant") ||
+        desc.includes("pregnancy") ||
+        presentation === "obstetrics"
+      ) {
         input.pregnancy = true;
         if (patientAge && patientAge >= 18) {
           input.pregnantTrimester = 3; // Default to third trimester for adults if pregnant
@@ -902,7 +1054,10 @@ function TriagePage() {
       images: hasImage ? [image!] : [],
       vitalSigns: buildVitalSigns(),
       condition: result.condition,
-      presentationType: presentationType !== "dermatology" ? (presentationType as import("@/types/trij").PresentationType) : undefined,
+      presentationType:
+        presentationType !== "dermatology"
+          ? (presentationType as import("@/types/trij").PresentationType)
+          : undefined,
       description: symptomDescription || undefined,
       icd10Code: result.icd10_code,
       confidence: result.confidence,
@@ -929,15 +1084,19 @@ function TriagePage() {
       createdAt: new Date().toISOString(),
     };
     await queueAssessment(a);
-    log("assessment:create", { resourceType: "assessment", resourceId: a.id, patientId: a.patientId });
+    log("assessment:create", {
+      resourceType: "assessment",
+      resourceId: a.id,
+      patientId: a.patientId,
+    });
     await clearVoiceDraft(patient.id).catch(() => {});
     clearDraft();
     voice.narrate(t("voiceGuideSaved"));
     toast.success(t("savedOffline"));
-    
+
     // Trigger well-being check-in after work session
     triggerCheckIn();
-    
+
     navigate({ to: "/patients/$patientId", params: { patientId: patient.id } });
   };
 
@@ -1057,7 +1216,14 @@ function TriagePage() {
               kindRef.current = "demo";
               setStep("analyzing");
               try {
-                const r = await triageImage(data || "", language, "demo", ollamaUrl, presentationType, symptomDescription);
+                const r = await triageImage(
+                  data || "",
+                  language,
+                  "demo",
+                  ollamaUrl,
+                  presentationType,
+                  symptomDescription,
+                );
                 setResult(r);
                 setStep("result");
               } catch {
@@ -1104,7 +1270,14 @@ function TriagePage() {
       )}
       <AppHeader title={t("newTriage")} subtitle={t("stepByStep")} />
       <div className="mx-auto max-w-4xl px-5 py-6">
-        <Stepper step={step} progress={progress} progressText={progressText} />
+        <Stepper
+          step={step}
+          progress={progress}
+          progressText={progressText}
+          shouldShowCheckIn={shouldShowCheckIn}
+          handleWellBeingSkip={handleWellBeingSkip}
+          handleWellBeingSubmit={handleWellBeingSubmit}
+        />
 
         {step === "patient" && (
           <div className="mt-7 space-y-5">
@@ -1312,16 +1485,18 @@ function TriagePage() {
               <p className="mt-1 text-sm text-muted-foreground">{t("presentationTypeDesc")}</p>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {([
-                ["dermatology", t("dermatologyIcon") || "Skin"],
-                ["respiratory", t("respiratoryIcon") || "Lungs"],
-                ["fever", t("feverIcon") || "Fever"],
-                ["gastrointestinal", t("giIcon") || "Stomach"],
-                ["neurological", t("neuroIcon") || "Brain"],
-                ["malnutrition", t("malnutritionIcon") || "Nutrition"],
-                ["eye_ear", t("eyeEarIcon") || "Eye/Ear"],
-                ["musculoskeletal", t("mskIcon") || "Joint"],
-              ] as const).map(([value, label]) => (
+              {(
+                [
+                  ["dermatology", t("dermatologyIcon") || "Skin"],
+                  ["respiratory", t("respiratoryIcon") || "Lungs"],
+                  ["fever", t("feverIcon") || "Fever"],
+                  ["gastrointestinal", t("giIcon") || "Stomach"],
+                  ["neurological", t("neuroIcon") || "Brain"],
+                  ["malnutrition", t("malnutritionIcon") || "Nutrition"],
+                  ["eye_ear", t("eyeEarIcon") || "Eye/Ear"],
+                  ["musculoskeletal", t("mskIcon") || "Joint"],
+                ] as const
+              ).map(([value, label]) => (
                 <button
                   key={value}
                   onClick={() => setPresentationType(value)}
@@ -1370,10 +1545,21 @@ function TriagePage() {
 
             {!imciActive ? (
               <div className="flex gap-3">
-                <Button onClick={() => { setImciActive(true); }} size="lg" className="flex-1 gap-2">
+                <Button
+                  onClick={() => {
+                    setImciActive(true);
+                  }}
+                  size="lg"
+                  className="flex-1 gap-2"
+                >
                   {t("start")} IMCI
                 </Button>
-                <Button onClick={() => setStep("presentation")} size="lg" variant="outline" className="flex-1">
+                <Button
+                  onClick={() => setStep("presentation")}
+                  size="lg"
+                  variant="outline"
+                  className="flex-1"
+                >
                   {t("skip")}
                 </Button>
               </div>
@@ -1515,11 +1701,7 @@ function TriagePage() {
                   </label>
                 </div>
 
-                <Button
-                  onClick={runImciAssessment}
-                  size="lg"
-                  className="w-full gap-2"
-                >
+                <Button onClick={runImciAssessment} size="lg" className="w-full gap-2">
                   {t("continue")} <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -1536,10 +1718,21 @@ function TriagePage() {
 
             {!imciActive ? (
               <div className="flex gap-3">
-                <Button onClick={() => { setImciActive(true); }} size="lg" className="flex-1 gap-2">
+                <Button
+                  onClick={() => {
+                    setImciActive(true);
+                  }}
+                  size="lg"
+                  className="flex-1 gap-2"
+                >
                   {t("start")} IMCI
                 </Button>
-                <Button onClick={() => setStep("presentation")} size="lg" variant="outline" className="flex-1">
+                <Button
+                  onClick={() => setStep("presentation")}
+                  size="lg"
+                  variant="outline"
+                  className="flex-1"
+                >
                   {t("skip")}
                 </Button>
               </div>
@@ -1681,11 +1874,7 @@ function TriagePage() {
                   </label>
                 </div>
 
-                <Button
-                  onClick={runImciAssessment}
-                  size="lg"
-                  className="w-full gap-2"
-                >
+                <Button onClick={runImciAssessment} size="lg" className="w-full gap-2">
                   {t("continue")} <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -1729,11 +1918,7 @@ function TriagePage() {
                 <div className="text-sm">
                   <p className="font-medium">{t("textOnlyMode")}</p>
                   <p className="mt-1 text-muted-foreground">{t("textOnlyDesc")}</p>
-                  <Button
-                    onClick={onTextOnlyAnalyze}
-                    size="sm"
-                    className="mt-3 gap-2"
-                  >
+                  <Button onClick={onTextOnlyAnalyze} size="sm" className="mt-3 gap-2">
                     {t("analyzeSymptoms")} <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -1810,12 +1995,19 @@ function TriagePage() {
               minConfidenceForLocalCare={minConfidenceForLocalCare}
               engineKind={kindRef.current as "webllm" | "ollama" | "demo" | "cloud" | "auto"}
             />
-            <AiFeedbackWidget onFeedback={(fb) => { aiFeedbackRef.current = fb; }} userId={user?.id || ""} />
+            <AiFeedbackWidget
+              onFeedback={(fb) => {
+                aiFeedbackRef.current = fb;
+              }}
+              userId={user?.id || ""}
+            />
             <div className="flex flex-wrap gap-3">
               <Button
                 variant="outline"
                 className="flex-1 gap-2"
-                onClick={() => { if (image && window.confirm(t("retakeConfirm"))) setStep("capture"); }}
+                onClick={() => {
+                  if (image && window.confirm(t("retakeConfirm"))) setStep("capture");
+                }}
               >
                 <ScanLine className="h-4 w-4" /> {t("retakePhoto")}
               </Button>
@@ -1926,9 +2118,18 @@ function TriagePage() {
                     capture: t("voiceGuideCapture"),
                     analyzing: t("analyzing") + "...",
                     result: result
-                      ? `${t("voiceGuideResult")}. ${t("likelyCondition")}: ${result.condition}. ${t("voiceGuideConfidence").replace("{pct}", String(Math.round(
-                        typeof result.confidence === 'number' ? result.confidence : result.confidence?.confidence_point ?? 0
-                      )))}. ${t("voiceGuideUrgency").replace("{level}", result.urgency)}.`
+                      ? `${t("voiceGuideResult")}. ${t("likelyCondition")}: ${result.condition}. ${t(
+                          "voiceGuideConfidence",
+                        ).replace(
+                          "{pct}",
+                          String(
+                            Math.round(
+                              typeof result.confidence === "number"
+                                ? result.confidence
+                                : (result.confidence?.confidence_point ?? 0),
+                            ),
+                          ),
+                        )}. ${t("voiceGuideUrgency").replace("{level}", result.urgency)}.`
                       : "",
                     voice: currentQuestion,
                   }[step];
@@ -1946,7 +2147,21 @@ function TriagePage() {
   );
 }
 
-function Stepper({ step, progress, progressText }: { step: Step; progress?: number; progressText?: string }) {
+function Stepper({
+  step,
+  progress,
+  progressText,
+  shouldShowCheckIn,
+  handleWellBeingSkip,
+  handleWellBeingSubmit,
+}: {
+  step: Step;
+  progress?: number;
+  progressText?: string;
+  shouldShowCheckIn: boolean;
+  handleWellBeingSkip: () => void;
+  handleWellBeingSubmit: (responses: [number, number, number]) => void;
+}) {
   const { t } = useI18n();
 
   const PHASES = [
@@ -1996,7 +2211,11 @@ function Stepper({ step, progress, progressText }: { step: Step; progress?: numb
                 </div>
                 <span
                   className={`hidden whitespace-nowrap text-[10px] font-medium leading-tight sm:block ${
-                    isCurrent ? "text-foreground" : isComplete ? "text-muted-foreground" : "text-muted-foreground/50"
+                    isCurrent
+                      ? "text-foreground"
+                      : isComplete
+                        ? "text-muted-foreground"
+                        : "text-muted-foreground/50"
                   }`}
                 >
                   {t(phase.key)}

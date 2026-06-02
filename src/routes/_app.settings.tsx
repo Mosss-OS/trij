@@ -123,11 +123,29 @@ function SettingsPage() {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [demoWarningOpen, setDemoWarningOpen] = useState(false);
 
+  // Sanitize persisted engine kind — "wasm" and "cpu" are not directly selectable
+  useEffect(() => {
+    const valid: Array<EngineKind | "auto"> = [
+      "webllm",
+      "ollama",
+      "demo",
+      "cloud",
+      "google",
+      "auto",
+    ];
+    if (!valid.includes(s.engineKind)) {
+      s.setEngineKind("auto");
+    }
+  }, []);
+
   const handleEngineChange = (v: string) => {
     if (v === "demo") {
       setDemoWarningOpen(true);
     } else {
       s.setEngineKind(v as EngineKind | "auto");
+      if (v === "google" && !s.modelId.startsWith("gemini") && !s.modelId.startsWith("gemma")) {
+        s.setModelId("gemini-2.0-flash");
+      }
     }
   };
 
@@ -139,7 +157,9 @@ function SettingsPage() {
 
   useEffect(() => {
     if (offlineUser) {
-      hasPinForUser(offlineUser.id).then(setHasPin).catch(() => setHasPin(false));
+      hasPinForUser(offlineUser.id)
+        .then(setHasPin)
+        .catch(() => setHasPin(false));
     }
   }, [offlineUser]);
 
@@ -166,7 +186,9 @@ function SettingsPage() {
         console.warn("[Trij] Failed to check supervisor role:", err);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const generateCode = async () => {
@@ -216,9 +238,18 @@ function SettingsPage() {
   };
 
   const engineOptions: { value: EngineKind | "auto"; label: string; desc: string }[] = [
-    { value: "auto", label: "Auto-detect", desc: "Cloud (mobile) / WebGPU → Ollama → Demo (desktop)" },
+    {
+      value: "auto",
+      label: "Auto-detect",
+      desc: "Cloud (mobile) / WebGPU → Ollama → Demo (desktop)",
+    },
     { value: "webllm", label: "WebLLM (WebGPU)", desc: "In-browser Gemma via WebGPU" },
     { value: "ollama", label: "Ollama (local)", desc: "Local Ollama server" },
+    {
+      value: "google",
+      label: "Google AI Studio",
+      desc: "Gemini API via Google AI Studio (free tier)",
+    },
     { value: "cloud", label: "Cloud inference", desc: "Remote Gemma 4 26B via Supabase" },
     { value: "demo", label: "Demo mode", desc: "Mock data, no real model needed" },
   ];
@@ -364,6 +395,60 @@ function SettingsPage() {
             </div>
           )}
 
+          {s.engineKind === "google" && (
+            <div className="space-y-3 rounded-2xl border bg-card p-4">
+              <div className="space-y-1.5">
+                <Label>Google AI Studio API Key</Label>
+                <Input
+                  type="password"
+                  value={s.googleApiKey}
+                  onChange={(e) => s.setGoogleApiKey(e.target.value)}
+                  placeholder="AIzaSy..."
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Get your free API key from{" "}
+                  <a
+                    href="https://aistudio.google.com/apikey"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    aistudio.google.com/apikey
+                  </a>
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Model</Label>
+                <Select
+                  value={
+                    s.modelId.startsWith("gemini") || s.modelId.startsWith("gemma")
+                      ? s.modelId
+                      : "gemini-2.0-flash"
+                  }
+                  onValueChange={s.setModelId}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash (fast, free)</SelectItem>
+                    <SelectItem value="gemini-2.0-flash-lite">
+                      Gemini 2.0 Flash-Lite (cheapest, free)
+                    </SelectItem>
+                    <SelectItem value="gemini-2.5-flash">
+                      Gemini 2.5 Flash (balanced, free)
+                    </SelectItem>
+                    <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro (best quality)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Gemini 2.0 Flash is recommended. It's free and supports image analysis.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <div>
               <Label>{t("extendedReasoning")}</Label>
@@ -494,22 +579,22 @@ function SettingsPage() {
                 >
                   {hasPin ? t("change") : t("setup")}
                 </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <Label>{t("encryptData")}</Label>
-                <p className="text-xs text-muted-foreground">{t("encryptDataDesc")}</p>
               </div>
-              <Switch
-                checked={s.encryptionEnabled}
-                onCheckedChange={(enabled) => {
-                  s.setEncryptionEnabled(enabled);
-                  toast.success(enabled ? t("encryptionEnabled") : t("encryptionDisabled"));
-                }}
-              />
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <Label>{t("encryptData")}</Label>
+                  <p className="text-xs text-muted-foreground">{t("encryptDataDesc")}</p>
+                </div>
+                <Switch
+                  checked={s.encryptionEnabled}
+                  onCheckedChange={(enabled) => {
+                    s.setEncryptionEnabled(enabled);
+                    toast.success(enabled ? t("encryptionEnabled") : t("encryptionDisabled"));
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        </Section>
+          </Section>
         )}
 
         <Section title={t("storage")}>
@@ -545,7 +630,10 @@ function SettingsPage() {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label>{t("theme")}</Label>
-              <Select value={s.theme} onValueChange={(value: "light" | "dark" | "system") => s.setTheme(value)}>
+              <Select
+                value={s.theme}
+                onValueChange={(value: "light" | "dark" | "system") => s.setTheme(value)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -601,7 +689,10 @@ function SettingsPage() {
                   if (enabled) {
                     import("@/lib/webauthn").then(({ registerBiometric, isBiometricAvailable }) => {
                       isBiometricAvailable().then((avail) => {
-                        if (!avail) { toast.error(t("biometricNotAvailable")); return; }
+                        if (!avail) {
+                          toast.error(t("biometricNotAvailable"));
+                          return;
+                        }
                         registerBiometric(s.chwName || sessionUser?.email || "user").then((ok) => {
                           if (ok) s.setBiometricEnabled(true);
                           else toast.error(t("biometricSetupFailed"));
@@ -670,7 +761,10 @@ function SettingsPage() {
           <div className="flex items-start gap-3 rounded-2xl border bg-card p-4">
             <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500" />
             <div className="text-sm">
-              <p className="font-medium">{t("biasAuditStatus")} <span className="text-amber-500">{t("biasAuditPending")}</span></p>
+              <p className="font-medium">
+                {t("biasAuditStatus")}{" "}
+                <span className="text-amber-500">{t("biasAuditPending")}</span>
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">{t("biasAuditDesc")}</p>
               <a
                 href="/BIAS_AUDIT.md"
@@ -686,7 +780,10 @@ function SettingsPage() {
           <div className="mt-3 flex items-start gap-3 rounded-2xl border bg-card p-4">
             <Beaker className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-500" />
             <div className="text-sm">
-              <p className="font-medium">{t("clinicalValidationStatus")} <span className="text-blue-500">{t("validationInProgress")}</span></p>
+              <p className="font-medium">
+                {t("clinicalValidationStatus")}{" "}
+                <span className="text-blue-500">{t("validationInProgress")}</span>
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">{t("validationDesc")}</p>
               <a
                 href="/CLINICAL_VALIDATION.md"
