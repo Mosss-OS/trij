@@ -79,9 +79,7 @@ export function ConsentCapture({ onConsent, disabled }: ConsentCaptureProps) {
           <label
             key={item.id}
             className={`flex items-start gap-3 rounded-xl border p-3 transition-colors ${
-              agreed[item.id]
-                ? "border-green-300 bg-green-50"
-                : "border-muted bg-transparent"
+              agreed[item.id] ? "border-green-300 bg-green-50" : "border-muted bg-transparent"
             }`}
           >
             <Checkbox
@@ -98,7 +96,7 @@ export function ConsentCapture({ onConsent, disabled }: ConsentCaptureProps) {
 
       <div>
         <Label className="text-xs text-muted-foreground">{t("consentMethod")}</Label>
-        <div className="mt-1.5 flex flex-wrap gap-2">
+        <div className="mt-1.5 grid grid-cols-2 gap-2">
           {(["verbal", "thumbprint", "signature", "voice"] as ConsentMethod[]).map((m) => {
             const icons = { verbal: Mic, thumbprint: Fingerprint, signature: PenLine, voice: Mic };
             const Icon = icons[m];
@@ -108,14 +106,14 @@ export function ConsentCapture({ onConsent, disabled }: ConsentCaptureProps) {
                 type="button"
                 onClick={() => setMethod(m)}
                 disabled={disabled || confirmed}
-                className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
+                className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2.5 text-xs font-medium transition-colors ${
                   method === m
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-muted text-muted-foreground hover:bg-accent"
                 }`}
               >
-                <Icon className="h-3.5 w-3.5" />
-                {t(m as any)}
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{t(m as any)}</span>
               </button>
             );
           })}
