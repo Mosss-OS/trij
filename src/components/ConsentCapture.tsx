@@ -98,7 +98,7 @@ export function ConsentCapture({ onConsent, disabled }: ConsentCaptureProps) {
 
       <div>
         <Label className="text-xs text-muted-foreground">{t("consentMethod")}</Label>
-        <div className="mt-1.5 flex gap-2">
+        <div className="mt-1.5 flex flex-wrap gap-2">
           {(["verbal", "thumbprint", "signature", "voice"] as ConsentMethod[]).map((m) => {
             const icons = { verbal: Mic, thumbprint: Fingerprint, signature: PenLine, voice: Mic };
             const Icon = icons[m];
