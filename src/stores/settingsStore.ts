@@ -142,6 +142,16 @@ export const useSettingsStore = create<SettingsState>()(
           ? localStorage
           : { getItem: () => null, setItem: () => {}, removeItem: () => {} },
       ),
+      merge: (persisted, current) => ({
+        ...current,
+        ...persisted,
+        googleApiKey:
+          (persisted as Partial<SettingsState>).googleApiKey ||
+          (typeof import.meta !== "undefined"
+            ? import.meta.env.VITE_GEMINI_API_KEY
+            : "") ||
+          "",
+      }),
     },
   ),
 );
