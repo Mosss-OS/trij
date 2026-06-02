@@ -1056,6 +1056,44 @@ const FALLBACK_DOC: DocumentResult = {
   recommendation: "",
 };
 
+async function cloudDocumentAnalysis(
+  imageDataUrl: string,
+  language: string,
+): Promise<DocumentResult> {
+  const apiKey = useSettingsStore.getState().googleApiKey;
+  if (apiKey) {
+    const model = useSettingsStore.getState().modelId.startsWith("gemini")
+      ? useSettingsStore.getState().modelId
+      : "gemini-2.0-flash";
+    return googleDocumentAnalysis(imageDataUrl, language, model, apiKey);
+  }
+  const settings = useSettingsStore.getState();
+  const supabaseUrl = settings.supabaseUrl || DEFAULT_CLOUD_URL;
+  const token = useSessionStore.getState().session?.access_token;
+  if (!token) throw new Error("No auth session for cloud inference");
+  const res = await fetch(
+    supabaseUrl.endsWith("/infer-gemma4")
+      ? supabaseUrl
+      : `${supabaseUrl}/functions/v1/infer-gemma4`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        image: imageDataUrl,
+        prompt:
+          "Extract the key information from this medical document and return a structured document analysis.",
+        language,
+      }),
+    },
+  );
+  if (!res.ok) throw new Error(`Cloud document analysis failed (${res.status})`);
+  const raw: string = await res.text();
+  return triesJson<DocumentResult>(raw, FALLBACK_DOC);
+}
+
 export async function analyzeDocument(
   imageDataUrl: string,
   language: string,
@@ -1067,22 +1105,38 @@ export async function analyzeDocument(
     return demoDocument();
   }
 
+  if (kind === "cloud") {
+    try {
+      return await cloudDocumentAnalysis(imageDataUrl, language);
+    } catch (err) {
+      console.warn("Cloud document analysis failed, falling back to demo:", err);
+      await sleep(1500 + Math.random() * 1000);
+      return demoDocument();
+    }
+  }
+
   if (kind === "ollama") {
-    const response = await ollamaChat(
-      [
-        { role: "system", content: getDocumentSystemPrompt(language) },
-        {
-          role: "user",
-          content: "Extract the key information from this document.",
-          images: [imageDataUrl],
-        },
-      ],
-      ollamaUrl ?? "http://localhost:11434",
-      [DOCUMENT_TOOL],
-    );
-    const result = parseToolCall<DocumentResult>(response.message, null);
-    if (result) return result;
-    return triesJson<DocumentResult>(response.message.content ?? "", FALLBACK_DOC);
+    try {
+      const response = await ollamaChat(
+        [
+          { role: "system", content: getDocumentSystemPrompt(language) },
+          {
+            role: "user",
+            content: "Extract the key information from this document.",
+            images: [imageDataUrl],
+          },
+        ],
+        ollamaUrl ?? "http://localhost:11434",
+        [DOCUMENT_TOOL],
+      );
+      const result = parseToolCall<DocumentResult>(response.message, null);
+      if (result) return result;
+      return triesJson<DocumentResult>(response.message.content ?? "", FALLBACK_DOC);
+    } catch (err) {
+      console.warn("Ollama failed, falling back to demo:", err);
+      await sleep(1500 + Math.random() * 1000);
+      return demoDocument();
+    }
   }
 
   if (kind === "google") {
@@ -1091,7 +1145,13 @@ export async function analyzeDocument(
     const model = useSettingsStore.getState().modelId.startsWith("gemini")
       ? useSettingsStore.getState().modelId
       : "gemini-2.0-flash";
-    return googleDocumentAnalysis(imageDataUrl, language, model, apiKey);
+    try {
+      return await googleDocumentAnalysis(imageDataUrl, language, model, apiKey);
+    } catch (err) {
+      console.warn("Google document analysis failed, falling back to demo:", err);
+      await sleep(1500 + Math.random() * 1000);
+      return demoDocument();
+    }
   }
 
   const settings = useSettingsStore.getState();
@@ -1127,7 +1187,18 @@ export async function analyzeDocument(
     if (result) return result;
     return triesJson<DocumentResult>(message.content ?? "", FALLBACK_DOC);
   } catch (err) {
-    console.warn("Primary engine failed, falling back to demo mode:", err);
+    console.warn("Primary engine failed, trying Google Gemini before demo:", err);
+    const apiKey = useSettingsStore.getState().googleApiKey;
+    if (apiKey) {
+      try {
+        const model = useSettingsStore.getState().modelId.startsWith("gemini")
+          ? useSettingsStore.getState().modelId
+          : "gemini-2.0-flash";
+        return await googleDocumentAnalysis(imageDataUrl, language, model, apiKey);
+      } catch (geminiErr) {
+        console.warn("Google Gemini fallback also failed:", geminiErr);
+      }
+    }
     await sleep(1500 + Math.random() * 1000);
     return demoDocument();
   }
