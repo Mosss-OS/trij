@@ -1271,7 +1271,7 @@ function TriagePage() {
         />
       )}
       <AppHeader title={t("newTriage")} subtitle={t("stepByStep")} />
-      <div className="mx-auto max-w-4xl px-5 py-6">
+      <div className="mx-auto max-w-4xl px-4 pb-28 pt-6 sm:px-5 overflow-x-hidden">
         <Stepper
           step={step}
           progress={progress}
