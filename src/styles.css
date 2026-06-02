@@ -20,8 +20,13 @@
    * are a 300–800 variable range (sans, serif) and 400 (mono). */
   --font-display: "Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-sans: "Anthropic Sans", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-serif: "Anthropic Serif", Georgia, "Arial Hebrew", "Noto Sans Hebrew", "Times New Roman", Times, "Hiragino Sans", "Yu Gothic", Meiryo, "Noto Sans CJK JP", "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Apple SD Gothic Neo", "Malgun Gothic", serif;
-  --font-mono: "Anthropic Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-serif:
+    "Anthropic Serif", Georgia, "Arial Hebrew", "Noto Sans Hebrew", "Times New Roman", Times,
+    "Hiragino Sans", "Yu Gothic", Meiryo, "Noto Sans CJK JP", "PingFang TC", "Microsoft JhengHei",
+    "Noto Sans CJK TC", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Apple SD Gothic Neo",
+    "Malgun Gothic", serif;
+  --font-mono:
+    "Anthropic Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -235,25 +240,43 @@
   font-size: 18px;
 }
 
-.sunlight-mode .text-xs { font-size: 0.75rem; }
-.sunlight-mode .text-sm { font-size: 0.9rem; }
-.sunlight-mode .text-base { font-size: 1.05rem; }
-.sunlight-mode .text-lg { font-size: 1.2rem; }
-.sunlight-mode .text-xl { font-size: 1.4rem; }
-.sunlight-mode .text-2xl { font-size: 1.6rem; }
+.sunlight-mode .text-xs {
+  font-size: 0.75rem;
+}
+.sunlight-mode .text-sm {
+  font-size: 0.9rem;
+}
+.sunlight-mode .text-base {
+  font-size: 1.05rem;
+}
+.sunlight-mode .text-lg {
+  font-size: 1.2rem;
+}
+.sunlight-mode .text-xl {
+  font-size: 1.4rem;
+}
+.sunlight-mode .text-2xl {
+  font-size: 1.6rem;
+}
 
 @layer base {
   * {
     border-color: var(--color-border);
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease,
+      border-color 0.3s ease;
   }
   html,
   body {
+    overflow-x: hidden;
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
   h1,
   h2,
