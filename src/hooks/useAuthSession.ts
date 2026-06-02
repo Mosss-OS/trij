@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSessionStore } from "@/stores/sessionStore";
 
-const SESSION_TIMEOUT = 10_000;
+const SESSION_TIMEOUT = 4_000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
@@ -24,10 +24,12 @@ export function useAuthSession() {
         setLoading(false);
         if (timeoutId) clearTimeout(timeoutId);
         if (session) setSession(session);
+        else setInitialized(true);
       });
       subscription = result.data.subscription;
     } catch {
       setLoading(false);
+      setInitialized(true);
       return;
     }
 
