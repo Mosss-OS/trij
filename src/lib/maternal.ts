@@ -61,115 +61,140 @@ export interface MaternalAssessmentResult {
 const ANTENATAL_ACTIONS: Record<AntenatalDangerSign, { condition: string; action: string }> = {
   heavy_bleeding: {
     condition: "Antepartum haemorrhage",
-    action: "Immediate emergency transport to maternity facility. Do not do vaginal examination. Lie patient on left side. IV access if possible.",
+    action:
+      "Immediate emergency transport to maternity facility. Do not do vaginal examination. Lie patient on left side. IV access if possible.",
   },
   severe_headache: {
     condition: "Severe pre-eclampsia / Hypertension",
-    action: "Emergency referral. Check BP. If SBP ≥160 or DBP ≥110, treat as emergency. Magnesium sulphate if fitting. Transfer to hospital with obstetric ICU.",
+    action:
+      "Emergency referral. Check BP. If SBP ≥160 or DBP ≥110, treat as emergency. Magnesium sulphate if fitting. Transfer to hospital with obstetric ICU.",
   },
   blurred_vision: {
     condition: "Severe pre-eclampsia with visual disturbance",
-    action: "Emergency referral. Sign of severe pre-eclampsia/eclampsia. Magnesium sulphate. Urgent delivery may be needed.",
+    action:
+      "Emergency referral. Sign of severe pre-eclampsia/eclampsia. Magnesium sulphate. Urgent delivery may be needed.",
   },
   fitting: {
     condition: "Eclampsia",
-    action: "EMERGENCY. Maintain airway. Magnesium sulphate 4g IV. Do not leave patient alone. Transfer to ICU after seizure controlled.",
+    action:
+      "EMERGENCY. Maintain airway. Magnesium sulphate 4g IV. Do not leave patient alone. Transfer to ICU after seizure controlled.",
   },
   reduced_fetal_movement: {
     condition: "Reduced fetal movement / Fetal distress",
-    action: "Urgent referral for CTG and ultrasound. Assess fetal wellbeing. Kick count chart if ≤36 weeks.",
+    action:
+      "Urgent referral for CTG and ultrasound. Assess fetal wellbeing. Kick count chart if ≤36 weeks.",
   },
   fever: {
     condition: "Maternal infection / Chorioamnionitis",
-    action: "Refer for assessment. Antibiotics if infection suspected. Monitor fetal heart rate. Paracetamol for fever.",
+    action:
+      "Refer for assessment. Antibiotics if infection suspected. Monitor fetal heart rate. Paracetamol for fever.",
   },
   difficulty_breathing: {
     condition: "Respiratory distress / Pulmonary oedema / Severe anaemia",
-    action: "Emergency referral. Oxygen if available. Assess for COVID-19, pneumonia, pulmonary embolism. Cardiac assessment.",
+    action:
+      "Emergency referral. Oxygen if available. Assess for COVID-19, pneumonia, pulmonary embolism. Cardiac assessment.",
   },
   severe_abdominal_pain: {
     condition: "Abruptio placentae / Labour / Other emergency",
-    action: "Emergency referral. Do not do vaginal examination. Monitor fetal movements. Prepare for possible emergency delivery.",
+    action:
+      "Emergency referral. Do not do vaginal examination. Monitor fetal movements. Prepare for possible emergency delivery.",
   },
   water_broken_no_contractions: {
     condition: "Prolonged rupture of membranes",
-    action: "Refer for assessment. Risk of infection. If >18 hours since rupture, antibiotics indicated. Induction may be needed.",
+    action:
+      "Refer for assessment. Risk of infection. If >18 hours since rupture, antibiotics indicated. Induction may be needed.",
   },
   swollen_face_hands: {
     condition: "Pre-eclampsia",
-    action: "Check BP and urine protein. Refer for assessment. Monitor for severe headache and visual changes.",
+    action:
+      "Check BP and urine protein. Refer for assessment. Monitor for severe headache and visual changes.",
   },
 };
 
 const POSTNATAL_ACTIONS: Record<PostnatalDangerSign, { condition: string; action: string }> = {
   heavy_bleeding_postnatal: {
     condition: "Postpartum haemorrhage",
-    action: "EMERGENCY. Fundal massage. Oxytocin 10 IU IM/IV. IV fluids. Emergency referral. Monitor vital signs closely.",
+    action:
+      "EMERGENCY. Fundal massage. Oxytocin 10 IU IM/IV. IV fluids. Emergency referral. Monitor vital signs closely.",
   },
   offensive_discharge: {
     condition: "Postpartum sepsis / Endometritis",
-    action: "Urgent referral. Broad-spectrum antibiotics (IV if severe). Uterine culture. Monitor for septic shock.",
+    action:
+      "Urgent referral. Broad-spectrum antibiotics (IV if severe). Uterine culture. Monitor for septic shock.",
   },
   fever_postnatal: {
     condition: "Puerperal sepsis",
-    action: "Refer for assessment. Full septic workup. IV antibiotics. Exclude retained products of conception.",
+    action:
+      "Refer for assessment. Full septic workup. IV antibiotics. Exclude retained products of conception.",
   },
   breast_abscess: {
     condition: "Breast abscess / Mastitis",
-    action: "Refer for incision and drainage if abscess. Continue breastfeeding or expressing. Antibiotics (flucloxacillin). Analgesia.",
+    action:
+      "Refer for incision and drainage if abscess. Continue breastfeeding or expressing. Antibiotics (flucloxacillin). Analgesia.",
   },
   breast_engorgement: {
     condition: "Breast engorgement",
-    action: "Advise frequent feeding. Warm compresses before feeding. Cold compresses after. Refer if not improving or if fever develops.",
+    action:
+      "Advise frequent feeding. Warm compresses before feeding. Cold compresses after. Refer if not improving or if fever develops.",
   },
   perineal_wound_infection: {
     condition: "Perineal wound infection / Breakdown",
-    action: "Refer for wound assessment. Sitz baths. Antibiotics if signs of infection. Surgical debridement may be needed.",
+    action:
+      "Refer for wound assessment. Sitz baths. Antibiotics if signs of infection. Surgical debridement may be needed.",
   },
 };
 
 const NEONATAL_ACTIONS: Record<NeonatalDangerSign, { condition: string; action: string }> = {
   neonatal_breathing_difficulty: {
     condition: "Neonatal respiratory distress",
-    action: "EMERGENCY. Keep warm. Clear airway. Oxygen if available. Refer urgently to neonatal unit. Check for grunting, chest indrawing.",
+    action:
+      "EMERGENCY. Keep warm. Clear airway. Oxygen if available. Refer urgently to neonatal unit. Check for grunting, chest indrawing.",
   },
   neonatal_not_feeding: {
     condition: "Neonatal feeding difficulty / Possible infection",
-    action: "Urgent referral. Assess for signs of infection. Ensure warmth. Express breastmilk and cup feed if necessary.",
+    action:
+      "Urgent referral. Assess for signs of infection. Ensure warmth. Express breastmilk and cup feed if necessary.",
   },
   neonatal_jaundice: {
     condition: "Neonatal jaundice",
-    action: "Refer for bilirubin assessment. If appearing <24 hours of age: EMERGENCY (pathological jaundice). Ensure adequate feeding. Phototherapy may be needed.",
+    action:
+      "Refer for bilirubin assessment. If appearing <24 hours of age: EMERGENCY (pathological jaundice). Ensure adequate feeding. Phototherapy may be needed.",
   },
   neonatal_hypothermia: {
     condition: "Neonatal hypothermia",
-    action: "Warm slowly (skin-to-skin, warm room). Feed if able. Refer if not warming or if signs of infection. Kangaroo mother care if stable.",
+    action:
+      "Warm slowly (skin-to-skin, warm room). Feed if able. Refer if not warming or if signs of infection. Kangaroo mother care if stable.",
   },
   neonatal_fever: {
     condition: "Neonatal fever / Possible sepsis",
-    action: "EMERGENCY. Full septic workup. IV antibiotics. Monitor temperature. Lumbar puncture may be needed. Refer to neonatal unit.",
+    action:
+      "EMERGENCY. Full septic workup. IV antibiotics. Monitor temperature. Lumbar puncture may be needed. Refer to neonatal unit.",
   },
   neonatal_umbilical_redness: {
     condition: "Neonatal omphalitis",
-    action: "Urgent referral. Topical and systemic antibiotics. Monitor for signs of spreading infection. Keep cord clean and dry.",
+    action:
+      "Urgent referral. Topical and systemic antibiotics. Monitor for signs of spreading infection. Keep cord clean and dry.",
   },
   neonatal_umbilical_discharge: {
     condition: "Neonatal umbilical discharge",
-    action: "Keep cord clean and dry. Topical antiseptic (chlorhexidine). Refer if redness spreads or if fever develops.",
+    action:
+      "Keep cord clean and dry. Topical antiseptic (chlorhexidine). Refer if redness spreads or if fever develops.",
   },
   neonatal_convulsions: {
     condition: "Neonatal seizures",
-    action: "EMERGENCY. Maintain airway. Check blood glucose. Phenobarbital loading if continuing. Urgent referral to neonatal ICU.",
+    action:
+      "EMERGENCY. Maintain airway. Check blood glucose. Phenobarbital loading if continuing. Urgent referral to neonatal ICU.",
   },
   neonatal_vomiting: {
     condition: "Neonatal vomiting / Possible obstruction",
-    action: "Refer for assessment. Bilious vomiting is EMERGENCY (intestinal obstruction). Keep nil by mouth. IV fluids.",
+    action:
+      "Refer for assessment. Bilious vomiting is EMERGENCY (intestinal obstruction). Keep nil by mouth. IV fluids.",
   },
 };
 
 export function assessMaternal(input: MaternalAssessmentInput): MaternalAssessmentResult {
   const allDangerSigns: string[] = [];
-  let highestUrgency: "green" = "green";
+  let highestUrgency: "red" | "yellow" | "green" = "green";
 
   if (input.phase === "antenatal" || input.phase === "postnatal") {
     const bpHigh = (input.systolicBP ?? 0) >= 160 || (input.diastolicBP ?? 0) >= 110;
@@ -189,13 +214,23 @@ export function assessMaternal(input: MaternalAssessmentInput): MaternalAssessme
       }
     }
 
-    if (input.antenatalDangerSigns.includes("fitting") || input.antenatalDangerSigns.includes("heavy_bleeding")) {
+    if (
+      input.antenatalDangerSigns.includes("fitting") ||
+      input.antenatalDangerSigns.includes("heavy_bleeding")
+    ) {
       highestUrgency = "red";
     } else if (bpHigh) {
-      allDangerSigns.push("Severe hypertension: emergency referral for BP management and magnesium sulphate assessment.");
+      allDangerSigns.push(
+        "Severe hypertension: emergency referral for BP management and magnesium sulphate assessment.",
+      );
       highestUrgency = "red";
-    } else if (fever && (input.phase === "postnatal" || input.antenatalDangerSigns.includes("fever"))) {
-      allDangerSigns.push("Maternal fever: assess for sepsis. Antibiotics and source control needed.");
+    } else if (
+      fever &&
+      (input.phase === "postnatal" || input.antenatalDangerSigns.includes("fever"))
+    ) {
+      allDangerSigns.push(
+        "Maternal fever: assess for sepsis. Antibiotics and source control needed.",
+      );
       highestUrgency = "red";
     } else if (input.antenatalDangerSigns.length > 0 || input.postnatalDangerSigns.length > 0) {
       highestUrgency = "yellow";
@@ -222,7 +257,11 @@ export function assessMaternal(input: MaternalAssessmentInput): MaternalAssessme
   }
 
   const hasRed = highestUrgency === "red" || allDangerSigns.some((s) => s.startsWith("EMERGENCY"));
-  const urgency: "red" | "yellow" | "green" = hasRed ? "red" : highestUrgency === "yellow" ? "yellow" : "green";
+  const urgency: "red" | "yellow" | "green" = hasRed
+    ? "red"
+    : highestUrgency === "yellow"
+      ? "yellow"
+      : "green";
 
   const suspectedConditions = [...new Set(allDangerSigns.map((s) => s.split(":")[0].trim()))];
   const recommendations = allDangerSigns.map((s) => s.split(":")[1]?.trim() || s).filter(Boolean);
@@ -231,11 +270,14 @@ export function assessMaternal(input: MaternalAssessmentInput): MaternalAssessme
     urgency,
     dangerSignsFound: allDangerSigns,
     suspectedCondition: suspectedConditions.join("; ") || "No danger signs detected",
-    recommendation: recommendations.join(" ") || "Continue routine antenatal/postnatal care. No immediate danger signs detected.",
+    recommendation:
+      recommendations.join(" ") ||
+      "Continue routine antenatal/postnatal care. No immediate danger signs detected.",
     referralRequired: urgency === "red" || urgency === "yellow",
-    referralDetails: urgency === "red"
-      ? `Obstetric emergency: ${suspectedConditions.join(", ")}. Immediate referral to highest-level maternity facility.`
-      : recommendedFacility(suspectedConditions),
+    referralDetails:
+      urgency === "red"
+        ? `Obstetric emergency: ${suspectedConditions.join(", ")}. Immediate referral to highest-level maternity facility.`
+        : recommendedFacility(suspectedConditions),
     phase: input.phase,
   };
 }

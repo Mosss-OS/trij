@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 import { Heart, X } from "lucide-react";
 import type { WellBeingCheckIn } from "@/types/trij";
@@ -48,15 +55,13 @@ export function WellBeingCheckIn({ isOpen, onClose, onSubmit, onSkip }: Props) {
             <Heart className="h-5 w-5 text-primary" />
             <DialogTitle>{t("wellBeingCheckIn")}</DialogTitle>
           </div>
-          <DialogDescription>
-            {t("wellBeingCheckInDesc")}
-          </DialogDescription>
+          <DialogDescription>{t("wellBeingCheckInDesc")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {QUESTIONS.map((key, index) => (
             <div key={key} className="space-y-2">
-              <p className="text-sm font-medium">{t(key)}</p>
+              <p className="text-sm font-medium">{t(key as any)}</p>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <button
@@ -81,11 +86,7 @@ export function WellBeingCheckIn({ isOpen, onClose, onSubmit, onSkip }: Props) {
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button
-            variant="outline"
-            onClick={handleSkip}
-            className="w-full sm:w-auto"
-          >
+          <Button variant="outline" onClick={handleSkip} className="w-full sm:w-auto">
             <X className="mr-2 h-4 w-4" />
             {t("skipCheckIn")}
           </Button>

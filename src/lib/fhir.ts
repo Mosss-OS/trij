@@ -1,15 +1,15 @@
 /**
  * FHIR R4 Type Definitions and Mappings for Trij
- * 
+ *
  * This module provides FHIR R4 compliant data structures and mapping functions
  * to convert Trij's internal data models to standard FHIR resources.
- * 
+ *
  * Supported FHIR Resources:
  * - Patient: Demographics and administrative information about patients
  * - Observation: Vital signs and clinical measurements
  * - Condition: Diagnoses and clinical conditions
  * - ClinicalImpression: Overall clinical assessment and impression
- * 
+ *
  * References:
  * - FHIR R4 Specification: https://hl7.org/FHIR/R4/
  * - FHIR Patient: https://hl7.org/FHIR/R4/patient.html
@@ -237,7 +237,14 @@ export interface FhirObservation extends FhirResource {
   identifier?: FhirIdentifier[];
   basedOn?: FhirReference[];
   partOf?: FhirReference[];
-  status: "final" | "amended" | "corrected" | "preliminary" | "cancelled" | "entered-in-error" | "unknown";
+  status:
+    | "final"
+    | "amended"
+    | "corrected"
+    | "preliminary"
+    | "cancelled"
+    | "entered-in-error"
+    | "unknown";
   category?: FhirCodeableConcept[];
   code: FhirCodeableConcept;
   subject?: FhirReference;
@@ -366,7 +373,7 @@ export interface FhirClinicalImpressionFinding {
 const LOINC_CODES = {
   // Vital Signs Panel
   VITAL_SIGNS_PANEL: "85353-1",
-  
+
   // Individual Vital Signs
   BODY_WEIGHT: "29463-7",
   BODY_HEIGHT: "8302-2",
@@ -389,7 +396,7 @@ const SNOMED_CODES = {
   // Condition Categories
   CONDITION_CATEGORY_PROBLEM_LIST: "55607002",
   CONDITION_CATEGORY_ENCOUNTER_DIAGNOSIS: "439401001",
-  
+
   // Clinical Status
   CLINICAL_STATUS_ACTIVE: "55561003",
   CLINICAL_STATUS_INACTIVE: "73488006",
@@ -397,7 +404,7 @@ const SNOMED_CODES = {
   CLINICAL_STATUS_REMISSION: "268967000",
   CLINICAL_STATUS_RECURRENCE: "249455004",
   CLINICAL_STATUS_RELAPSE: "26696006",
-  
+
   // Verification Status
   VERIFICATION_CONFIRMED: "410605003",
   VERIFICATION_PROVISIONAL: "394846009",
@@ -405,10 +412,10 @@ const SNOMED_CODES = {
   VERIFICATION_UNCONFIRMED: "2931005",
   VERIFICATION_REFUTED: "410594000",
   VERIFICATION_ENTERED_IN_ERROR: "410593000",
-  
+
   // Observation Categories
   OBSERVATION_CATEGORY_VITAL_SIGNS: "vital-signs",
-  
+
   // Severity
   SEVERITY_MILD: "255604002",
   SEVERITY_MODERATE: "6736007",
@@ -513,7 +520,7 @@ export function mapPatientToFhir(patient: Patient): FhirPatient {
 export function mapVitalSignsToFhirObservations(
   vitalSigns: VitalSigns,
   patientId: string,
-  assessmentId: string
+  assessmentId: string,
 ): FhirObservation[] {
   const observations: FhirObservation[] = [];
 
@@ -523,7 +530,7 @@ export function mapVitalSignsToFhirObservations(
     displayName: string,
     value?: number,
     unit?: string,
-    ucumCode?: string
+    ucumCode?: string,
   ): FhirObservation | null => {
     if (value === undefined) return null;
 
@@ -574,8 +581,8 @@ export function mapVitalSignsToFhirObservations(
           "Systolic blood pressure",
           vitalSigns.systolicBP,
           "mmHg",
-          UCUM_UNITS.MM_HG
-        )!
+          UCUM_UNITS.MM_HG,
+        )!,
       );
     }
 
@@ -586,8 +593,8 @@ export function mapVitalSignsToFhirObservations(
           "Diastolic blood pressure",
           vitalSigns.diastolicBP,
           "mmHg",
-          UCUM_UNITS.MM_HG
-        )!
+          UCUM_UNITS.MM_HG,
+        )!,
       );
     }
 
@@ -632,7 +639,7 @@ export function mapVitalSignsToFhirObservations(
       "Heart rate",
       vitalSigns.heartRate,
       "beats/minute",
-      UCUM_UNITS.BEATS_PER_MINUTE
+      UCUM_UNITS.BEATS_PER_MINUTE,
     );
     if (obs) observations.push(obs);
   }
@@ -643,7 +650,7 @@ export function mapVitalSignsToFhirObservations(
       "Respiratory rate",
       vitalSigns.respiratoryRate,
       "breaths/minute",
-      UCUM_UNITS.BREATHS_PER_MINUTE
+      UCUM_UNITS.BREATHS_PER_MINUTE,
     );
     if (obs) observations.push(obs);
   }
@@ -654,7 +661,7 @@ export function mapVitalSignsToFhirObservations(
       "Body temperature",
       vitalSigns.temperature,
       "°C",
-      UCUM_UNITS.CELSIUS
+      UCUM_UNITS.CELSIUS,
     );
     if (obs) observations.push(obs);
   }
@@ -665,7 +672,7 @@ export function mapVitalSignsToFhirObservations(
       "Oxygen saturation",
       vitalSigns.oxygenSaturation,
       "%",
-      UCUM_UNITS.PERCENT
+      UCUM_UNITS.PERCENT,
     );
     if (obs) observations.push(obs);
   }
@@ -676,7 +683,7 @@ export function mapVitalSignsToFhirObservations(
       "Body weight",
       vitalSigns.weight,
       "kg",
-      UCUM_UNITS.KG
+      UCUM_UNITS.KG,
     );
     if (obs) observations.push(obs);
   }
@@ -687,7 +694,7 @@ export function mapVitalSignsToFhirObservations(
       "Mid-upper arm circumference",
       vitalSigns.muac,
       "cm",
-      UCUM_UNITS.CM
+      UCUM_UNITS.CM,
     );
     if (obs) observations.push(obs);
   }
@@ -698,7 +705,7 @@ export function mapVitalSignsToFhirObservations(
       "Pain severity",
       vitalSigns.painScale,
       "score",
-      UCUM_UNITS.NO_UNIT
+      UCUM_UNITS.NO_UNIT,
     );
     if (obs) observations.push(obs);
   }
@@ -711,7 +718,7 @@ export function mapVitalSignsToFhirObservations(
  */
 export function mapAssessmentToFhirCondition(
   assessment: Assessment,
-  patientId: string
+  patientId: string,
 ): FhirCondition | null {
   if (!assessment.condition && !assessment.icd10Code) {
     return null;
@@ -811,11 +818,15 @@ export function mapAssessmentToFhirCondition(
   if (assessment.keyVisualFeatures && assessment.keyVisualFeatures.length > 0) {
     condition.evidence = [
       {
-        code: assessment.keyVisualFeatures.map(feature => ({
-          system: `${SYSTEM_URLS.TRIJ}/feature-codes`,
-          code: feature,
-          display: feature,
-        })),
+        code: [
+          {
+            coding: assessment.keyVisualFeatures.map((feature) => ({
+              system: `${SYSTEM_URLS.TRIJ}/feature-codes`,
+              code: feature,
+              display: feature,
+            })),
+          },
+        ],
       },
     ];
   }
@@ -844,7 +855,7 @@ export function mapAssessmentToFhirCondition(
 export function mapAssessmentToFhirClinicalImpression(
   assessment: Assessment,
   patientId: string,
-  conditionId?: string
+  conditionId?: string,
 ): FhirClinicalImpression | null {
   const clinicalImpression: FhirClinicalImpression = {
     resourceType: "ClinicalImpression",
@@ -895,7 +906,7 @@ export function mapAssessmentToFhirClinicalImpression(
 
   // Add findings (possible conditions)
   if (assessment.possibleConditions && assessment.possibleConditions.length > 0) {
-    clinicalImpression.finding = assessment.possibleConditions.map(condition => ({
+    clinicalImpression.finding = assessment.possibleConditions.map((condition) => ({
       itemCodeableConcept: {
         coding: [
           {
@@ -953,12 +964,12 @@ export function mapAssessmentToFhirClinicalImpression(
  */
 export function mapAssessmentToFhirBundle(
   assessment: Assessment,
-  patient: Patient
+  patient: Patient,
 ): {
   patient: FhirPatient;
   observations: FhirObservation[];
   condition: FhirCondition | null;
-  clinicalImpression: FhirClinicalImpression;
+  clinicalImpression: FhirClinicalImpression | null;
 } {
   const fhirPatient = mapPatientToFhir(patient);
   const fhirObservations = assessment.vitalSigns
@@ -968,7 +979,7 @@ export function mapAssessmentToFhirBundle(
   const fhirClinicalImpression = mapAssessmentToFhirClinicalImpression(
     assessment,
     patient.id,
-    fhirCondition?.id
+    fhirCondition?.id,
   );
 
   return {
@@ -991,7 +1002,7 @@ export function exportFhirAsJson(fhirData: unknown): string {
  */
 export function createFhirBundle(
   assessment: Assessment,
-  patient: Patient
+  patient: Patient,
 ): {
   resourceType: "Bundle";
   type: "document";
@@ -1029,11 +1040,13 @@ export function createFhirBundle(
     });
   }
 
-  // Add clinical impression
-  entries.push({
-    fullUrl: `urn:uuid:${fhirData.clinicalImpression.id}`,
-    resource: fhirData.clinicalImpression,
-  });
+  // Add clinical impression (optional)
+  if (fhirData.clinicalImpression) {
+    entries.push({
+      fullUrl: `urn:uuid:${fhirData.clinicalImpression.id}`,
+      resource: fhirData.clinicalImpression,
+    });
+  }
 
   return {
     resourceType: "Bundle",

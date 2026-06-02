@@ -57,7 +57,7 @@ function BatchRegister() {
   const addRow = () => {
     const lastRow = rows[rows.length - 1];
     let newIdentifier = "";
-    
+
     // Auto-generate sequential ID based on last row
     if (lastRow && lastRow.identifier) {
       const match = lastRow.identifier.match(/(\d+)$/);
@@ -67,7 +67,7 @@ function BatchRegister() {
         newIdentifier = prefix + num.toString().padStart(match[1].length, "0");
       }
     }
-    
+
     setRows([
       ...rows,
       { id: crypto.randomUUID(), identifier: newIdentifier, ageYears: "", sex: "F" },
@@ -88,7 +88,9 @@ function BatchRegister() {
     setRows(
       rows.map((row) => ({
         ...row,
-        identifier: commonVillage ? `${commonVillage}-${row.identifier.split("-").pop() || "001"}` : row.identifier,
+        identifier: commonVillage
+          ? `${commonVillage}-${row.identifier.split("-").pop() || "001"}`
+          : row.identifier,
       })),
     );
   };
@@ -143,7 +145,11 @@ function BatchRegister() {
         };
 
         await queuePatient(patient);
-        log("patient:create", { resourceType: "patient", resourceId: patient.id, patientId: patient.id });
+        log("patient:create", {
+          resourceType: "patient",
+          resourceId: patient.id,
+          patientId: patient.id,
+        });
         successCount++;
       } catch (error) {
         console.error("Failed to create patient:", error);
@@ -155,7 +161,9 @@ function BatchRegister() {
     setProgressText("");
 
     if (successCount > 0) {
-      toast.success(`${t("batchRegisterSuccess")} ${successCount} ${successCount === 1 ? t("patient") : t("patients")}`);
+      toast.success(
+        `${t("batchRegisterSuccess")} ${successCount} ${successCount === 1 ? t("patient") : t("patients")}`,
+      );
       // Reset form
       setRows([{ id: crypto.randomUUID(), identifier: "", ageYears: "", sex: "F" }]);
       setCommonVillage("");
@@ -214,7 +222,10 @@ function BatchRegister() {
           </div>
 
           {rows.map((row, index) => (
-            <div key={row.id} className="grid min-w-[500px] grid-cols-12 gap-2 border-b p-3 last:border-b-0">
+            <div
+              key={row.id}
+              className="grid min-w-[500px] grid-cols-12 gap-2 border-b p-3 last:border-b-0"
+            >
               <div className="col-span-4">
                 <Input
                   value={row.identifier}
@@ -241,7 +252,9 @@ function BatchRegister() {
                       aria-checked={row.sex === s}
                       onClick={() => updateRow(row.id, "sex", s)}
                       className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
-                        row.sex === s ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                        row.sex === s
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground"
                       }`}
                     >
                       {s}
@@ -290,7 +303,9 @@ function BatchRegister() {
         <div className="mt-6 flex gap-3">
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting || rows.filter((r) => r.identifier.trim() && r.ageYears).length === 0}
+            disabled={
+              isSubmitting || rows.filter((r) => r.identifier.trim() && r.ageYears).length === 0
+            }
             size="lg"
             className="flex-1 gap-2"
           >
@@ -300,7 +315,8 @@ function BatchRegister() {
               </>
             ) : (
               <>
-                <Save className="h-4 w-4" /> {t("batchRegisterSubmit")} ({rows.filter((r) => r.identifier.trim() && r.ageYears).length})
+                <Save className="h-4 w-4" /> {t("batchRegisterSubmit")} (
+                {rows.filter((r) => r.identifier.trim() && r.ageYears).length})
               </>
             )}
           </Button>

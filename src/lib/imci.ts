@@ -90,11 +90,11 @@ export function assessImci(input: ImciInput): ImciClassification[] {
     classifications.push({ category: "severe_disease_with_danger_sign", urgency: "red" });
   }
 
-  if (input.stridor || input.central_cyanosis || input.chest_indrawing) {
+  if (input.stridor || input.dangerSigns.includes("central_cyanosis") || input.chestIndrawing) {
     classifications.push({
       category: input.dangerSigns.length > 0 ? "severe_pneumonia" : "pneumonia",
       urgency: input.dangerSigns.length > 0 ? "red" : "yellow",
-    });
+    } as ImciClassification);
   } else if (input.coughDays > 0 || input.respiratoryRate > 0) {
     if (input.respiratoryRate > rrThreshold.severe) {
       classifications.push({ category: "severe_pneumonia", urgency: "red" });
@@ -110,7 +110,7 @@ export function assessImci(input: ImciInput): ImciClassification[] {
       classifications.push({ category: "dysentery", urgency: "yellow" });
     } else if (input.diarrhoeaDays >= 14) {
       classifications.push(
-        (input.sunkenEyes && input.unableToDrink)
+        input.sunkenEyes && input.unableToDrink
           ? { category: "severe_persistent_diarrhoea", urgency: "red" }
           : { category: "persistent_diarrhoea", urgency: "yellow" },
       );
@@ -161,7 +161,9 @@ export function assessImci(input: ImciInput): ImciClassification[] {
   return classifications;
 }
 
-export function getOverallUrgency(classifications: ImciClassification[]): "red" | "yellow" | "green" {
+export function getOverallUrgency(
+  classifications: ImciClassification[],
+): "red" | "yellow" | "green" {
   if (classifications.some((c) => c.urgency === "red")) return "red";
   if (classifications.some((c) => c.urgency === "yellow")) return "yellow";
   return "green";
@@ -202,7 +204,9 @@ export function getImciAction(classifications: ImciClassification[]): string {
   for (const c of classifications) {
     switch (c.category) {
       case "severe_pneumonia":
-        actions.push("Refer urgently to hospital. Give first dose of antibiotic. Keep airway clear.");
+        actions.push(
+          "Refer urgently to hospital. Give first dose of antibiotic. Keep airway clear.",
+        );
         break;
       case "pneumonia":
         actions.push("Home care with oral antibiotic (amoxicillin). Follow up in 2 days.");
@@ -226,16 +230,22 @@ export function getImciAction(classifications: ImciClassification[]): string {
         actions.push("Oral ciprofloxacin for 3 days. Follow up in 2 days.");
         break;
       case "malaria":
-        actions.push("Treat with ACT (artemisinin-based combination therapy). Give first dose. Follow up in 2 days.");
+        actions.push(
+          "Treat with ACT (artemisinin-based combination therapy). Give first dose. Follow up in 2 days.",
+        );
         break;
       case "very_severe_febrile_disease":
-        actions.push("Emergency referral. Give first dose of antibiotic and antimalarial if endemic.");
+        actions.push(
+          "Emergency referral. Give first dose of antibiotic and antimalarial if endemic.",
+        );
         break;
       case "severe_malnutrition_complicated":
         actions.push("Admit to therapeutic feeding centre. Treat complications. Start F-75.");
         break;
       case "severe_malnutrition":
-        actions.push("Refer to therapeutic feeding programme. Start F-75 at home if no complications.");
+        actions.push(
+          "Refer to therapeutic feeding programme. Start F-75 at home if no complications.",
+        );
         break;
       case "moderate_malnutrition":
         actions.push("Supplementary feeding. Nutritional counselling. Follow up monthly.");
@@ -247,7 +257,9 @@ export function getImciAction(classifications: ImciClassification[]): string {
         actions.push("Emergency referral for transfusion. Treat underlying cause.");
         break;
       case "young_infant_bacterial_infection":
-        actions.push("Emergency referral. Give first dose of antibiotics. Keep warm. Monitor breathing.");
+        actions.push(
+          "Emergency referral. Give first dose of antibiotics. Keep warm. Monitor breathing.",
+        );
         break;
       case "young_infant_local_infection":
         actions.push("Treat with oral antibiotics. Follow up in 2 days. Keep warm.");
@@ -256,13 +268,17 @@ export function getImciAction(classifications: ImciClassification[]): string {
         actions.push("Emergency referral for phototherapy. Check bilirubin urgently.");
         break;
       case "young_infant_jaundice":
-        actions.push("Advise frequent feeding. Ensure warm. Follow up in 2 days. Refer if persists.");
+        actions.push(
+          "Advise frequent feeding. Ensure warm. Follow up in 2 days. Refer if persists.",
+        );
         break;
       case "severe_persistent_diarrhoea":
         actions.push("Refer to hospital. IV fluids. Treat dehydration. Investigate cause.");
         break;
       case "persistent_diarrhoea":
-        actions.push("Continue feeding. Give ORS. Treat with zinc for 14 days. Follow up in 5 days.");
+        actions.push(
+          "Continue feeding. Give ORS. Treat with zinc for 14 days. Follow up in 5 days.",
+        );
         break;
       case "well_child":
         actions.push("No IMCI classification. Continue routine care and monitoring.");

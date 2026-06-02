@@ -56,36 +56,46 @@ export function AiFailureOverlay({
 
   const failureKey = (k: AiFailureKind) => {
     switch (k) {
-      case "model_not_ready": return "aiFailureModelNotReady";
-      case "timeout": return "aiFailureTimeout";
-      case "oom": return "aiFailureOom";
-      case "image_error": return "aiFailureImage";
-      default: return "aiFailureGeneric";
+      case "model_not_ready":
+        return "aiFailureModelNotReady";
+      case "timeout":
+        return "aiFailureTimeout";
+      case "oom":
+        return "aiFailureOom";
+      case "image_error":
+        return "aiFailureImage";
+      default:
+        return "aiFailureGeneric";
     }
   };
 
-    const handleManualSubmit = () => {
-      setSubmitting(true);
-      const result: TriageResult = {
-        condition: manualCondition || "Unspecified condition",
-        confidence: 0,
-        urgency: manualUrgency,
-        possible_conditions: manualCondition ? [{ name: manualCondition, probability: 100 }] : [],
-        key_visual_features: [],
-        recommendation:
-          manualUrgency === "red"
-            ? "Immediate referral required."
-            : manualUrgency === "yellow"
-              ? "Refer to clinic within 24 hours."
-              : "Home care with monitoring. Refer if symptoms worsen.",
-        referral_advised: manualUrgency !== "green",
-        follow_up_questions: [],
-      };
-      setTimeout(() => {
-        setSubmitting(false);
-        onManualAssessment?.(result);
-      }, 300);
+  const handleManualSubmit = () => {
+    setSubmitting(true);
+    const result: TriageResult = {
+      condition: manualCondition || "Unspecified condition",
+      confidence: {
+        confidence_point: 0,
+        confidence_interval: [0, 0] as [number, number],
+        uncertainty_source: "model_knowledge",
+        uncertainty_reason: "Manual override",
+      },
+      urgency: manualUrgency,
+      possible_conditions: manualCondition ? [{ name: manualCondition, probability: 100 }] : [],
+      key_visual_features: [],
+      recommendation:
+        manualUrgency === "red"
+          ? "Immediate referral required."
+          : manualUrgency === "yellow"
+            ? "Refer to clinic within 24 hours."
+            : "Home care with monitoring. Refer if symptoms worsen.",
+      referral_advised: manualUrgency !== "green",
+      follow_up_questions: [],
     };
+    setTimeout(() => {
+      setSubmitting(false);
+      onManualAssessment?.(result);
+    }, 300);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
@@ -179,7 +189,9 @@ export function AiFailureOverlay({
                 >
                   <option value="">Select condition...</option>
                   {MANUAL_CONDITIONS.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -198,11 +210,7 @@ export function AiFailureOverlay({
                 )}
                 {t("manualSubmit")}
               </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setShowManual(false)}
-                className="w-full"
-              >
+              <Button variant="ghost" onClick={() => setShowManual(false)} className="w-full">
                 {t("cancel") || "Cancel"}
               </Button>
             </div>
@@ -215,9 +223,11 @@ export function AiFailureOverlay({
 
 export function classifyAiError(err: unknown): AiFailureKind {
   const msg = (err as Error)?.message?.toLowerCase() || "";
-  if (msg.includes("not ready") || msg.includes("not loaded") || msg.includes("model not")) return "model_not_ready";
+  if (msg.includes("not ready") || msg.includes("not loaded") || msg.includes("model not"))
+    return "model_not_ready";
   if (msg.includes("timeout") || msg.includes("timed out")) return "timeout";
   if (msg.includes("memory") || msg.includes("oom") || msg.includes("out of memory")) return "oom";
-  if (msg.includes("image") || msg.includes("process") || msg.includes("format")) return "image_error";
+  if (msg.includes("image") || msg.includes("process") || msg.includes("format"))
+    return "image_error";
   return "generic";
 }

@@ -1,6 +1,13 @@
 import { getDB, type DeadLetterItem } from "./db";
 import { supabase } from "@/integrations/supabase/client";
-import type { Patient, Assessment, FollowUp, ReferralFeedback, SyncQueueItem, SyncConflict } from "@/types/trij";
+import type {
+  Patient,
+  Assessment,
+  FollowUp,
+  ReferralFeedback,
+  SyncQueueItem,
+  SyncConflict,
+} from "@/types/trij";
 import { registerBackgroundSync } from "./sw-register";
 
 /**
@@ -13,18 +20,20 @@ function logSyncError(context: string, error: unknown, item?: SyncQueueItem) {
     timestamp: new Date().toISOString(),
     errorMessage: error instanceof Error ? error.message : String(error),
     errorStack: error instanceof Error ? error.stack : undefined,
-    itemDetails: item ? {
-      table: item.table,
-      action: item.action,
-      recordId: item.recordId,
-      attempts: item.attempts,
-      lastError: item.lastError,
-      createdAt: item.createdAt,
-    } : undefined,
+    itemDetails: item
+      ? {
+          table: item.table,
+          action: item.action,
+          recordId: item.recordId,
+          attempts: item.attempts,
+          lastError: item.lastError,
+          createdAt: item.createdAt,
+        }
+      : undefined,
   };
-  
+
   console.error("[Sync Error]", errorDetails);
-  
+
   // Store error in localStorage for debugging
   try {
     const syncErrors = JSON.parse(localStorage.getItem("trij-sync-errors") || "[]");
@@ -43,7 +52,7 @@ export const RETRY_BACKOFF_MS = [5_000, 30_000, 120_000];
 async function moveToDeadLetter(item: SyncQueueItem) {
   const db = getDB();
   const now = new Date().toISOString();
-  
+
   const deadLetterItem: DeadLetterItem = {
     table: item.table,
     action: item.action,
@@ -54,7 +63,7 @@ async function moveToDeadLetter(item: SyncQueueItem) {
     lastError: item.lastError ?? "Max retries exceeded",
     movedAt: now,
   };
-  
+
   await db.deadLetterQueue.add(deadLetterItem);
   await db.syncQueue.delete(item.id!);
 }
@@ -196,7 +205,7 @@ export async function processSyncQueue(
   let ok = 0,
     failed = 0,
     deadLetter = 0;
-  
+
   for (const item of items) {
     const progress: SyncProgressItem = {
       id: item.id!,
@@ -205,19 +214,19 @@ export async function processSyncQueue(
       status: "syncing",
     };
     onProgress?.(progress);
-    
+
     try {
       // Validate payload before processing
       if (!item.payload || Object.keys(item.payload).length === 0) {
         throw new Error("Empty or invalid payload");
       }
-      
+
       if (item.table === "patients") {
         const p = item.payload as Patient;
         if (!p.id || !p.chwUserId || !p.identifier) {
           throw new Error("Invalid patient data: missing required fields");
         }
-        
+
         const serverRec = await fetchServerRecord("patients", p.id);
         if (serverRec && serverRec.version !== undefined && serverRec.version > p.version) {
           const conflict: SyncConflict = {
@@ -259,7 +268,7 @@ export async function processSyncQueue(
         if (!f.id || !f.patientId || !f.chwUserId) {
           throw new Error("Invalid follow-up data: missing required fields");
         }
-        
+
         const { error } = await supabase.from("follow_ups" as never).upsert({
           id: f.id,
           patient_id: f.patientId,
@@ -279,7 +288,7 @@ export async function processSyncQueue(
         if (!a.id || !a.patientId || !a.chwUserId) {
           throw new Error("Invalid assessment data: missing required fields");
         }
-        
+
         const serverRec = await fetchServerRecord("assessments", a.id);
         if (serverRec && serverRec.version !== undefined && serverRec.version > a.version) {
           const conflict: SyncConflict = {
@@ -332,16 +341,16 @@ export async function processSyncQueue(
       } else {
         throw new Error(`Unknown table type: ${item.table}`);
       }
-      
+
       await db.syncQueue.delete(item.id!);
       ok++;
       onProgress?.({ ...progress, status: "ok" });
     } catch (err) {
       logSyncError(`processSyncQueue-${item.table}`, err, item);
-      
+
       const attempts = (item.attempts ?? 0) + 1;
       const errorMessage = err instanceof Error ? err.message : String(err);
-      
+
       // If we've exceeded max retries, move to dead letter queue
       if (attempts >= MAX_RETRIES) {
         await moveToDeadLetter(item);
@@ -357,7 +366,7 @@ export async function processSyncQueue(
       }
     }
   }
-  
+
   return { ok, failed, deadLetter };
 }
 
@@ -452,8 +461,8 @@ export async function retryDeadLetterItem(id: number): Promise<void> {
 
   await db.deadLetterQueue.delete(id);
   await db.syncQueue.add({
-    table: item.table,
-    action: item.action,
+    table: item.table as SyncQueueItem["table"],
+    action: item.action as SyncQueueItem["action"],
     recordId: item.recordId,
     payload: item.payload,
     createdAt: new Date().toISOString(),

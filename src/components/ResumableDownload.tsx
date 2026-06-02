@@ -12,7 +12,16 @@ import {
   type DownloadJob,
   type DownloadProgress,
 } from "@/lib/resumable-download";
-import { Pause, Play, XCircle, Download, AlertTriangle, CheckCircle2, RefreshCw, Smartphone } from "lucide-react";
+import {
+  Pause,
+  Play,
+  XCircle,
+  Download,
+  AlertTriangle,
+  CheckCircle2,
+  RefreshCw,
+  Smartphone,
+} from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
@@ -37,7 +46,14 @@ function formatEta(sec: number): string {
   return `${Math.floor(sec / 3600)}h ${Math.floor((sec % 3600) / 60)}m`;
 }
 
-export function ResumableDownload({ jobId, url, totalBytes, fileName, onComplete, onError }: Props) {
+export function ResumableDownload({
+  jobId,
+  url,
+  totalBytes,
+  fileName,
+  onComplete,
+  onError,
+}: Props) {
   const { t } = useI18n();
   const [job, setJob] = useState<DownloadJob | null>(null);
   const [progress, setProgress] = useState<DownloadProgress | null>(null);
@@ -48,9 +64,17 @@ export function ResumableDownload({ jobId, url, totalBytes, fileName, onComplete
     mountedRef.current = true;
     getJob(jobId).then((existing) => {
       if (!mountedRef.current) return;
-      if (existing && existing.status !== "completed" && existing.status !== "failed" && existing.status !== "cancelled") {
+      if (
+        existing &&
+        existing.status !== "completed" &&
+        existing.status !== "failed" &&
+        existing.status !== "cancelled"
+      ) {
         setJob(existing);
-        const pct = existing.totalBytes > 0 ? Math.round((existing.downloadedBytes / existing.totalBytes) * 100) : 0;
+        const pct =
+          existing.totalBytes > 0
+            ? Math.round((existing.downloadedBytes / existing.totalBytes) * 100)
+            : 0;
         setProgress({
           percent: pct,
           downloadedBytes: existing.downloadedBytes,
@@ -65,7 +89,9 @@ export function ResumableDownload({ jobId, url, totalBytes, fileName, onComplete
       }
       setInitializing(false);
     });
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+    };
   }, [jobId, url, totalBytes, fileName]);
 
   const handleProgress = useCallback((p: DownloadProgress) => {
@@ -122,9 +148,7 @@ export function ResumableDownload({ jobId, url, totalBytes, fileName, onComplete
   }
 
   if (!job) {
-    return (
-      <div className="text-xs text-muted-foreground">{t("notDownloaded")}</div>
-    );
+    return <div className="text-xs text-muted-foreground">{t("notDownloaded")}</div>;
   }
 
   const isActive = job.status === "downloading";
@@ -153,7 +177,9 @@ export function ResumableDownload({ jobId, url, totalBytes, fileName, onComplete
               <span>
                 {t("downloadingModel")} &middot; {formatSpeed(speed)}
               </span>
-              <span>{formatEta(eta)} {t("remaining")}</span>
+              <span>
+                {formatEta(eta)} {t("remaining")}
+              </span>
             </div>
             {typeof window !== "undefined" && navigator.serviceWorker?.controller && (
               <div className="flex items-center gap-1 text-[11px] text-primary/60">
@@ -181,7 +207,12 @@ export function ResumableDownload({ jobId, url, totalBytes, fileName, onComplete
 
       <div className="flex gap-2">
         {(isActive || isPaused) && (
-          <Button size="sm" variant="outline" onClick={isPaused ? handleResume : handlePause} className="gap-1.5">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={isPaused ? handleResume : handlePause}
+            className="gap-1.5"
+          >
             {isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
             {isPaused ? t("resume") : t("pause")}
           </Button>
@@ -199,13 +230,23 @@ export function ResumableDownload({ jobId, url, totalBytes, fileName, onComplete
           </Button>
         )}
         {(isActive || isPaused || isFailed) && (
-          <Button size="sm" variant="ghost" onClick={handleCancel} className="gap-1.5 text-muted-foreground">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleCancel}
+            className="gap-1.5 text-muted-foreground"
+          >
             <XCircle className="h-3.5 w-3.5" />
             {t("cancel")}
           </Button>
         )}
         {isComplete && (
-          <Button size="sm" variant="ghost" onClick={handleCancel} className="gap-1.5 text-muted-foreground">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleCancel}
+            className="gap-1.5 text-muted-foreground"
+          >
             <XCircle className="h-3.5 w-3.5" />
             {t("clearCache")}
           </Button>

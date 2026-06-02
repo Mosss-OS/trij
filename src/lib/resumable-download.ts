@@ -77,25 +77,45 @@ function sha256(data: ArrayBuffer): Promise<string> {
   });
 }
 
+function txPromise(tx: IDBTransaction): Promise<void> {
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
 export async function saveJob(job: DownloadJob): Promise<void> {
   const db = await openDB();
-  await db.put("jobs", job);
+  const tx = db.transaction("jobs", "readwrite");
+  tx.objectStore("jobs").put(job);
+  await txPromise(tx);
 }
 
 export async function getJob(jobId: string): Promise<DownloadJob | undefined> {
   const db = await openDB();
-  return db.get("jobs", jobId);
+  const tx = db.transaction("jobs", "readonly");
+  const store = tx.objectStore("jobs");
+  const req = store.get(jobId);
+  await txPromise(tx);
+  return req.result;
 }
 
 export async function saveChunk(jobId: string, chunk: DownloadChunk): Promise<void> {
   const db = await openDB();
-  await db.put("chunks", { jobId, ...chunk });
+  const tx = db.transaction("chunks", "readwrite");
+  tx.objectStore("chunks").put({ jobId, ...chunk });
+  await txPromise(tx);
 }
 
 export async function getChunks(jobId: string): Promise<DownloadChunk[]> {
   const db = await openDB();
-  const chunks = await db.getAllFromIndex("chunks", "jobId", jobId);
-  return chunks.map((c: any) => ({
+  const tx = db.transaction("chunks", "readonly");
+  const store = tx.objectStore("chunks");
+  const index = store.index("jobId");
+  const req = index.getAll(jobId);
+  await txPromise(tx);
+  return (req.result as any[]).map((c: any) => ({
     index: c.index,
     data: c.data,
     sha256: c.sha256,
@@ -105,19 +125,24 @@ export async function getChunks(jobId: string): Promise<DownloadChunk[]> {
 
 export async function removeJob(jobId: string): Promise<void> {
   const db = await openDB();
-  await db.delete("jobs", jobId);
-  const chunks = await db.getAllFromIndex("chunks", "jobId", jobId);
-  for (const c of chunks) {
-    await db.delete("chunks", [jobId, c.index]);
+  const chunksTx = db.transaction("chunks", "readwrite");
+  const chunkStore = chunksTx.objectStore("chunks");
+  const chunkIndex = chunkStore.index("jobId");
+  const chunkReq = chunkIndex.getAllKeys(jobId);
+  await txPromise(chunksTx);
+  for (const key of chunkReq.result) {
+    const delTx = db.transaction("chunks", "readwrite");
+    delTx.objectStore("chunks").delete(key);
+    await txPromise(delTx);
   }
+  const jobTx = db.transaction("jobs", "readwrite");
+  jobTx.objectStore("jobs").delete(jobId);
+  await txPromise(jobTx);
 }
 
 const activeDownloads = new Map<string, { abort: AbortController }>();
 
-export async function startDownload(
-  job: DownloadJob,
-  onProgress: ProgressCallback,
-): Promise<void> {
+export async function startDownload(job: DownloadJob, onProgress: ProgressCallback): Promise<void> {
   // Prefer SW-based download for background capability
   if (typeof window !== "undefined" && navigator.serviceWorker?.controller) {
     swDownloadActive = true;
@@ -183,10 +208,7 @@ export async function startDownload(
   await mainThreadDownload(job, onProgress);
 }
 
-async function mainThreadDownload(
-  job: DownloadJob,
-  onProgress: ProgressCallback,
-): Promise<void> {
+async function mainThreadDownload(job: DownloadJob, onProgress: ProgressCallback): Promise<void> {
   const existing = activeDownloads.get(job.id);
   if (existing) {
     existing.abort.abort();
@@ -194,7 +216,7 @@ async function mainThreadDownload(
   }
 
   const controller = new AbortController();
-  activeDownloads.set(job.id, controller);
+  activeDownloads.set(job.id, { abort: controller });
 
   job.status = "downloading";
   job.startedAt = job.startedAt ?? Date.now();
@@ -410,7 +432,10 @@ export async function* iterateChunks(jobId: string): AsyncGenerator<Uint8Array> 
   }
 }
 
-export async function assembleBlob(jobId: string, mimeType = "application/octet-stream"): Promise<Blob> {
+export async function assembleBlob(
+  jobId: string,
+  mimeType = "application/octet-stream",
+): Promise<Blob> {
   const parts: BlobPart[] = [];
   const chunks = await getChunks(jobId);
   chunks.sort((a, b) => a.index - b.index);

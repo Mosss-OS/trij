@@ -5,7 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, AlertTriangle, CheckCircle2, Pill, Droplets, Activity, FileText } from "lucide-react";
+import {
+  Calculator,
+  AlertTriangle,
+  CheckCircle2,
+  Pill,
+  Droplets,
+  Activity,
+  FileText,
+} from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import pediatricDosingData from "@/data/pediatric-dosing.json";
 
@@ -26,7 +34,6 @@ interface Formulation {
   maxDailyDosePerKg?: string;
   maxDailyDoseUnit?: string;
   dose?: string;
-  doseUnit?: string;
   minAge?: number;
   minAgeMonths?: number;
   maxAgeMonths?: number;
@@ -55,7 +62,7 @@ interface DoseResult {
 export function PediatricDoseCalculator() {
   const { t } = useI18n();
   const medications = pediatricDosingData.medications as Medication[];
-  
+
   const [weight, setWeight] = useState("");
   const [selectedMedication, setSelectedMedication] = useState<string>("");
   const [selectedFormulation, setSelectedFormulation] = useState<Formulation | null>(null);
@@ -99,7 +106,9 @@ export function PediatricDoseCalculator() {
       // Artemether-lumefantrine uses fixed doses based on weight
       tablets = form.doses?.[0]?.tablets || 0;
       doseUnit = "tablets";
-      warnings.push(`6-dose regimen: ${form.doses?.map(d => `${d.time}: ${d.tablets} tablet(s)`).join(", ")}`);
+      warnings.push(
+        `6-dose regimen: ${form.doses?.map((d) => `${d.time}: ${d.tablets} tablet(s)`).join(", ")}`,
+      );
     } else if (form.dose) {
       // Fixed dose (e.g., zinc)
       calculatedDose = parseFloat(form.dose);
@@ -111,7 +120,7 @@ export function PediatricDoseCalculator() {
       const dosePerKg = parseFloat(form.dosePerKg || "0");
       calculatedDose = weightNum * dosePerKg;
       doseUnit = form.doseUnit || "mg";
-      
+
       // Calculate volume for liquid formulations
       if (form.form === "syrup" || form.form === "suspension") {
         const concMatch = form.concentration.match(/(\d+)mg\/(\d+)ml/);
@@ -121,16 +130,18 @@ export function PediatricDoseCalculator() {
           volumeUnit = "ml";
         }
       }
-      
+
       // Calculate max daily dose
       const maxDailyDosePerKg = parseFloat(form.maxDailyDosePerKg || "0");
       maxDailyDose = weightNum * maxDailyDosePerKg;
       maxDailyUnit = form.maxDailyDoseUnit || "mg";
-      
+
       // Check if exceeds max daily dose
       if (calculatedDose > maxDailyDose) {
         exceedsMax = true;
-        warnings.push(`Calculated dose (${calculatedDose.toFixed(1)}${doseUnit}) exceeds maximum daily dose (${maxDailyDose.toFixed(1)}${maxDailyUnit})`);
+        warnings.push(
+          `Calculated dose (${calculatedDose.toFixed(1)}${doseUnit}) exceeds maximum daily dose (${maxDailyDose.toFixed(1)}${maxDailyUnit})`,
+        );
       }
     }
 
@@ -147,7 +158,7 @@ export function PediatricDoseCalculator() {
     });
   };
 
-  const selectedMed = medications.find(m => m.id === selectedMedication);
+  const selectedMed = medications.find((m) => m.id === selectedMedication);
 
   return (
     <div className="space-y-4">
@@ -189,7 +200,9 @@ export function PediatricDoseCalculator() {
             >
               <option value="">Select medication...</option>
               {medications.map((med) => (
-                <option key={med.id} value={med.id}>{med.name}</option>
+                <option key={med.id} value={med.id}>
+                  {med.name}
+                </option>
               ))}
             </select>
           </div>
@@ -203,8 +216,8 @@ export function PediatricDoseCalculator() {
                 className="w-full rounded-md border bg-background px-3 py-2"
                 value={selectedFormulation?.form || ""}
                 onChange={(e) => {
-                  const form = selectedMed.formulations.find(f => 
-                    `${f.form} - ${f.concentration}` === e.target.value
+                  const form = selectedMed.formulations.find(
+                    (f) => `${f.form} - ${f.concentration}` === e.target.value,
                   );
                   setSelectedFormulation(form || null);
                   setResult(null);
@@ -251,7 +264,8 @@ export function PediatricDoseCalculator() {
               <div>
                 <div className="text-sm text-muted-foreground">Calculated Dose</div>
                 <div className="text-2xl font-bold">
-                  {result.calculatedDose > 0 && `${result.calculatedDose.toFixed(1)} ${result.doseUnit}`}
+                  {result.calculatedDose > 0 &&
+                    `${result.calculatedDose.toFixed(1)} ${result.doseUnit}`}
                   {result.tablets > 0 && `${result.tablets} tablet(s)`}
                   {result.volume > 0 && `${result.volume.toFixed(1)} ${result.volumeUnit}`}
                 </div>
@@ -282,7 +296,9 @@ export function PediatricDoseCalculator() {
             {result.maxDailyDose > 0 && (
               <div className="text-sm">
                 <span className="text-muted-foreground">Maximum Daily Dose: </span>
-                <span className="font-medium">{result.maxDailyDose.toFixed(1)} {result.maxDailyUnit}</span>
+                <span className="font-medium">
+                  {result.maxDailyDose.toFixed(1)} {result.maxDailyUnit}
+                </span>
               </div>
             )}
 
@@ -352,9 +368,9 @@ export function PediatricDoseCalculator() {
       <Alert variant="default" className="bg-yellow-50 border-yellow-200">
         <AlertTriangle className="h-4 w-4 text-yellow-600" />
         <AlertDescription className="text-yellow-800">
-          <strong>Medical Disclaimer:</strong> This calculator is a tool to assist with dosing calculations. 
-          Always verify calculations and consult current drug references. Clinical judgment and patient-specific 
-          factors should always guide final dosing decisions.
+          <strong>Medical Disclaimer:</strong> This calculator is a tool to assist with dosing
+          calculations. Always verify calculations and consult current drug references. Clinical
+          judgment and patient-specific factors should always guide final dosing decisions.
         </AlertDescription>
       </Alert>
     </div>
