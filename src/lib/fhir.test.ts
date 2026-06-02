@@ -1,6 +1,6 @@
 /**
  * FHIR R4 Mapping Tests
- * 
+ *
  * Tests for validating that Trij data structures are correctly mapped to FHIR R4 resources
  */
 
@@ -61,7 +61,7 @@ const mockAssessment: Assessment = {
   urgency: "yellow",
   possibleConditions: [
     { name: "Contact Dermatitis", probability: 0.85 },
-    { name: "Atopic Dermatitis", probability: 0.10 },
+    { name: "Atopic Dermatitis", probability: 0.1 },
     { name: "Psoriasis", probability: 0.05 },
   ],
   keyVisualFeatures: ["erythema", "scaling", "pruritus"],
@@ -84,7 +84,7 @@ function runTests() {
   totalTests++;
   try {
     const fhirPatient = mapPatientToFhir(mockPatient);
-    
+
     if (
       fhirPatient.resourceType === "Patient" &&
       fhirPatient.id === "patient-123" &&
@@ -108,14 +108,14 @@ function runTests() {
     const fhirObservations = mapVitalSignsToFhirObservations(
       mockVitalSigns,
       "patient-123",
-      "assessment-789"
+      "assessment-789",
     );
-    
+
     if (
       Array.isArray(fhirObservations) &&
       fhirObservations.length > 0 &&
-      fhirObservations.every(obs => obs.resourceType === "Observation") &&
-      fhirObservations.every(obs => obs.status === "final")
+      fhirObservations.every((obs) => obs.resourceType === "Observation") &&
+      fhirObservations.every((obs) => obs.status === "final")
     ) {
       console.log("✓ Test 2 passed: Vital Signs to FHIR Observations mapping");
       passedTests++;
@@ -130,7 +130,7 @@ function runTests() {
   totalTests++;
   try {
     const fhirCondition = mapAssessmentToFhirCondition(mockAssessment, "patient-123");
-    
+
     if (
       fhirCondition !== null &&
       fhirCondition.resourceType === "Condition" &&
@@ -154,9 +154,9 @@ function runTests() {
     const fhirImpression = mapAssessmentToFhirClinicalImpression(
       mockAssessment,
       "patient-123",
-      "assessment-789"
+      "assessment-789",
     );
-    
+
     if (
       fhirImpression !== null &&
       fhirImpression.resourceType === "ClinicalImpression" &&
@@ -177,12 +177,12 @@ function runTests() {
   totalTests++;
   try {
     const fhirBundle = mapAssessmentToFhirBundle(mockAssessment, mockPatient);
-    
+
     if (
       fhirBundle.patient.resourceType === "Patient" &&
       Array.isArray(fhirBundle.observations) &&
       fhirBundle.condition !== null &&
-      fhirBundle.clinicalImpression.resourceType === "ClinicalImpression"
+      fhirBundle.clinicalImpression?.resourceType === "ClinicalImpression"
     ) {
       console.log("✓ Test 5 passed: Complete Assessment to FHIR Bundle mapping");
       passedTests++;
@@ -197,13 +197,13 @@ function runTests() {
   totalTests++;
   try {
     const fhirBundle = createFhirBundle(mockAssessment, mockPatient);
-    
+
     if (
       fhirBundle.resourceType === "Bundle" &&
       fhirBundle.type === "document" &&
       Array.isArray(fhirBundle.entry) &&
       fhirBundle.entry.length > 0 &&
-      fhirBundle.entry.every(entry => entry.resource.resourceType !== undefined)
+      fhirBundle.entry.every((entry) => entry.resource.resourceType !== undefined)
     ) {
       console.log("✓ Test 6 passed: FHIR Bundle creation");
       passedTests++;
@@ -219,7 +219,7 @@ function runTests() {
   try {
     const fhirData = mapAssessmentToFhirBundle(mockAssessment, mockPatient);
     const jsonString = exportFhirAsJson(fhirData);
-    
+
     if (
       typeof jsonString === "string" &&
       jsonString.includes("resourceType") &&
@@ -236,7 +236,7 @@ function runTests() {
 
   // Summary
   console.log(`\nTest Results: ${passedTests}/${totalTests} tests passed`);
-  
+
   if (passedTests === totalTests) {
     console.log("All tests passed! ✓");
     return 0;

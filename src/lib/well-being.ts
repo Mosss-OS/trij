@@ -1,4 +1,9 @@
-import type { WellBeingCheckIn, WellBeingTrend, SupportResource, WellBeingAggregate } from "@/types/trij";
+import type {
+  WellBeingCheckIn,
+  WellBeingTrend,
+  SupportResource,
+  WellBeingAggregate,
+} from "@/types/trij";
 import { supabase } from "@/integrations/supabase/client";
 
 const WELL_BEING_STORE = "trij-well-being";
@@ -19,7 +24,7 @@ export function getWellBeingCheckInsLocally(): WellBeingCheckIn[] {
 export function getLatestWellBeingCheckIn(chwUserId: string): WellBeingCheckIn | null {
   const checkIns = getWellBeingCheckInsLocally();
   const userCheckIns = checkIns
-    .filter(c => c.chwUserId === chwUserId)
+    .filter((c) => c.chwUserId === chwUserId)
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   return userCheckIns.length > 0 ? userCheckIns[0] : null;
 }
@@ -27,50 +32,48 @@ export function getLatestWellBeingCheckIn(chwUserId: string): WellBeingCheckIn |
 export function hasCompletedThisWeek(chwUserId: string): boolean {
   const latest = getLatestWellBeingCheckIn(chwUserId);
   if (!latest) return false;
-  
+
   const checkInDate = new Date(latest.timestamp);
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  
+
   return checkInDate >= oneWeekAgo;
 }
 
 // Supabase sync functions
 export async function syncWellBeingCheckIn(checkIn: WellBeingCheckIn): Promise<boolean> {
   try {
-    const { error } = await supabase
-      .from('wellbeing_checkins')
-      .insert({
-        id: checkIn.id,
-        chw_user_id: checkIn.chwUserId,
-        week_start_date: checkIn.weekStartDate,
-        responses: checkIn.responses,
-        score: checkIn.score,
-        timestamp: checkIn.timestamp,
-        created_at: checkIn.createdAt,
-        synced_at: new Date().toISOString(),
-      });
+    const { error } = await (supabase as any).from("wellbeing_checkins").insert({
+      id: checkIn.id,
+      chw_user_id: checkIn.chwUserId,
+      week_start_date: checkIn.weekStartDate,
+      responses: checkIn.responses,
+      score: checkIn.score,
+      timestamp: checkIn.timestamp,
+      created_at: checkIn.createdAt,
+      synced_at: new Date().toISOString(),
+    });
 
     if (error) throw error;
 
     // Update local copy with sync status
     const existing = getWellBeingCheckInsLocally();
-    const updated = existing.map(c => 
-      c.id === checkIn.id ? { ...c, syncedAt: new Date().toISOString() } : c
+    const updated = existing.map((c) =>
+      c.id === checkIn.id ? { ...c, syncedAt: new Date().toISOString() } : c,
     );
     localStorage.setItem(WELL_BEING_STORE, JSON.stringify(updated));
 
     return true;
   } catch (error) {
-    console.error('Failed to sync well-being check-in:', error);
+    console.error("Failed to sync well-being check-in:", error);
     return false;
   }
 }
 
 export async function syncPendingWellBeingCheckIns(chwUserId: string): Promise<void> {
   const checkIns = getWellBeingCheckInsLocally();
-  const pending = checkIns.filter(c => c.chwUserId === chwUserId && !c.syncedAt);
-  
+  const pending = checkIns.filter((c) => c.chwUserId === chwUserId && !c.syncedAt);
+
   for (const checkIn of pending) {
     await syncWellBeingCheckIn(checkIn);
   }
@@ -79,17 +82,17 @@ export async function syncPendingWellBeingCheckIns(chwUserId: string): Promise<v
 // Trend analysis functions
 export function calculateWellBeingTrend(chwUserId: string): WellBeingTrend | null {
   const checkIns = getWellBeingCheckInsLocally()
-    .filter(c => c.chwUserId === chwUserId)
+    .filter((c) => c.chwUserId === chwUserId)
     .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
   if (checkIns.length < 2) return null;
 
   const currentScore = checkIns[checkIns.length - 1].score;
   const previousScore = checkIns[checkIns.length - 2].score;
-  
+
   let trend: "improving" | "stable" | "declining";
   const scoreDiff = currentScore - previousScore;
-  
+
   if (scoreDiff >= 10) trend = "improving";
   else if (scoreDiff <= -10) trend = "declining";
   else trend = "stable";
@@ -106,10 +109,7 @@ export function calculateWellBeingTrend(chwUserId: string): WellBeingTrend | nul
 }
 
 export function getDecliningTrendCHWs(allTrends: WellBeingTrend[]): WellBeingTrend[] {
-  return allTrends.filter(t => 
-    t.trend === "declining" && 
-    t.weeksTracked >= 2
-  );
+  return allTrends.filter((t) => t.trend === "declining" && t.weeksTracked >= 2);
 }
 
 // Support resources functions
@@ -122,45 +122,52 @@ export function getSupportResourcesLocally(): SupportResource[] {
   return data ? JSON.parse(data) : [];
 }
 
-export function getSupportResourcesByCategory(category: SupportResource['category']): SupportResource[] {
+export function getSupportResourcesByCategory(
+  category: SupportResource["category"],
+): SupportResource[] {
   const resources = getSupportResourcesLocally();
-  return resources.filter(r => r.category === category);
+  return resources.filter((r) => r.category === category);
 }
 
 // Aggregate reporting (anonymous)
-export async function getWellBeingAggregate(startDate: string, endDate: string): Promise<WellBeingAggregate | null> {
+export async function getWellBeingAggregate(
+  startDate: string,
+  endDate: string,
+): Promise<WellBeingAggregate | null> {
   try {
-    const { data, error } = await supabase
-      .from('wellbeing_checkins')
-      .select('score, timestamp')
-      .gte('timestamp', startDate)
-      .lte('timestamp', endDate);
+    const { data, error } = await (supabase as any)
+      .from("wellbeing_checkins")
+      .select("score, timestamp")
+      .gte("timestamp", startDate)
+      .lte("timestamp", endDate);
 
     if (error) throw error;
     if (!data || data.length === 0) return null;
 
-    const scores = data.map(d => d.score);
+    const scores = data.map((d: any) => d.score);
     const totalCheckIns = scores.length;
-    const averageScore = scores.reduce((a, b) => a + b, 0) / totalCheckIns;
+    const averageScore = scores.reduce((a: number, b: number) => a + b, 0) / totalCheckIns;
 
     const distribution = {
-      high: scores.filter(s => s >= 75).length,
-      medium: scores.filter(s => s >= 50 && s < 75).length,
-      low: scores.filter(s => s < 50).length,
+      high: scores.filter((s: number) => s >= 75).length,
+      medium: scores.filter((s: number) => s >= 50 && s < 75).length,
+      low: scores.filter((s: number) => s < 50).length,
     };
 
     // Calculate week-over-week averages
     const weekData: { [key: string]: number[] } = {};
-    data.forEach(d => {
+    data.forEach((d: any) => {
       const week = getWeekStart(new Date(d.timestamp));
       if (!weekData[week]) weekData[week] = [];
       weekData[week].push(d.score);
     });
 
-    const weekOverWeek = Object.entries(weekData).map(([week, scores]) => ({
-      week,
-      averageScore: scores.reduce((a, b) => a + b, 0) / scores.length,
-    })).sort((a, b) => a.week.localeCompare(b.week));
+    const weekOverWeek = Object.entries(weekData)
+      .map(([week, scores]) => ({
+        week,
+        averageScore: scores.reduce((a, b) => a + b, 0) / scores.length,
+      }))
+      .sort((a, b) => a.week.localeCompare(b.week));
 
     return {
       totalCheckIns,
@@ -169,17 +176,17 @@ export async function getWellBeingAggregate(startDate: string, endDate: string):
       weekOverWeek,
     };
   } catch (error) {
-    console.error('Failed to fetch well-being aggregate:', error);
+    console.error("Failed to fetch well-being aggregate:", error);
     return null;
   }
 }
 
-function getWeekStart(date: Date): string {
+export function getWeekStart(date: Date): string {
   const d = new Date(date);
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
   d.setDate(diff);
-  return d.toISOString().split('T')[0];
+  return d.toISOString().split("T")[0];
 }
 
 // Calculate well-being score from responses (0-100 scale)

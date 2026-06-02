@@ -458,10 +458,16 @@ function demoAssessment(): TriageResult {
   const diffs = DEMO_CONDITIONS.filter((d) => d.condition !== c.condition)
     .slice(0, 2 + Math.floor(Math.random() * 2))
     .map((d) => ({ name: d.condition, probability: Math.floor(Math.random() * 50) + 5 }));
+  const point = c.confidence - Math.floor(Math.random() * 10) + 5;
 
   return {
     condition: c.condition,
-    confidence: c.confidence - Math.floor(Math.random() * 10) + 5,
+    confidence: {
+      confidence_point: Math.max(0, Math.min(100, point)),
+      confidence_interval: [Math.max(0, point - 10), Math.min(100, point + 10)] as [number, number],
+      uncertainty_source: "model_knowledge",
+      uncertainty_reason: "Demo mode simulation",
+    },
     urgency: c.urgency,
     possible_conditions: diffs,
     key_visual_features: c.features,
@@ -715,7 +721,12 @@ Language: ${language}`;
   const raw = await googleGeminiChat(model, systemPrompt, userText, apiKey, imageDataUrl);
   return triesJson<TriageResult>(raw, {
     condition: "Unable to assess",
-    confidence: 0,
+    confidence: {
+      confidence_point: 0,
+      confidence_interval: [0, 0] as [number, number],
+      uncertainty_source: "model_knowledge",
+      uncertainty_reason: "Fallback - unable to assess",
+    },
     urgency: "yellow",
     possible_conditions: [],
     key_visual_features: [],
@@ -744,22 +755,22 @@ export async function loadEngine(
     } else if (kind === "ollama") {
       // Ollama doesn't require loading, it's an external service
       if (onProgress) {
-        onProgress({ progress: 1, text: "Ollama connection ready" });
+        onProgress({ progress: 1, text: "Ollama connection ready", timeElapsed: 0 });
       }
     } else if (kind === "cloud") {
       // Cloud doesn't require loading, it's an external service
       if (onProgress) {
-        onProgress({ progress: 1, text: "Cloud inference ready" });
+        onProgress({ progress: 1, text: "Cloud inference ready", timeElapsed: 0 });
       }
     } else if (kind === "google") {
       // Google AI Studio doesn't require local loading
       if (onProgress) {
-        onProgress({ progress: 1, text: "Google AI Studio ready" });
+        onProgress({ progress: 1, text: "Google AI Studio ready", timeElapsed: 0 });
       }
     } else if (kind === "demo") {
       // Demo mode doesn't require loading
       if (onProgress) {
-        onProgress({ progress: 1, text: "Demo mode ready" });
+        onProgress({ progress: 1, text: "Demo mode ready", timeElapsed: 0 });
       }
     }
   } catch (error) {
@@ -843,7 +854,12 @@ export function isLoaded(kind: EngineKind): boolean {
 
 const FALLBACK_TRIAGE: TriageResult = {
   condition: "Unable to assess",
-  confidence: 0,
+  confidence: {
+    confidence_point: 0,
+    confidence_interval: [0, 0] as [number, number],
+    uncertainty_source: "model_knowledge",
+    uncertainty_reason: "Fallback - unable to assess",
+  },
   urgency: "yellow",
   possible_conditions: [],
   key_visual_features: [],
@@ -1280,7 +1296,7 @@ export function initVoiceConversation(language: string, triage: TriageResult): C
   const system = getConversationSystemPrompt(
     language,
     triage.condition,
-    triage.confidence,
+    triage.confidence.confidence_point,
     triage.urgency,
     triage.key_visual_features ?? [],
     useSettingsStore.getState().thinkingMode,

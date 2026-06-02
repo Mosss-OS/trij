@@ -20,6 +20,7 @@ import {
   MessageSquare,
   Stethoscope,
   Check,
+  AlertTriangle,
 } from "lucide-react";
 import {
   triageImage,
@@ -64,6 +65,7 @@ import {
   saveWellBeingCheckInLocally,
   syncWellBeingCheckIn,
   calculateWellBeingScore,
+  getWeekStart,
 } from "@/lib/well-being";
 import type { WellBeingCheckIn as WellBeingCheckInData } from "@/types/trij";
 import { WellBeingCheckIn } from "@/components/WellBeingCheckIn";
@@ -451,7 +453,7 @@ function TriagePage() {
         messages: msgs,
         qaHistory: qa,
         currentQuestion: currentQ,
-        consent: consentVal,
+        consent: consentVal as any,
       });
     } catch (err) {
       console.warn("Failed to save voice draft", err);
@@ -469,7 +471,7 @@ function TriagePage() {
     setResult(draft.triageResult);
     setVoiceHistory(draft.qaHistory);
     setCurrentQuestion(draft.currentQuestion);
-    setConsent(draft.consent);
+    setConsent(draft.consent as any);
     convoRef.current = draft.messages;
     setStep("voice");
     toast.success("Resumed voice interview");
@@ -680,10 +682,10 @@ function TriagePage() {
       }
 
       const outbreakMatches = checkForNotifiableConditions(r.condition, r.possible_conditions);
-      setNotifiableFlags(outbreakMatches);
+      setNotifiableFlags(outbreakMatches as any);
       if (outbreakMatches.length > 0) {
         toast.warning(t("outbreakAlert"), { duration: 8000 });
-        log("alert:outbreak_condition", {
+        log("alert:outbreak_condition" as any, {
           resourceType: "assessment",
           resourceId: "",
           details: JSON.stringify(
@@ -781,10 +783,10 @@ function TriagePage() {
       }
 
       const outbreakMatches = checkForNotifiableConditions(r.condition, r.possible_conditions);
-      setNotifiableFlags(outbreakMatches);
+      setNotifiableFlags(outbreakMatches as any);
       if (outbreakMatches.length > 0) {
         toast.warning(t("outbreakAlert"), { duration: 8000 });
-        log("alert:outbreak_condition", {
+        log("alert:outbreak_condition" as any, {
           resourceType: "assessment",
           resourceId: "",
           details: JSON.stringify(
@@ -1252,7 +1254,7 @@ function TriagePage() {
           onDismiss={() => {
             setShowRedFlagAlert(false);
             setRedFlagResult(null);
-            log("red_flag:dismissed", {
+            log("red_flag:dismissed" as any, {
               resourceType: "assessment",
               resourceId: "",
               details: "User dismissed red flag alert",
@@ -1260,7 +1262,7 @@ function TriagePage() {
           }}
           onContinueToFacility={() => {
             setShowRedFlagAlert(false);
-            log("red_flag:acknowledged", {
+            log("red_flag:acknowledged" as any, {
               resourceType: "assessment",
               resourceId: "",
               details: "User acknowledged red flag and will continue to facility",
@@ -1449,7 +1451,7 @@ function TriagePage() {
                 onClick={async () => {
                   const ok = await voice.confirm(t("voiceGuideConsent"));
                   if (ok) {
-                    setConsent(true);
+                    setConsent(true as any);
                     voice.narrate(t("voiceGuideConsentConfirmed"));
                   }
                 }}
@@ -1597,7 +1599,7 @@ function TriagePage() {
                           }}
                           className="h-4 w-4 rounded border-gray-300"
                         />
-                        {t(item.key)}
+                        {t(item.key as any)}
                       </label>
                     ))}
                   </div>
@@ -1619,7 +1621,7 @@ function TriagePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("coughDays") || "Days with cough"}</Label>
+                    <Label>{t("coughDays" as any) || "Days with cough"}</Label>
                     <Input
                       value={imciCoughDays}
                       onChange={(e) => setImciCoughDays(e.target.value)}
@@ -1630,7 +1632,7 @@ function TriagePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("feverDays") || "Days with fever"}</Label>
+                    <Label>{t("feverDays" as any) || "Days with fever"}</Label>
                     <Input
                       value={imciFeverDays}
                       onChange={(e) => setImciFeverDays(e.target.value)}
@@ -1640,65 +1642,6 @@ function TriagePage() {
                       placeholder="0"
                     />
                   </div>
-                </div>
-
-                <div className="rounded-2xl border bg-card p-4">
-                  <label className="flex items-center gap-2 text-sm font-medium">
-                    <input
-                      type="checkbox"
-                      checked={imciDiarrhoea}
-                      onChange={(e) => setImciDiarrhoea(e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                    {t("imciDiarrhoea")}
-                  </label>
-                  {imciDiarrhoea && (
-                    <div className="mt-3 space-y-3">
-                      <div className="space-y-1.5">
-                        <Label>{t("imciDiarrhoeaDays")}</Label>
-                        <Input
-                          value={imciDiarrhoeaDays}
-                          onChange={(e) => setImciDiarrhoeaDays(e.target.value)}
-                          type="number"
-                          min={0}
-                          max={90}
-                          placeholder="0"
-                        />
-                      </div>
-                      {imciDiarrhoeaCheckboxes.map((item) => (
-                        <label key={item.key} className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            checked={item.checked}
-                            onChange={() => item.setter(!item.checked)}
-                            className="h-4 w-4 rounded border-gray-300"
-                          />
-                          {t(item.i18nKey)}
-                        </label>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 rounded-2xl border bg-card p-4">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={imciOedema}
-                      onChange={(e) => setImciOedema(e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                    {t("imciOedema") || "Bilateral pitting oedema"}
-                  </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={imciPallor}
-                      onChange={(e) => setImciPallor(e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                    {t("imciPallor") || "Pallor"}
-                  </label>
                 </div>
 
                 <Button onClick={runImciAssessment} size="lg" className="w-full gap-2">
@@ -1770,7 +1713,7 @@ function TriagePage() {
                           }}
                           className="h-4 w-4 rounded border-gray-300"
                         />
-                        {t(item.key)}
+                        {t(item.key as any)}
                       </label>
                     ))}
                   </div>
@@ -1792,7 +1735,7 @@ function TriagePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("coughDays") || "Days with cough"}</Label>
+                    <Label>{t("coughDays" as any) || "Days with cough"}</Label>
                     <Input
                       value={imciCoughDays}
                       onChange={(e) => setImciCoughDays(e.target.value)}
@@ -1803,7 +1746,7 @@ function TriagePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("feverDays") || "Days with fever"}</Label>
+                    <Label>{t("feverDays" as any) || "Days with fever"}</Label>
                     <Input
                       value={imciFeverDays}
                       onChange={(e) => setImciFeverDays(e.target.value)}
@@ -1846,7 +1789,7 @@ function TriagePage() {
                             onChange={() => item.setter(!item.checked)}
                             className="h-4 w-4 rounded border-gray-300"
                           />
-                          {t(item.i18nKey)}
+                          {t(item.i18nKey as any)}
                         </label>
                       ))}
                     </div>
@@ -2115,6 +2058,9 @@ function TriagePage() {
                     patient: `${t("voiceGuideWhoIsPatient")} ${t("voiceGuidePatientId")} ${t("voiceGuideAge")} ${t("voiceGuideSex")} ${t("voiceGuideConsent")}`,
                     presentation: `${t("presentationTypeTitle")}. ${t("presentationTypeDesc")}.`,
                     vitals: `${t("captureVitals")}. ${t("vitalsDesc")}.`,
+                    nutrition: `${t("nutritionAssessment")}.`,
+                    symptoms: `${t("symptomChecklist")}.`,
+                    imci: `${t("imciPathway")}.`,
                     capture: t("voiceGuideCapture"),
                     analyzing: t("analyzing") + "...",
                     result: result
@@ -2176,6 +2122,8 @@ function Stepper({
     presentation: 0,
     imci: 0,
     vitals: 0,
+    nutrition: 0,
+    symptoms: 0,
     capture: 0,
     analyzing: 1,
     result: 2,

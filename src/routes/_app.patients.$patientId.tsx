@@ -23,10 +23,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Calendar, Camera, FileDown, Share2, UserRound, RefreshCw, Clock, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Calendar,
+  Camera,
+  FileDown,
+  Share2,
+  UserRound,
+  RefreshCw,
+  Clock,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import { format, isPast, isToday } from "date-fns";
 import { downloadReferralPdf, shareReferralPdf } from "@/lib/referral";
-import { updateReferralStatus, saveReferralFeedback, queueFollowUp, updateFollowUpStatus } from "@/lib/sync";
+import {
+  updateReferralStatus,
+  saveReferralFeedback,
+  queueFollowUp,
+  updateFollowUpStatus,
+} from "@/lib/sync";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -103,7 +118,9 @@ function PatientDetail() {
   const [feedbackDiagnosis, setFeedbackDiagnosis] = useState("");
   const [feedbackTreatment, setFeedbackTreatment] = useState("");
   const [feedbackFacility, setFeedbackFacility] = useState("");
-  const [feedbackOutcome, setFeedbackOutcome] = useState<"treated" | "referred_elsewhere" | "admitted" | "discharged" | "unknown">("unknown");
+  const [feedbackOutcome, setFeedbackOutcome] = useState<
+    "treated" | "referred_elsewhere" | "admitted" | "discharged" | "unknown"
+  >("unknown");
   const [feedbackNotes, setFeedbackNotes] = useState("");
 
   useEffect(() => {
@@ -134,7 +151,9 @@ function PatientDetail() {
 
   useEffect(() => {
     let alive = true;
-    loadData().then(() => { /* */ });
+    loadData().then(() => {
+      /* */
+    });
     return () => {
       alive = false;
     };
@@ -173,9 +192,7 @@ function PatientDetail() {
 
   const handleCancel = async (id: string) => {
     await updateFollowUpStatus(id, "cancelled");
-    setFollowUps((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, status: "cancelled" } : f)),
-    );
+    setFollowUps((prev) => prev.map((f) => (f.id === id ? { ...f, status: "cancelled" } : f)));
   };
 
   const handleSaveFeedback = async () => {
@@ -252,7 +269,8 @@ function PatientDetail() {
                       </p>
                     )}
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {format(new Date(a.createdAt), "PPp")} · conf {Math.round(a.confidence ?? 0)}%
+                      {format(new Date(a.createdAt), "PPp")} · conf{" "}
+                      {Math.round(a.confidence?.confidence_point ?? 0)}%
                     </p>
                   </div>
                   {a.urgency && <UrgencyPill urgency={a.urgency} />}
@@ -329,7 +347,13 @@ function PatientDetail() {
                     <Select
                       value={a.referralStatus}
                       onValueChange={(v) => {
-                        const s = v as "none" | "pending" | "active" | "awaiting_feedback" | "feedback_received" | "resolved";
+                        const s = v as
+                          | "none"
+                          | "pending"
+                          | "active"
+                          | "awaiting_feedback"
+                          | "feedback_received"
+                          | "resolved";
                         updateReferralStatus(a.id, s);
                         toast.success(`Referral marked as ${s}`);
                       }}
@@ -345,23 +369,33 @@ function PatientDetail() {
                         <SelectItem value="resolved">Resolved</SelectItem>
                       </SelectContent>
                     </Select>
-                    {a.referralFeedback && (a.referralStatus === "feedback_received" || a.referralStatus === "resolved") && (
-                      <div className="mt-2 w-full rounded-xl border bg-muted/20 p-3 text-xs">
-                        <p className="font-medium text-foreground">Referral feedback</p>
-                        {a.referralFeedback.facilityName && (
-                          <p className="mt-1 text-muted-foreground">Facility: {a.referralFeedback.facilityName}</p>
-                        )}
-                        {a.referralFeedback.diagnosis && (
-                          <p className="text-muted-foreground">Diagnosis: {a.referralFeedback.diagnosis}</p>
-                        )}
-                        {a.referralFeedback.treatment && (
-                          <p className="text-muted-foreground">Treatment: {a.referralFeedback.treatment}</p>
-                        )}
-                        {a.referralFeedback.notes && (
-                          <p className="mt-1 italic text-muted-foreground">{a.referralFeedback.notes}</p>
-                        )}
-                      </div>
-                    )}
+                    {a.referralFeedback &&
+                      (a.referralStatus === "feedback_received" ||
+                        a.referralStatus === "resolved") && (
+                        <div className="mt-2 w-full rounded-xl border bg-muted/20 p-3 text-xs">
+                          <p className="font-medium text-foreground">Referral feedback</p>
+                          {a.referralFeedback.facilityName && (
+                            <p className="mt-1 text-muted-foreground">
+                              Facility: {a.referralFeedback.facilityName}
+                            </p>
+                          )}
+                          {a.referralFeedback.diagnosis && (
+                            <p className="text-muted-foreground">
+                              Diagnosis: {a.referralFeedback.diagnosis}
+                            </p>
+                          )}
+                          {a.referralFeedback.treatment && (
+                            <p className="text-muted-foreground">
+                              Treatment: {a.referralFeedback.treatment}
+                            </p>
+                          )}
+                          {a.referralFeedback.notes && (
+                            <p className="mt-1 italic text-muted-foreground">
+                              {a.referralFeedback.notes}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     <Button
                       variant="outline"
                       size="sm"
@@ -460,9 +494,7 @@ function PatientDetail() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">
-                          {format(dueDate, "PPp")}
-                        </span>
+                        <span className="font-medium">{format(dueDate, "PPp")}</span>
                         {f.status === "completed" && (
                           <span className="inline-flex items-center gap-1 text-xs text-green-600">
                             <CheckCircle2 className="h-3 w-3" /> Done
@@ -484,9 +516,7 @@ function PatientDetail() {
                           </span>
                         )}
                       </div>
-                      {f.notes && (
-                        <p className="mt-1 text-sm text-muted-foreground">{f.notes}</p>
-                      )}
+                      {f.notes && <p className="mt-1 text-sm text-muted-foreground">{f.notes}</p>}
                     </div>
                     {f.status === "pending" && (
                       <div className="flex shrink-0 gap-1">
@@ -548,7 +578,10 @@ function PatientDetail() {
               </div>
               <div className="space-y-1.5">
                 <Label>Outcome</Label>
-                <Select value={feedbackOutcome} onValueChange={(v) => setFeedbackOutcome(v as typeof feedbackOutcome)}>
+                <Select
+                  value={feedbackOutcome}
+                  onValueChange={(v) => setFeedbackOutcome(v as typeof feedbackOutcome)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

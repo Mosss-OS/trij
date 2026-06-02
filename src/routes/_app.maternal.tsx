@@ -194,9 +194,7 @@ function MaternalPage() {
             <h2 className="mt-4 font-display text-xl font-bold">{t("assessmentSaved")}</h2>
             <p className="mt-2 text-sm text-muted-foreground">{t("savedOffline")}</p>
             <div className="mt-6 flex justify-center gap-3">
-              <Button onClick={() => navigate({ to: "/patients" })}>
-                {t("viewAll")}
-              </Button>
+              <Button onClick={() => navigate({ to: "/patients" })}>{t("viewAll")}</Button>
               <Button variant="outline" onClick={() => navigate({ to: "/triage" })}>
                 {t("newTriage")}
               </Button>
@@ -226,7 +224,14 @@ function MaternalPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>{t("ageYears")}</Label>
-                <Input value={patientAge} onChange={(e) => setPatientAge(e.target.value)} type="number" min={10} max={60} placeholder="25" />
+                <Input
+                  value={patientAge}
+                  onChange={(e) => setPatientAge(e.target.value)}
+                  type="number"
+                  min={10}
+                  max={60}
+                  placeholder="25"
+                />
               </div>
               <div className="space-y-1.5">
                 <Label>{t("sex")}</Label>
@@ -269,11 +274,25 @@ function MaternalPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>{t("gestationalWeeks")}</Label>
-                    <Input value={gestWeeks} onChange={(e) => setGestWeeks(e.target.value)} type="number" min={0} max={44} placeholder="32" />
+                    <Input
+                      value={gestWeeks}
+                      onChange={(e) => setGestWeeks(e.target.value)}
+                      type="number"
+                      min={0}
+                      max={44}
+                      placeholder="32"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label>{t("fundalHeightCm")}</Label>
-                    <Input value={fundalHeight} onChange={(e) => setFundalHeight(e.target.value)} type="number" min={0} max={50} placeholder={t("cm")} />
+                    <Input
+                      value={fundalHeight}
+                      onChange={(e) => setFundalHeight(e.target.value)}
+                      type="number"
+                      min={0}
+                      max={50}
+                      placeholder={t("cm")}
+                    />
                   </div>
                 </div>
                 {gestWeeks && (
@@ -285,16 +304,37 @@ function MaternalPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>{t("fetalHeartRate")}</Label>
-                    <Input value={fetalHR} onChange={(e) => setFetalHR(e.target.value)} type="number" min={60} max={200} placeholder="140" />
+                    <Input
+                      value={fetalHR}
+                      onChange={(e) => setFetalHR(e.target.value)}
+                      type="number"
+                      min={60}
+                      max={200}
+                      placeholder="140"
+                    />
                   </div>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <div className="space-y-1.5">
                       <Label>{t("gravidity")}</Label>
-                      <Input value={gravidity} onChange={(e) => setGravidity(e.target.value)} type="number" min={0} max={20} placeholder="2" />
+                      <Input
+                        value={gravidity}
+                        onChange={(e) => setGravidity(e.target.value)}
+                        type="number"
+                        min={0}
+                        max={20}
+                        placeholder="2"
+                      />
                     </div>
                     <div className="space-y-1.5">
                       <Label>{t("parity")}</Label>
-                      <Input value={parity} onChange={(e) => setParity(e.target.value)} type="number" min={0} max={20} placeholder="1" />
+                      <Input
+                        value={parity}
+                        onChange={(e) => setParity(e.target.value)}
+                        type="number"
+                        min={0}
+                        max={20}
+                        placeholder="1"
+                      />
                     </div>
                   </div>
                 </div>
@@ -302,17 +342,42 @@ function MaternalPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>{t("systolicBP")}</Label>
-                    <Input value={systolicBP} onChange={(e) => setSystolicBP(e.target.value)} type="number" min={60} max={250} placeholder="120" />
+                    <Input
+                      value={systolicBP}
+                      onChange={(e) => setSystolicBP(e.target.value)}
+                      type="number"
+                      min={60}
+                      max={250}
+                      placeholder="120"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label>{t("diastolicBP")}</Label>
-                    <Input value={diastolicBP} onChange={(e) => setDiastolicBP(e.target.value)} type="number" min={30} max={180} placeholder="80" />
+                    <Input
+                      value={diastolicBP}
+                      onChange={(e) => setDiastolicBP(e.target.value)}
+                      type="number"
+                      min={30}
+                      max={180}
+                      placeholder="80"
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label><Thermometer className="mr-1 inline h-3 w-3" />{t("temperature")}</Label>
-                  <Input value={temperature} onChange={(e) => setTemperature(e.target.value)} type="number" min={34} max={43} step={0.1} placeholder="37.0" />
+                  <Label>
+                    <Thermometer className="mr-1 inline h-3 w-3" />
+                    {t("temperature")}
+                  </Label>
+                  <Input
+                    value={temperature}
+                    onChange={(e) => setTemperature(e.target.value)}
+                    type="number"
+                    min={34}
+                    max={43}
+                    step={0.1}
+                    placeholder="37.0"
+                  />
                 </div>
               </>
             )}
@@ -330,7 +395,7 @@ function MaternalPage() {
                         onChange={() => toggleSign(antenatalSigns, item.value, setAntenatalSigns)}
                         className="h-4 w-4 rounded border-gray-300"
                       />
-                      {t(item.key)}
+                      {t(item.key as any)}
                     </label>
                   ))}
                 </div>
@@ -350,7 +415,7 @@ function MaternalPage() {
                           onChange={() => toggleSign(postnatalSigns, item.value, setPostnatalSigns)}
                           className="h-4 w-4 rounded border-gray-300"
                         />
-                        {t(item.key)}
+                        {t(item.key as any)}
                       </label>
                     ))}
                   </div>
@@ -358,7 +423,9 @@ function MaternalPage() {
 
                 <div className="rounded-2xl border bg-card p-4">
                   <h3 className="text-sm font-semibold">{t("neonatalAssessment")}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">{t("neonatalAssessmentDesc")}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("neonatalAssessmentDesc")}
+                  </p>
                   <div className="mt-3 space-y-2">
                     {NEONATAL_SIGNS.map((item) => (
                       <label key={item.value} className="flex items-center gap-2 text-sm">
@@ -368,7 +435,7 @@ function MaternalPage() {
                           onChange={() => toggleSign(neonatalSigns, item.value, setNeonatalSigns)}
                           className="h-4 w-4 rounded border-gray-300"
                         />
-                        {t(item.key)}
+                        {t(item.key as any)}
                       </label>
                     ))}
                   </div>
@@ -376,12 +443,30 @@ function MaternalPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label><Weight className="mr-1 inline h-3 w-3" />{t("neonatalWeight")}</Label>
-                    <Input value={neonatalWeight} onChange={(e) => setNeonatalWeight(e.target.value)} type="number" min={0.5} max={6} step={0.1} placeholder="3.2" />
+                    <Label>
+                      <Weight className="mr-1 inline h-3 w-3" />
+                      {t("neonatalWeight")}
+                    </Label>
+                    <Input
+                      value={neonatalWeight}
+                      onChange={(e) => setNeonatalWeight(e.target.value)}
+                      type="number"
+                      min={0.5}
+                      max={6}
+                      step={0.1}
+                      placeholder="3.2"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label>{t("neonatalAgeDays")}</Label>
-                    <Input value={neonatalAgeDays} onChange={(e) => setNeonatalAgeDays(e.target.value)} type="number" min={0} max={28} placeholder="3" />
+                    <Input
+                      value={neonatalAgeDays}
+                      onChange={(e) => setNeonatalAgeDays(e.target.value)}
+                      type="number"
+                      min={0}
+                      max={28}
+                      placeholder="3"
+                    />
                   </div>
                 </div>
               </>
@@ -391,17 +476,46 @@ function MaternalPage() {
               <>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label><Weight className="mr-1 inline h-3 w-3" />{t("neonatalWeight")}</Label>
-                    <Input value={neonatalWeight} onChange={(e) => setNeonatalWeight(e.target.value)} type="number" min={0.5} max={6} step={0.1} placeholder="3.2" />
+                    <Label>
+                      <Weight className="mr-1 inline h-3 w-3" />
+                      {t("neonatalWeight")}
+                    </Label>
+                    <Input
+                      value={neonatalWeight}
+                      onChange={(e) => setNeonatalWeight(e.target.value)}
+                      type="number"
+                      min={0.5}
+                      max={6}
+                      step={0.1}
+                      placeholder="3.2"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label>{t("neonatalAgeDays")}</Label>
-                    <Input value={neonatalAgeDays} onChange={(e) => setNeonatalAgeDays(e.target.value)} type="number" min={0} max={28} placeholder="3" />
+                    <Input
+                      value={neonatalAgeDays}
+                      onChange={(e) => setNeonatalAgeDays(e.target.value)}
+                      type="number"
+                      min={0}
+                      max={28}
+                      placeholder="3"
+                    />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label><Thermometer className="mr-1 inline h-3 w-3" />{t("temperature")}</Label>
-                  <Input value={temperature} onChange={(e) => setTemperature(e.target.value)} type="number" min={34} max={43} step={0.1} placeholder="37.0" />
+                  <Label>
+                    <Thermometer className="mr-1 inline h-3 w-3" />
+                    {t("temperature")}
+                  </Label>
+                  <Input
+                    value={temperature}
+                    onChange={(e) => setTemperature(e.target.value)}
+                    type="number"
+                    min={34}
+                    max={43}
+                    step={0.1}
+                    placeholder="37.0"
+                  />
                 </div>
                 <div className="rounded-2xl border bg-card p-4">
                   <h3 className="text-sm font-semibold">{t("neonatalDangerSigns")}</h3>
@@ -414,7 +528,7 @@ function MaternalPage() {
                           onChange={() => toggleSign(neonatalSigns, item.value, setNeonatalSigns)}
                           className="h-4 w-4 rounded border-gray-300"
                         />
-                        {t(item.key)}
+                        {t(item.key as any)}
                       </label>
                     ))}
                   </div>
@@ -437,7 +551,7 @@ function MaternalPage() {
               <div className="flex items-center gap-3">
                 <UrgencyPill urgency={result.urgency} />
                 <div>
-                  <h2 className="font-display text-lg font-bold">{t("assessmentResult")}</h2>
+                  <h2 className="font-display text-lg font-bold">{t("assessmentResult" as any)}</h2>
                   <p className="text-xs text-muted-foreground">
                     {t("phase")}: {t(`phase_${result.phase}`)}
                   </p>
@@ -466,7 +580,7 @@ function MaternalPage() {
             )}
 
             <div className="rounded-3xl border bg-card p-6">
-              <h3 className="font-display text-sm font-semibold">{t("recommendation")}</h3>
+              <h3 className="font-display text-sm font-semibold">{t("recommendation" as any)}</h3>
               <p className="mt-1 text-sm">{result.recommendation}</p>
             </div>
 
@@ -481,7 +595,13 @@ function MaternalPage() {
               <Save className="h-4 w-4" /> {t("saveAssessment")}
             </Button>
 
-            <Button variant="outline" className="w-full" onClick={() => { setResult(null); }}>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setResult(null);
+              }}
+            >
               {t("startNew")}
             </Button>
           </div>

@@ -3,9 +3,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { assessNutrition, getClassificationLabel, getClassificationColor, getOedemaLabel, type NutritionAssessmentResult } from "@/lib/nutrition";
-import { calculateWHOScores, getZScoreLabel, getZScoreColor, type ZScoreResult, BOYS_WFA, GIRLS_WFA, BOYS_HFA, GIRLS_HFA } from "@/lib/who-standards";
-import { AlertTriangle, CheckCircle2, ChevronRight, Ruler, Droplets, Eye, Scale, Activity } from "lucide-react";
+import {
+  assessNutrition,
+  getClassificationLabel,
+  getClassificationColor,
+  getOedemaLabel,
+  type NutritionAssessmentResult,
+} from "@/lib/nutrition";
+import {
+  calculateWHOScores,
+  getZScoreLabel,
+  getZScoreColor,
+  type ZScoreResult,
+  BOYS_WFA,
+  GIRLS_WFA,
+  BOYS_HFA,
+  GIRLS_HFA,
+} from "@/lib/who-standards";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronRight,
+  Ruler,
+  Droplets,
+  Eye,
+  Scale,
+  Activity,
+} from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { WHOGrowthChart } from "./WHO GrowthChart";
 
@@ -26,18 +50,45 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
   const [hairChanges, setHairChanges] = useState(false);
   const [skinChanges, setSkinChanges] = useState(false);
 
+  const zScoreResult = useMemo<ZScoreResult | null>(() => {
+    const weight = parseFloat(weightKg);
+    const height = parseFloat(heightCm);
+    const ageMonths = ageYears * 12;
+
+    if (
+      !sex ||
+      isNaN(weight) ||
+      isNaN(height) ||
+      weight <= 0 ||
+      height <= 0 ||
+      ageMonths < 0 ||
+      ageMonths > 60
+    ) {
+      return null;
+    }
+
+    return calculateWHOScores(weight, height, ageMonths, sex);
+  }, [weightKg, heightCm, ageYears, sex]);
+
   const result = useMemo<NutritionAssessmentResult | null>(() => {
     const val = parseFloat(muacCm);
     if (isNaN(val) || val <= 0) return null;
-    
-    const muacResult = assessNutrition(val, ageYears, oedema, visibleWasting, hairChanges, skinChanges);
-    
+
+    const muacResult = assessNutrition(
+      val,
+      ageYears,
+      oedema,
+      visibleWasting,
+      hairChanges,
+      skinChanges,
+    );
+
     // Combine with WHO Z-score classification if available
     if (zScoreResult) {
       // WHO classification takes precedence for SAM/MAM determination
       // as it's more specific for acute malnutrition
       const whoClassification = zScoreResult.classification;
-      
+
       // If WHO indicates SAM or MAM, use that classification
       if (whoClassification === "sam" || whoClassification === "mam") {
         return {
@@ -48,21 +99,9 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
         };
       }
     }
-    
+
     return muacResult;
   }, [muacCm, ageYears, oedema, visibleWasting, hairChanges, skinChanges, zScoreResult]);
-
-  const zScoreResult = useMemo<ZScoreResult | null>(() => {
-    const weight = parseFloat(weightKg);
-    const height = parseFloat(heightCm);
-    const ageMonths = ageYears * 12;
-    
-    if (!sex || isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0 || ageMonths < 0 || ageMonths > 60) {
-      return null;
-    }
-    
-    return calculateWHOScores(weight, height, ageMonths, sex);
-  }, [weightKg, heightCm, ageYears, sex]);
 
   const isChild = ageYears < 18;
 
@@ -82,9 +121,7 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
                   <Scale className="h-4 w-4 text-primary" />
                   {t("weightForAge")}
                 </Label>
-                <p className="mb-1.5 text-xs text-muted-foreground">
-                  {t("whoZScoreDescription")}
-                </p>
+                <p className="mb-1.5 text-xs text-muted-foreground">{t("whoZScoreDescription")}</p>
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
@@ -105,9 +142,7 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
                   <Activity className="h-4 w-4 text-primary" />
                   {t("heightForAge")}
                 </Label>
-                <p className="mb-1.5 text-xs text-muted-foreground">
-                  {t("whoZScoreDescription")}
-                </p>
+                <p className="mb-1.5 text-xs text-muted-foreground">{t("whoZScoreDescription")}</p>
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
@@ -153,19 +188,21 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
             </Label>
             <p className="mb-1.5 text-xs text-muted-foreground">{t("oedemaGuide")}</p>
             <div className="flex flex-wrap gap-1.5">
-              {(["none", "bilateral_mild", "bilateral_moderate", "bilateral_severe"] as const).map((o) => (
-                <button
-                  key={o}
-                  onClick={() => setOedema(o)}
-                  className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
-                    oedema === o
-                      ? "border-primary bg-primary/10 font-medium text-primary"
-                      : "border-border text-muted-foreground hover:bg-accent"
-                  }`}
-                >
-                  {getOedemaLabel(o)}
-                </button>
-              ))}
+              {(["none", "bilateral_mild", "bilateral_moderate", "bilateral_severe"] as const).map(
+                (o) => (
+                  <button
+                    key={o}
+                    onClick={() => setOedema(o)}
+                    className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${
+                      oedema === o
+                        ? "border-primary bg-primary/10 font-medium text-primary"
+                        : "border-border text-muted-foreground hover:bg-accent"
+                    }`}
+                  >
+                    {getOedemaLabel(o)}
+                  </button>
+                ),
+              )}
             </div>
           </div>
 
@@ -278,7 +315,7 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
         <>
           <div className="rounded-2xl border bg-card p-5">
             <h4 className="mb-3 font-display text-sm font-semibold">{t("whoGrowthStandards")}</h4>
-            
+
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t("weightForAge")}</span>
@@ -286,24 +323,26 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
                   {zScoreResult.waz.toFixed(2)} ({getZScoreLabel(zScoreResult.waz)})
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t("heightForAge")}</span>
                 <span className={`font-mono font-semibold ${getZScoreColor(zScoreResult.haz)}`}>
                   {zScoreResult.haz.toFixed(2)} ({getZScoreLabel(zScoreResult.haz)})
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t("weightForHeight")}</span>
                 <span className={`font-mono font-semibold ${getZScoreColor(zScoreResult.whz)}`}>
                   {zScoreResult.whz.toFixed(2)} ({getZScoreLabel(zScoreResult.whz)})
                 </span>
               </div>
-              
+
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t("bmiForAge")}</span>
-                <span className={`font-mono font-semibold ${getZScoreColor(zScoreResult.bmiForAge)}`}>
+                <span
+                  className={`font-mono font-semibold ${getZScoreColor(zScoreResult.bmiForAge)}`}
+                >
                   {zScoreResult.bmiForAge.toFixed(2)} ({getZScoreLabel(zScoreResult.bmiForAge)})
                 </span>
               </div>
@@ -339,7 +378,7 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
               ageMonths={ageYears * 12}
               title="Weight-for-Age Growth Chart"
             />
-            
+
             <WHOGrowthChart
               standards={sex === "male" ? BOYS_HFA : GIRLS_HFA}
               value={parseFloat(heightCm)}

@@ -113,11 +113,13 @@ export const translations = {
     findNearestFacility: "Find Nearest Facility",
     alertTime: "Alert Time",
     redFlagOverride: "Red flag override - AI classification bypassed",
-    redFlagDisclaimer: "This alert was triggered by a critical clinical safety rule, not the AI model. The urgency level has been set to RED (emergency) regardless of the AI's confidence.",
+    redFlagDisclaimer:
+      "This alert was triggered by a critical clinical safety rule, not the AI model. The urgency level has been set to RED (emergency) regardless of the AI's confidence.",
     callEmergencyServices: "Call Emergency Services",
     iUnderstand: "I Understand",
     wellBeingCheckIn: "Weekly Well-being Check-in",
-    wellBeingCheckInDesc: "How have you been feeling this week? This optional check-in helps us support you better.",
+    wellBeingCheckInDesc:
+      "How have you been feeling this week? This optional check-in helps us support you better.",
     wellBeingQuestion1: "I have felt cheerful and in good spirits",
     wellBeingQuestion2: "I have felt calm and relaxed",
     wellBeingQuestion3: "I have felt active and vigorous",
@@ -142,7 +144,8 @@ export const translations = {
     selfCare: "Self Care",
     emergency: "Emergency",
     decliningTrendAlert: "Declining Well-being Trend Alert",
-    decliningTrendAlertDesc: "Some CHWs show declining well-being scores over 2+ weeks. Consider reaching out to offer support.",
+    decliningTrendAlertDesc:
+      "Some CHWs show declining well-being scores over 2+ weeks. Consider reaching out to offer support.",
     anonymousAggregate: "Anonymous Aggregate Report",
     totalCheckIns: "Total Check-ins",
     averageScore: "Average Score",
@@ -158,9 +161,11 @@ export const translations = {
     noAuditLogs: "No audit logs recorded yet.",
     patientId: "Patient ID",
     encryptData: "Encrypt data at rest",
-    encryptDataDesc: "Encrypts patient and assessment data in local storage using AES-256-GCM. Key derived from PIN via PBKDF2.",
+    encryptDataDesc:
+      "Encrypts patient and assessment data in local storage using AES-256-GCM. Key derived from PIN via PBKDF2.",
     encryptionEnabled: "Encryption enabled. Data will be encrypted on next save.",
-    encryptionDisabled: "Encryption disabled. Existing encrypted data will be unreadable unless re-saved.",
+    encryptionDisabled:
+      "Encryption disabled. Existing encrypted data will be unreadable unless re-saved.",
     minConfidence: "Minimum confidence for local care",
     alwaysRefer: "always refer",
     neverRefer: "never refer",
@@ -184,7 +189,8 @@ export const translations = {
     pending: "pending",
     deadLetter: "dead letter",
     deadLetterItems: "Failed sync items",
-    deadLetterDescription: "These items failed after multiple attempts. You can retry or delete them.",
+    deadLetterDescription:
+      "These items failed after multiple attempts. You can retry or delete them.",
     viewDetails: "View",
     hideDetails: "Hide",
     syncResults: "Sync results",
@@ -217,7 +223,8 @@ export const translations = {
     batchRegisterSuccess: "Successfully registered",
     batchRegisterErrors: "Failed to register",
     batchRegisterNoValidRows: "Please add at least one patient with ID and age",
-    batchRegisterHelp: "Enter patient details for each row. IDs can be auto-generated sequentially. All data is stored offline.",
+    batchRegisterHelp:
+      "Enter patient details for each row. IDs can be auto-generated sequentially. All data is stored offline.",
     networkOfflineMessage: "You are offline — data will sync when connected",
     networkSyncing: "Syncing...",
     networkPendingItems: "pending items:",
@@ -237,7 +244,8 @@ export const translations = {
     contraindications: "Contraindications",
     warnings: "Warnings",
     medicalDisclaimer: "Medical Disclaimer",
-    medicalDisclaimerText: "This calculator is a tool to assist with dosing calculations. Always verify calculations and consult current drug references. Clinical judgment and patient-specific factors should always guide final dosing decisions.",
+    medicalDisclaimerText:
+      "This calculator is a tool to assist with dosing calculations. Always verify calculations and consult current drug references. Clinical judgment and patient-specific factors should always guide final dosing decisions.",
     supervisor: "Supervisor",
     regionOverview: "Region overview",
     connectivityRequired: "Supervisor view requires connectivity.",
@@ -296,8 +304,10 @@ export const translations = {
     lowProbability: "Low probability",
     whyThisDiagnosis: "Why this diagnosis?",
     sources: "Sources",
-    aiDisclaimer: "This is a preliminary AI-assisted assessment and does not constitute a clinical diagnosis. Always verify with clinical judgment and refer when in doubt.",
-    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
+    aiDisclaimer:
+      "This is a preliminary AI-assisted assessment and does not constitute a clinical diagnosis. Always verify with clinical judgment and refer when in doubt.",
+    validationDisclaimer:
+      "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     lowConfidenceWarning:
       "Low confidence assessment — verify with in-person examination and consider referral",
     veryLowConfidenceWarning: "Very low confidence — seek immediate clinical supervision",
@@ -313,17 +323,22 @@ export const translations = {
     somethingWentWrong: "Something went wrong",
     unexpectedError: "An unexpected error occurred. Please try again.",
     cameraUnavailable: "Camera unavailable",
-    cameraErrorDesc: "Camera access was denied or is not available on this device. You can upload a photo instead.",
+    cameraErrorDesc:
+      "Camera access was denied or is not available on this device. You can upload a photo instead.",
     aiEngineError: "AI engine error",
-    engineErrorDesc: "The AI engine failed to initialize. Try switching to Demo mode in Settings, or restart the app.",
+    engineErrorDesc:
+      "The AI engine failed to initialize. Try switching to Demo mode in Settings, or restart the app.",
     databaseError: "Database error",
-    databaseErrorDesc: "Your local database is not responding. Your data is safe — restart the app. If the issue persists, export your data.",
+    databaseErrorDesc:
+      "Your local database is not responding. Your data is safe — restart the app. If the issue persists, export your data.",
     triageInterrupted: "Triage interrupted",
-    triageInterruptedDesc: "The assessment could not be completed. Your patient data has been saved. You can try again or use manual mode.",
+    triageInterruptedDesc:
+      "The assessment could not be completed. Your patient data has been saved. You can try again or use manual mode.",
     scanFailed: "Scan failed",
     scanFailedDesc: "Could not process the document. Try a clearer photo or upload from gallery.",
     tryAgain: "Try again",
     retry: "Retry",
+    delete: "Delete",
     downloadErrorData: "Download error data",
     uploadPhoto: "Upload photo",
     openSettings: "Open settings",
@@ -338,13 +353,17 @@ export const translations = {
     sex: "Sex",
     continue: "Continue",
     presentationTypeTitle: "What are you assessing?",
-    presentationTypeDesc: "Select the body system or presentation type. This helps the AI provide a more accurate assessment.",
+    presentationTypeDesc:
+      "Select the body system or presentation type. This helps the AI provide a more accurate assessment.",
     presentationType: "Presentation type",
     symptomDescription: "Describe the symptoms",
-    symptomDescriptionPlaceholder: "e.g. Cough with fever for 3 days, fast breathing, chest pain...",
-    symptomDescriptionHint: "Describe the symptoms in as much detail as possible. Include duration, severity, and any relevant history.",
+    symptomDescriptionPlaceholder:
+      "e.g. Cough with fever for 3 days, fast breathing, chest pain...",
+    symptomDescriptionHint:
+      "Describe the symptoms in as much detail as possible. Include duration, severity, and any relevant history.",
     textOnlyMode: "Text-only assessment",
-    textOnlyDesc: "You can analyze symptoms without a photo. The AI will use your symptom description to provide a triage assessment.",
+    textOnlyDesc:
+      "You can analyze symptoms without a photo. The AI will use your symptom description to provide a triage assessment.",
     analyzeSymptoms: "Analyze symptoms",
     dermatologyIcon: "Skin / Wound",
     respiratoryIcon: "Respiratory",
@@ -407,7 +426,8 @@ export const translations = {
     aiFailureOom: "Not enough memory to run analysis. Close other tabs and apps, then try again.",
     aiFailureImage: "Could not process the image. Make sure the photo is clear and well-lit.",
     aiFailureGeneric: "Something went wrong during analysis.",
-    aiFailureNoAiGuidance: "Without AI analysis, refer all patients with Red or Yellow urgency signs directly to the clinic.",
+    aiFailureNoAiGuidance:
+      "Without AI analysis, refer all patients with Red or Yellow urgency signs directly to the clinic.",
     aiFailureLoad: "Load AI",
     aiFailureProceedWithout: "Proceed without AI",
     aiFailureRetry: "Retry",
@@ -431,7 +451,8 @@ export const translations = {
     retakePhoto: "Retake photo",
     retakeConfirm: "Retaking the photo will discard the current assessment context. Continue?",
     manualAssessment: "Manual assessment",
-    manualAssessmentDesc: "Select the urgency level and likely condition based on your clinical judgment.",
+    manualAssessmentDesc:
+      "Select the urgency level and likely condition based on your clinical judgment.",
     manualUrgency: "Urgency level",
     manualCondition: "Likely condition",
     manualSubmit: "Complete assessment",
@@ -574,10 +595,12 @@ export const translations = {
     minute: "minute",
     minutes: "minutes",
     outbreakDetected: "Outbreak detected",
-    redFlagDetected: "Red flag symptom patterns detected by safety rules. Urgency overridden to RED.",
+    redFlagDetected:
+      "Red flag symptom patterns detected by safety rules. Urgency overridden to RED.",
     suspected: "Suspected",
     viewAssessmentAnyway: "View assessment anyway",
-    redFlagUrgencyOverride: "This assessment has been upgraded to RED urgency based on clinical safety rules, regardless of AI confidence.",
+    redFlagUrgencyOverride:
+      "This assessment has been upgraded to RED urgency based on clinical safety rules, regardless of AI confidence.",
     imciPathway: "Paediatric Assessment (IMCI)",
     imciDesc: "Child under 5 — use WHO IMCI integrated assessment",
     imciDangerSigns: "Check for IMCI danger signs",
@@ -671,20 +694,25 @@ export const translations = {
     biasAuditPending: "Pending — audit in progress",
     biasAuditPassed: "Passed — no significant performance gap detected",
     biasAuditGapDetected: "Known limitation — performance gap documented",
-    biasAuditDesc: "We evaluate model performance across all Fitzpatrick skin types (I-VI) to ensure equitable accuracy regardless of skin tone.",
+    biasAuditDesc:
+      "We evaluate model performance across all Fitzpatrick skin types (I-VI) to ensure equitable accuracy regardless of skin tone.",
     biasAuditReadMore: "Read the full bias audit report",
     complianceReadMore: "View regulatory compliance matrix",
     clinicalValidationStatus: "Clinical Validation Status",
     validationInProgress: "In progress — collecting validation data",
     validationPassed: "Passed — meeting performance targets",
-    validationDesc: "Trij's AI assessments undergo structured clinical validation to ensure accuracy across conditions and demographics.",
+    validationDesc:
+      "Trij's AI assessments undergo structured clinical validation to ensure accuracy across conditions and demographics.",
     validationReadMore: "Read the full clinical validation report",
     amrWarning: "Antimicrobial Resistance (AMR) Warning",
-    amrWarningDesc: "Antibiotic therapy should follow local protocols and guidelines. Misuse of antibiotics contributes to antimicrobial resistance. Always verify before prescribing.",
+    amrWarningDesc:
+      "Antibiotic therapy should follow local protocols and guidelines. Misuse of antibiotics contributes to antimicrobial resistance. Always verify before prescribing.",
     wasmFallback: "WASM (CPU inference)",
-    wasmFallbackDesc: "Use llama.cpp WASM build for CPU-based inference — slower but works without WebGPU",
+    wasmFallbackDesc:
+      "Use llama.cpp WASM build for CPU-based inference — slower but works without WebGPU",
     estimatedTime: "Estimated time",
-    enginePerformance: "Performance depends on your device. GPU acceleration provides the fastest results.",
+    enginePerformance:
+      "Performance depends on your device. GPU acceleration provides the fastest results.",
     pause: "Pause",
     resume: "Resume",
     resumableDownload: "Direct model download (resumable)",
@@ -710,7 +738,8 @@ export const translations = {
     totalBsa: "Total body surface area",
     nutritionAssessment: "Nutrition Assessment",
     nutritionChildPrompt: "Assess the child's nutritional status using MUAC and visual indicators",
-    nutritionAdultPrompt: "Assess the patient's nutritional status using MUAC and visual indicators",
+    nutritionAdultPrompt:
+      "Assess the patient's nutritional status using MUAC and visual indicators",
     nutritionVoiceGuide: "Measure mid-upper arm circumference and check for signs of malnutrition",
     muacLabel: "MUAC (Mid-Upper Arm Circumference)",
     muacGuide: "Measure at the midpoint of the left upper arm. Wrap tape snugly — not too tight.",
@@ -726,20 +755,24 @@ export const translations = {
     skinChanges: "Skin changes (dry, flaky, dermatitis)",
     nutritionStatus: "Nutrition status",
     samDetected: "Severe Acute Malnutrition (SAM) detected",
-    samGuidance: "Immediate referral to therapeutic feeding programme. Treat for complications per WHO protocol.",
+    samGuidance:
+      "Immediate referral to therapeutic feeding programme. Treat for complications per WHO protocol.",
     mamDetected: "Moderate Acute Malnutrition (MAM) detected",
     mamGuidance: "Refer to supplementary feeding programme. Monitor monthly MUAC.",
     nutritionNormal: "Normal nutritional status. Continue standard monitoring.",
     whoGrowthStandards: "WHO Growth Standards (Z-Scores)",
-    whoZScoreDescription: "WHO Child Growth Standards provide standardized nutrition assessment using Z-scores",
+    whoZScoreDescription:
+      "WHO Child Growth Standards provide standardized nutrition assessment using Z-scores",
     weightForAge: "Weight-for-Age (WAZ)",
     heightForAge: "Height-for-Age (HAZ)",
     weightForHeight: "Weight-for-Height (WHZ)",
     bmiForAge: "BMI-for-Age",
     whoSAM: "SAM by WHO Standards",
-    whoSAMGuidance: "Weight-for-height Z-score below -3 indicates severe acute malnutrition. Immediate therapeutic feeding protocol recommended per WHO guidelines.",
+    whoSAMGuidance:
+      "Weight-for-height Z-score below -3 indicates severe acute malnutrition. Immediate therapeutic feeding protocol recommended per WHO guidelines.",
     whoMAM: "MAM by WHO Standards",
-    whoMAMGuidance: "Weight-for-height Z-score between -3 and -2 indicates moderate acute malnutrition. Nutritional supplementation recommended.",
+    whoMAMGuidance:
+      "Weight-for-height Z-score between -3 and -2 indicates moderate acute malnutrition. Nutritional supplementation recommended.",
     symptomChecklist: "Symptom Checklist",
     symptomChecklistDesc: "Select all symptoms the patient is experiencing",
     symptomsSelected: "Symptoms selected",
@@ -747,18 +780,24 @@ export const translations = {
     localProtocolDesc: "Reference for antibiotic therapy guidelines used in this region",
     setLocalProtocol: "Set local protocol reference",
     outbreakAlert: "Possible notifiable condition detected",
-    outbreakAlertDesc: "This condition may require public health notification — contact your supervisor immediately",
+    outbreakAlertDesc:
+      "This condition may require public health notification — contact your supervisor immediately",
     outbreakAlertTitle: "Public Health Alert",
     outbreakBanner: "Outbreak-Potential Conditions",
-    outbreakBannerDesc: "The following conditions with outbreak potential have been detected in recent assessments",
+    outbreakBannerDesc:
+      "The following conditions with outbreak potential have been detected in recent assessments",
     outbreakConfidenceLabel: "Min. confidence for outbreak alerts",
     outbreakNone: "No outbreak-potential conditions detected",
     consentTitle: "Patient Consent",
     consentSubtitle: "Review and confirm each item with the patient before proceeding",
-    consentItemData: "I understand that images and health information will be collected for assessment",
-    consentItemUsage: "I understand this data will be used for AI-assisted triage and may be shared with my CHW and supervisor",
-    consentItemSharing: "I understand anonymised data may be used for quality improvement and training",
-    consentItemWithdraw: "I understand I can withdraw consent at any time and request data deletion",
+    consentItemData:
+      "I understand that images and health information will be collected for assessment",
+    consentItemUsage:
+      "I understand this data will be used for AI-assisted triage and may be shared with my CHW and supervisor",
+    consentItemSharing:
+      "I understand anonymised data may be used for quality improvement and training",
+    consentItemWithdraw:
+      "I understand I can withdraw consent at any time and request data deletion",
     consentMethod: "Consent capture method",
     verbal: "Verbal",
     thumbprint: "Thumbprint",
@@ -766,13 +805,20 @@ export const translations = {
     consentConfirm: "Confirm consent",
     consentConfirmed: "Consent recorded",
     backgroundDownload: "Downloading in background — you can navigate the app",
+    remaining: "remaining",
+    ok: "ok",
+    assessmentResult: "Assessment Result",
+    recommendation: "Recommendation",
+    coughDays: "Cough (days)",
+    feverDays: "Fever (days)",
   },
   "fr-FR": {
     dashboard: "Tableau de bord",
     home: "Accueil",
     settings: "Paramètres",
     newTriage: "Nouveau triage",
-    triageDesc: "Prenez une photo d'une plaie ou d'une affection cutanée pour une évaluation instantanée.",
+    triageDesc:
+      "Prenez une photo d'une plaie ou d'une affection cutanée pour une évaluation instantanée.",
     scanDoc: "Scanner doc",
     quickAction: "Action rapide",
     start: "Démarrer",
@@ -835,12 +881,14 @@ export const translations = {
     medical: "Médical",
     display: "Affichage",
     theme: "Thème",
-    themeDesc: "Choisissez votre palette de couleurs préférée. Le mode sombre est plus facile pour les yeux dans la pénombre.",
+    themeDesc:
+      "Choisissez votre palette de couleurs préférée. Le mode sombre est plus facile pour les yeux dans la pénombre.",
     systemDefault: "Par défaut du système",
     light: "Clair",
     dark: "Sombre",
     sunlightMode: "Mode lumière du soleil",
-    sunlightModeDesc: "Contraste maximal, bordures plus épaisses, texte plus grand — idéal pour une utilisation en extérieur",
+    sunlightModeDesc:
+      "Contraste maximal, bordures plus épaisses, texte plus grand — idéal pour une utilisation en extérieur",
     minConfidence: "Confiance minimale pour les soins locaux",
     alwaysRefer: "toujours référer",
     neverRefer: "ne jamais référer",
@@ -886,7 +934,8 @@ export const translations = {
     autoMerged: "Fusionné automatiquement",
     dedupFailed: "Échec de dédoublonnage",
     batchRegister: "Enregistrement groupé",
-    batchRegisterDesc: "Enregistrer plusieurs patients rapidement pour les événements de dépistage communautaire",
+    batchRegisterDesc:
+      "Enregistrer plusieurs patients rapidement pour les événements de dépistage communautaire",
     batchRegisterCommonCharacteristics: "Caractéristiques communes",
     villageCode: "Code de village",
     householdId: "ID de ménage",
@@ -899,8 +948,10 @@ export const translations = {
     batchRegisterSuccess: "Enregistré avec succès",
     batchRegisterErrors: "Échec de l'enregistrement",
     batchRegisterNoValidRows: "Veuillez ajouter au moins un patient avec ID et âge",
-    batchRegisterHelp: "Entrez les détails du patient pour chaque ligne. Les ID peuvent être générés séquentiellement. Toutes les données sont stockées hors ligne.",
-    networkOfflineMessage: "Vous êtes hors ligne — les données se synchroniseront lors de la connexion",
+    batchRegisterHelp:
+      "Entrez les détails du patient pour chaque ligne. Les ID peuvent être générés séquentiellement. Toutes les données sont stockées hors ligne.",
+    networkOfflineMessage:
+      "Vous êtes hors ligne — les données se synchroniseront lors de la connexion",
     networkSyncing: "Synchronisation...",
     networkPendingItems: "éléments en attente :",
     networkLastSynced: "Dernière synchronisation :",
@@ -919,7 +970,8 @@ export const translations = {
     contraindications: "Contre-indications",
     warnings: "Avertissements",
     medicalDisclaimer: "Avis médical",
-    medicalDisclaimerText: "Cette calculatrice est un outil pour aider aux calculs de dosage. Vérifiez toujours les calculs et consultez les références actuelles des médicaments. Le jugement clinique et les facteurs spécifiques au patient doivent toujours guider les décisions de dosage final.",
+    medicalDisclaimerText:
+      "Cette calculatrice est un outil pour aider aux calculs de dosage. Vérifiez toujours les calculs et consultez les références actuelles des médicaments. Le jugement clinique et les facteurs spécifiques au patient doivent toujours guider les décisions de dosage final.",
     supervisor: "Superviseur",
     regionOverview: "Aperçu de la région",
     connectivityRequired: "La vue superviseur nécessite une connexion.",
@@ -967,8 +1019,10 @@ export const translations = {
     lowProbability: "Faible probabilité",
     whyThisDiagnosis: "Pourquoi ce diagnostic ?",
     sources: "Sources",
-    aiDisclaimer: "Ceci est une évaluation préliminaire assistée par l'IA et ne constitue pas un diagnostic clinique. Vérifiez toujours avec un jugement clinique.",
-    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
+    aiDisclaimer:
+      "Ceci est une évaluation préliminaire assistée par l'IA et ne constitue pas un diagnostic clinique. Vérifiez toujours avec un jugement clinique.",
+    validationDisclaimer:
+      "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "Scanner un document",
     labPrescriptionReferral: "Laboratoire, ordonnance, référence",
     readingDocument: "Lecture du document...",
@@ -978,15 +1032,20 @@ export const translations = {
     somethingWentWrong: "Quelque chose s'est mal passé",
     unexpectedError: "Une erreur inattendue s'est produite. Veuillez réessayer.",
     cameraUnavailable: "Caméra indisponible",
-    cameraErrorDesc: "L'accès à la caméra a été refusé ou n'est pas disponible sur cet appareil. Vous pouvez télécharger une photo à la place.",
+    cameraErrorDesc:
+      "L'accès à la caméra a été refusé ou n'est pas disponible sur cet appareil. Vous pouvez télécharger une photo à la place.",
     aiEngineError: "Erreur du moteur d'IA",
-    engineErrorDesc: "Le moteur d'IA n'a pas pu être initialisé. Essayez de passer en mode Démo dans les paramètres, ou redémarrez l'application.",
+    engineErrorDesc:
+      "Le moteur d'IA n'a pas pu être initialisé. Essayez de passer en mode Démo dans les paramètres, ou redémarrez l'application.",
     databaseError: "Erreur de base de données",
-    databaseErrorDesc: "Votre base de données locale ne répond pas. Vos données sont en sécurité — redémarrez l'application. Si le problème persiste, exportez vos données.",
+    databaseErrorDesc:
+      "Votre base de données locale ne répond pas. Vos données sont en sécurité — redémarrez l'application. Si le problème persiste, exportez vos données.",
     triageInterrupted: "Triage interrompu",
-    triageInterruptedDesc: "L'évaluation n'a pas pu être terminée. Les données du patient ont été sauvegardées. Vous pouvez réessayer ou utiliser le mode manuel.",
+    triageInterruptedDesc:
+      "L'évaluation n'a pas pu être terminée. Les données du patient ont été sauvegardées. Vous pouvez réessayer ou utiliser le mode manuel.",
     scanFailed: "Analyse échouée",
-    scanFailedDesc: "Impossible de traiter le document. Essayez une photo plus claire ou téléchargez depuis la galerie.",
+    scanFailedDesc:
+      "Impossible de traiter le document. Essayez une photo plus claire ou téléchargez depuis la galerie.",
     tryAgain: "Réessayer",
     retry: "Réessayer",
     downloadErrorData: "Télécharger les données d'erreur",
@@ -1125,7 +1184,8 @@ export const translations = {
     noActiveSession: "Aucune session active",
     testConnection: "Tester la connexion",
     csvExport: "Exporter CSV",
-    insufficientDataForExport: "Données insuffisantes pour l'exportation (minimum 5 enregistrements requis)",
+    insufficientDataForExport:
+      "Données insuffisantes pour l'exportation (minimum 5 enregistrements requis)",
     skip: "Passer",
     kioskMode: "Mode kiosque",
     kioskModeDesc:
@@ -1135,7 +1195,8 @@ export const translations = {
     fieldModeDesc: "Interface simplifiée à 3 écrans pour les évaluations rapides sur le terrain",
     fieldModeActive: "Mode terrain actif. Navigation réduite à Caméra et Patients.",
     pictogramMode: "Mode pictogramme",
-    pictogramModeDesc: "Interface uniquement par icônes pour les utilisateurs à faible alphabétisation",
+    pictogramModeDesc:
+      "Interface uniquement par icônes pour les utilisateurs à faible alphabétisation",
     pictogramModeActive: "Mode pictogramme actif. Icônes et texte minimal activés.",
     keyboardShortcuts: "Raccourcis clavier",
     navigationShortcuts: "Navigation",
@@ -1148,11 +1209,13 @@ export const translations = {
     immediateActionRequired: "ACTION IMMÉDIATE REQUISE",
     additionalRedFlagsDetected: "Drapeaux rouges supplémentaires détectés:",
     nearestFacility: "Établissement Médical le Plus Proche",
-    facilitySearchNote: "Activez les services de localisation pour trouver l'établissement le plus proche",
+    facilitySearchNote:
+      "Activez les services de localisation pour trouver l'établissement le plus proche",
     findNearestFacility: "Trouver l'Établissement le Plus Proche",
     alertTime: "Heure de l'Alerte",
     redFlagOverride: "Contournement du drapeau rouge - classification AI contournée",
-    redFlagDisclaimer: "Cette alerte a été déclenchée par une règle de sécurité clinique critique, et non par le modèle d'IA. Le niveau d'urgence a été réglé sur ROUGE (urgence) quelle que soit la confiance de l'IA.",
+    redFlagDisclaimer:
+      "Cette alerte a été déclenchée par une règle de sécurité clinique critique, et non par le modèle d'IA. Le niveau d'urgence a été réglé sur ROUGE (urgence) quelle que soit la confiance de l'IA.",
     callEmergencyServices: "Appeler les Services d'Urgence",
     iUnderstand: "Je Comprends",
     hapticFeedback: "Retour haptique",
@@ -1166,10 +1229,12 @@ export const translations = {
     minutes: "minutes",
     outbreakDetected: "Épidémie détectée",
     viewDetails: "Voir les détails",
-    redFlagDetected: "Des symptômes de drapeau rouge détectés par les règles de sécurité. L'urgence a été remplacée par ROUGE.",
+    redFlagDetected:
+      "Des symptômes de drapeau rouge détectés par les règles de sécurité. L'urgence a été remplacée par ROUGE.",
     suspected: "Suspecté",
     viewAssessmentAnyway: "Voir l'évaluation quand même",
-    redFlagUrgencyOverride: "Cette évaluation a été mise à niveau vers une urgence ROUGE en raison des règles de sécurité clinique.",
+    redFlagUrgencyOverride:
+      "Cette évaluation a été mise à niveau vers une urgence ROUGE en raison des règles de sécurité clinique.",
     imciPathway: "Évaluation pédiatrique (IMCI)",
     imciDesc: "Enfant de moins de 5 ans — utiliser l'évaluation intégrée IMCI de l'OMS",
     imciDangerSigns: "Vérifier les signes de danger IMCI",
@@ -1312,7 +1377,8 @@ export const translations = {
     batchRegisterSuccess: "Imesajiliwa kwa mafanikio",
     batchRegisterErrors: "Imeshindwa kusajili",
     batchRegisterNoValidRows: "Tafadhali ongeza angalau mgonjwa mmoja na ID na umri",
-    batchRegisterHelp: "Weka maelezo ya mgonjwa kwa kila mstari. ID zinaweza kuzalishwa kwa msururu. Data yote huhifadhiwa nje ya mtandao.",
+    batchRegisterHelp:
+      "Weka maelezo ya mgonjwa kwa kila mstari. ID zinaweza kuzalishwa kwa msururu. Data yote huhifadhiwa nje ya mtandao.",
     networkOfflineMessage: "Uko nje ya mtandao — data itasawazishwa utakapounganishwa",
     networkSyncing: "Inasawazisha...",
     networkPendingItems: "vitu vinavyosubiri:",
@@ -1332,7 +1398,8 @@ export const translations = {
     contraindications: "Vituo",
     warnings: "Onyo",
     medicalDisclaimer: "Tahadhari ya tiba",
-    medicalDisclaimerText: "Kikokotoa hiki ni chombo cha kusaidia katika mahesabu ya dozi. Daima thibitisha mahesabu na uliza rufani za dawa za sasa. Hukumu ya kliniki na mambo ya kipekee kwa mtoto yanapaswa kila wakati kuongoza maamuzi ya dozi.",
+    medicalDisclaimerText:
+      "Kikokotoa hiki ni chombo cha kusaidia katika mahesabu ya dozi. Daima thibitisha mahesabu na uliza rufani za dawa za sasa. Hukumu ya kliniki na mambo ya kipekee kwa mtoto yanapaswa kila wakati kuongoza maamuzi ya dozi.",
     supervisor: "Msimamizi",
     regionOverview: "Muhtasari wa mkoa",
     connectivityRequired: "Mwonekano wa msimamizi unahitaji muunganisho.",
@@ -1378,8 +1445,10 @@ export const translations = {
     lowProbability: "Uwezekano mdogo",
     whyThisDiagnosis: "Kwa nini utambuzi huu?",
     sources: "Vyanzo",
-    aiDisclaimer: "Hii ni tathmini ya awali inayosaidiwa na AI na sio utambuzi wa kimatibabu. Thibitisha kila mara kwa uamuzi wa kimatibabu.",
-    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
+    aiDisclaimer:
+      "Hii ni tathmini ya awali inayosaidiwa na AI na sio utambuzi wa kimatibabu. Thibitisha kila mara kwa uamuzi wa kimatibabu.",
+    validationDisclaimer:
+      "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "Changanua hati",
     labPrescriptionReferral: "Maabara, agizo la dawa, rufaa",
     readingDocument: "Inasoma hati...",
@@ -1389,15 +1458,20 @@ export const translations = {
     somethingWentWrong: "Kitu kimeenda vibaya",
     unexpectedError: "Hitilafu isiyotarajiwa imetokea. Tafadhali jaribu tena.",
     cameraUnavailable: "Kamera haipatikani",
-    cameraErrorDesc: "Ufikiaji wa kamera umekataliwa au haipatikani kwenye kifaa hiki. Unaweza kupakia picha badala yake.",
+    cameraErrorDesc:
+      "Ufikiaji wa kamera umekataliwa au haipatikani kwenye kifaa hiki. Unaweza kupakia picha badala yake.",
     aiEngineError: "Hitilafu ya injini ya AI",
-    engineErrorDesc: "Injini ya AI imeshindwa kuanza. Jaribu kubadili hadi hali ya Demo katika Mipangilio, au anzisha upya programu.",
+    engineErrorDesc:
+      "Injini ya AI imeshindwa kuanza. Jaribu kubadili hadi hali ya Demo katika Mipangilio, au anzisha upya programu.",
     databaseError: "Hitilafu ya hifadhidata",
-    databaseErrorDesc: "Hifadhidata yako ya ndani haijibu. Data yako iko salama — anzisha upya programu. Ikiwa tatizo linaendelea, hamisha data yako.",
+    databaseErrorDesc:
+      "Hifadhidata yako ya ndani haijibu. Data yako iko salama — anzisha upya programu. Ikiwa tatizo linaendelea, hamisha data yako.",
     triageInterrupted: "Triage imekatizwa",
-    triageInterruptedDesc: "Tathmini haikuweza kukamilika. Data ya mgonjwa imehifadhiwa. Unaweza kujaribu tena au kutumia hali ya mwongozo.",
+    triageInterruptedDesc:
+      "Tathmini haikuweza kukamilika. Data ya mgonjwa imehifadhiwa. Unaweza kujaribu tena au kutumia hali ya mwongozo.",
     scanFailed: "Uchanganuzi umeshindwa",
-    scanFailedDesc: "Haukuweza kuchakata hati. Jaribu picha iliyo wazi zaidi au pakua kutoka kwenye nyumba ya picha.",
+    scanFailedDesc:
+      "Haukuweza kuchakata hati. Jaribu picha iliyo wazi zaidi au pakua kutoka kwenye nyumba ya picha.",
     tryAgain: "Jaribu tena",
     retry: "Jaribu tena",
     downloadErrorData: "Pakua data ya hitilafu",
@@ -1558,7 +1632,8 @@ export const translations = {
     findNearestFacility: "Tafuta Hospitali Karibu Zaidi",
     alertTime: "Saa ya K alerts",
     redFlagOverride: "Kuzidhisha bendera nyekundu - AI uundao bado",
-    redFlagDisclaimer: "Hii ilisababishwa na kanuni ya usalama wa kliniki muhimu, sio na mtindo wa AI. Kiwango cha dharura kimesetwa kwa WEKUNDU (dharura) bila kujali imani ya AI.",
+    redFlagDisclaimer:
+      "Hii ilisababishwa na kanuni ya usalama wa kliniki muhimu, sio na mtindo wa AI. Kiwango cha dharura kimesetwa kwa WEKUNDU (dharura) bila kujali imani ya AI.",
     callEmergencyServices: "Pigia Huduma za Dharura",
     iUnderstand: "Naelewa",
     hapticFeedback: "Maoni ya kugusa",
@@ -1572,10 +1647,12 @@ export const translations = {
     minutes: "dakika",
     outbreakDetected: "Mlipuko umegunduliwa",
     viewDetails: "Tazama maelezo",
-    redFlagDetected: "Dalili za bendera nyekundu zimegunduliwa na sheria za usalama. Dharura imebadilishwa kuwa NYEKUNDU.",
+    redFlagDetected:
+      "Dalili za bendera nyekundu zimegunduliwa na sheria za usalama. Dharura imebadilishwa kuwa NYEKUNDU.",
     suspected: "Inashukiwa",
     viewAssessmentAnyway: "Angalia tathmini hata hivyo",
-    redFlagUrgencyOverride: "Tathmini hii imebadilishwa kuwa dharura NYEKUNDU kulingana na sheria za usalama wa kimatibabu.",
+    redFlagUrgencyOverride:
+      "Tathmini hii imebadilishwa kuwa dharura NYEKUNDU kulingana na sheria za usalama wa kimatibabu.",
     imciPathway: "Tathmini ya Watoto (IMCI)",
     imciDesc: "Mtoto chini ya miaka 5 — tumia tathmini ya IMCI ya WHO",
     imciDangerSigns: "Angalia dalili za hatari za IMCI",
@@ -1715,7 +1792,8 @@ export const translations = {
     batchRegisterSuccess: "सफलतापूर्वक पंजीकृत",
     batchRegisterErrors: "पंजीकरण विफल",
     batchRegisterNoValidRows: "कृपया कम से कम एक मरीज को आईडी और उम्र के साथ जोड़ें",
-    batchRegisterHelp: "प्रत्येक पंक्ति के लिए मरीज का विवरण दर्ज करें। आईडी को अनुक्रमिक रूप से उत्पन्न किया जा सकता है। सभी डेटा ऑफलाइन संग्रहीत किया जाता है।",
+    batchRegisterHelp:
+      "प्रत्येक पंक्ति के लिए मरीज का विवरण दर्ज करें। आईडी को अनुक्रमिक रूप से उत्पन्न किया जा सकता है। सभी डेटा ऑफलाइन संग्रहीत किया जाता है।",
     networkOfflineMessage: "आप ऑफलाइन हैं — डेटा कनेक्ट होने पर सिंक हो जाएगा",
     networkSyncing: "सिंक हो रहा है...",
     networkPendingItems: "लंबित आइटम:",
@@ -1735,7 +1813,8 @@ export const translations = {
     contraindications: "विरोधात्मक",
     warnings: "चेतावनी",
     medicalDisclaimer: "चिकित्सकीय अस्वीकरण",
-    medicalDisclaimerText: "यह कैलकुलेटर खुराक गणना में सहायत करने के लिए एक उपकरण है। हमेशा गणना की पुष्टि करें और वर्तमान दवा संदर्भों का परामर्श करें। नैदिनिक निर्णय और रोगी-विशिष्ट कारकों को हमेशा अंतिम खुराक निर्णयों का मार्गदर्शन करना चाहिए।",
+    medicalDisclaimerText:
+      "यह कैलकुलेटर खुराक गणना में सहायत करने के लिए एक उपकरण है। हमेशा गणना की पुष्टि करें और वर्तमान दवा संदर्भों का परामर्श करें। नैदिनिक निर्णय और रोगी-विशिष्ट कारकों को हमेशा अंतिम खुराक निर्णयों का मार्गदर्शन करना चाहिए।",
     supervisor: "पर्यवेक्षक",
     regionOverview: "क्षेत्र अवलोकन",
     connectivityRequired: "पर्यवेक्षक दृश्य के लिए कनेक्टिविटी आवश्यक है।",
@@ -1782,8 +1861,10 @@ export const translations = {
     lowProbability: "कम संभावना",
     whyThisDiagnosis: "यह निदान क्यों?",
     sources: "स्रोत",
-    aiDisclaimer: "यह एक प्रारंभिक AI-सहायक मूल्यांकन है और यह नैदानिक निदान नहीं है। हमेशा नैदानिक निर्णय से सत्यापित करें और संदेह होने पर रेफर करें।",
-    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
+    aiDisclaimer:
+      "यह एक प्रारंभिक AI-सहायक मूल्यांकन है और यह नैदानिक निदान नहीं है। हमेशा नैदानिक निर्णय से सत्यापित करें और संदेह होने पर रेफर करें।",
+    validationDisclaimer:
+      "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "दस्तावेज़ स्कैन करें",
     labPrescriptionReferral: "प्रयोगशाला, नुस्खा, रेफरल",
     readingDocument: "दस्तावेज़ पढ़ा जा रहा है...",
@@ -1793,15 +1874,20 @@ export const translations = {
     somethingWentWrong: "कुछ गलत हो गया",
     unexpectedError: "एक अनपेक्षित त्रुटि हुई। कृपया पुनः प्रयास करें।",
     cameraUnavailable: "कैमरा अनुपलब्ध",
-    cameraErrorDesc: "कैमरा एक्सेस अस्वीकार कर दिया गया या इस डिवाइस पर उपलब्ध नहीं है। आप इसके बजाय एक फ़ोटो अपलोड कर सकते हैं।",
+    cameraErrorDesc:
+      "कैमरा एक्सेस अस्वीकार कर दिया गया या इस डिवाइस पर उपलब्ध नहीं है। आप इसके बजाय एक फ़ोटो अपलोड कर सकते हैं।",
     aiEngineError: "AI इंजन त्रुटि",
-    engineErrorDesc: "AI इंजन प्रारंभ नहीं हो सका। सेटिंग्स में डेमो मोड पर स्विच करने का प्रयास करें, या ऐप को पुनरारंभ करें।",
+    engineErrorDesc:
+      "AI इंजन प्रारंभ नहीं हो सका। सेटिंग्स में डेमो मोड पर स्विच करने का प्रयास करें, या ऐप को पुनरारंभ करें।",
     databaseError: "डेटाबेस त्रुटि",
-    databaseErrorDesc: "आपका स्थानीय डेटाबेस प्रतिक्रिया नहीं दे रहा है। आपका डेटा सुरक्षित है — ऐप को पुनरारंभ करें। यदि समस्या बनी रहती है, तो अपना डेटा निर्यात करें।",
+    databaseErrorDesc:
+      "आपका स्थानीय डेटाबेस प्रतिक्रिया नहीं दे रहा है। आपका डेटा सुरक्षित है — ऐप को पुनरारंभ करें। यदि समस्या बनी रहती है, तो अपना डेटा निर्यात करें।",
     triageInterrupted: "ट्राइएज बाधित हुआ",
-    triageInterruptedDesc: "मूल्यांकन पूरा नहीं किया जा सका। आपका रोगी डेटा सहेज लिया गया है। आप पुनः प्रयास कर सकते हैं या मैन्युअल मोड का उपयोग कर सकते हैं।",
+    triageInterruptedDesc:
+      "मूल्यांकन पूरा नहीं किया जा सका। आपका रोगी डेटा सहेज लिया गया है। आप पुनः प्रयास कर सकते हैं या मैन्युअल मोड का उपयोग कर सकते हैं।",
     scanFailed: "स्कैन विफल",
-    scanFailedDesc: "दस्तावेज़ को संसाधित नहीं किया जा सका। एक स्पष्ट फ़ोटो लेने का प्रयास करें या गैलरी से अपलोड करें।",
+    scanFailedDesc:
+      "दस्तावेज़ को संसाधित नहीं किया जा सका। एक स्पष्ट फ़ोटो लेने का प्रयास करें या गैलरी से अपलोड करें।",
     tryAgain: "पुनः प्रयास करें",
     retry: "पुनः प्रयास करें",
     downloadErrorData: "त्रुटि डेटा डाउनलोड करें",
@@ -1965,7 +2051,8 @@ export const translations = {
     findNearestFacility: "निकटतम सुविधा खोजें",
     alertTime: "अलर्ट समय",
     redFlagOverride: "लाल झंडा ओवरराइड - AI वर्गीकरण अवहन किया गया",
-    redFlagDisclaimer: "यह अलर्ट एक महत्वपूर्ण नैदिनिक सुरक्षा नियम से ट्रिगर किया गया था, AI मॉडल से नहीं। AI की विश्वास की परवाह न करते हुए आपातकालिटा का स्तर लाल (आपातकालिटा) सेट किया गया है।",
+    redFlagDisclaimer:
+      "यह अलर्ट एक महत्वपूर्ण नैदिनिक सुरक्षा नियम से ट्रिगर किया गया था, AI मॉडल से नहीं। AI की विश्वास की परवाह न करते हुए आपातकालिटा का स्तर लाल (आपातकालिटा) सेट किया गया है।",
     callEmergencyServices: "आपातकालिय सेवाओं को कॉल करें",
     iUnderstand: "मैं समझता हूं",
     hapticFeedback: "हैप्टिक फीडबैक",
@@ -1978,10 +2065,12 @@ export const translations = {
     minutes: "मिनट",
     outbreakDetected: "प्रकोप का पता चला",
     viewDetails: "विवरण देखें",
-    redFlagDetected: "सुरक्षा नियमों द्वारा रेड फ्लैग लक्षण पैटर्न का पता चला। आपातकाल को RED में बदल दिया गया है।",
+    redFlagDetected:
+      "सुरक्षा नियमों द्वारा रेड फ्लैग लक्षण पैटर्न का पता चला। आपातकाल को RED में बदल दिया गया है।",
     suspected: "संदिग्ध",
     viewAssessmentAnyway: "फिर भी आकलन देखें",
-    redFlagUrgencyOverride: "नैदानिक सुरक्षा नियमों के आधार पर इस आकलन को RED आपातकाल में अपग्रेड किया गया है।",
+    redFlagUrgencyOverride:
+      "नैदानिक सुरक्षा नियमों के आधार पर इस आकलन को RED आपातकाल में अपग्रेड किया गया है।",
     imciPathway: "बाल चिकित्सा मूल्यांकन (IMCI)",
     imciDesc: "5 वर्ष से कम उम्र का बच्चा — WHO IMCI एकीकृत मूल्यांकन का उपयोग करें",
     imciDangerSigns: "IMCI खतरे के संकेतों की जाँच करें",
@@ -2063,12 +2152,14 @@ export const translations = {
     medical: "Médico",
     display: "Exibição",
     theme: "Tema",
-    themeDesc: "Escolha seu esquema de cores preferido. O modo escuro é mais fácil para os olhos em pouca luz.",
+    themeDesc:
+      "Escolha seu esquema de cores preferido. O modo escuro é mais fácil para os olhos em pouca luz.",
     systemDefault: "Padrão do sistema",
     light: "Claro",
     dark: "Escuro",
     sunlightMode: "Modo luz solar",
-    sunlightModeDesc: "Contraste máximo, bordas mais espessas, texto maior — ideal para uso ao ar livre",
+    sunlightModeDesc:
+      "Contraste máximo, bordas mais espessas, texto maior — ideal para uso ao ar livre",
     minConfidence: "Confiança mínima para atendimento local",
     alwaysRefer: "sempre encaminhar",
     neverRefer: "nunca encaminhar",
@@ -2125,7 +2216,8 @@ export const translations = {
     batchRegisterSuccess: "Registrado com sucesso",
     batchRegisterErrors: "Falha ao registrar",
     batchRegisterNoValidRows: "Adicione pelo menos um paciente com ID e idade",
-    batchRegisterHelp: "Insira os detalhes do paciente para cada linha. Os IDs podem ser gerados sequencialmente. Todos os dados são armazenados offline.",
+    batchRegisterHelp:
+      "Insira os detalhes do paciente para cada linha. Os IDs podem ser gerados sequencialmente. Todos os dados são armazenados offline.",
     networkOfflineMessage: "Você está offline — os dados serão sincronizados quando conectado",
     networkSyncing: "Sincronizando...",
     networkPendingItems: "itens pendentes:",
@@ -2145,7 +2237,8 @@ export const translations = {
     contraindications: "Contraindicações",
     warnings: "Avisos",
     medicalDisclaimer: "Isenção de Responsabilidade Médica",
-    medicalDisclaimerText: "Esta calculadora é uma ferramenta para auxiliar nos cálculos de dosagem. Sempre verifique os cálculos e consulte as referências atuais de medicamentos. O julgamento clínico e fatores específicos do paciente devem sempre guiar as decisões finais de dosagem.",
+    medicalDisclaimerText:
+      "Esta calculadora é uma ferramenta para auxiliar nos cálculos de dosagem. Sempre verifique os cálculos e consulte as referências atuais de medicamentos. O julgamento clínico e fatores específicos do paciente devem sempre guiar as decisões finais de dosagem.",
     supervisor: "Supervisor",
     regionOverview: "Visão geral da região",
     connectivityRequired: "A visualização do supervisor requer conectividade.",
@@ -2177,9 +2270,9 @@ export const translations = {
     sceneTooDark: "Cena muito escura. Mova-se para uma área mais clara.",
     holdSteady: "Segure a câmera firme.",
     captureAnyway: "Capturar mesmo assim",
-     likelyCondition: "Condição provável",
-     icd10Code: "ICD-10",
-     confidence: "Confiança",
+    likelyCondition: "Condição provável",
+    icd10Code: "ICD-10",
+    confidence: "Confiança",
     belowThreshold: "Abaixo do limite de {pct}% — encaminhamento recomendado",
     referralAdvised: "Encaminhamento aconselhado",
     treatLocally: "Tratar localmente",
@@ -2193,8 +2286,10 @@ export const translations = {
     lowProbability: "Baixa probabilidade",
     whyThisDiagnosis: "Por que este diagnóstico?",
     sources: "Fontes",
-    aiDisclaimer: "Esta é uma avaliação preliminar assistida por IA e não constitui um diagnóstico clínico. Sempre verifique com julgamento clínico e encaminhe em caso de dúvida.",
-    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
+    aiDisclaimer:
+      "Esta é uma avaliação preliminar assistida por IA e não constitui um diagnóstico clínico. Sempre verifique com julgamento clínico e encaminhe em caso de dúvida.",
+    validationDisclaimer:
+      "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "Escanear documento",
     labPrescriptionReferral: "Laboratório, prescrição, encaminhamento",
     readingDocument: "Lendo documento...",
@@ -2204,15 +2299,20 @@ export const translations = {
     somethingWentWrong: "Algo deu errado",
     unexpectedError: "Ocorreu um erro inesperado. Por favor, tente novamente.",
     cameraUnavailable: "Câmera indisponível",
-    cameraErrorDesc: "O acesso à câmera foi negado ou não está disponível neste dispositivo. Você pode enviar uma foto.",
+    cameraErrorDesc:
+      "O acesso à câmera foi negado ou não está disponível neste dispositivo. Você pode enviar uma foto.",
     aiEngineError: "Erro no mecanismo de IA",
-    engineErrorDesc: "O mecanismo de IA não pôde ser inicializado. Tente mudar para o Modo de Demonstração nas Configurações ou reinicie o aplicativo.",
+    engineErrorDesc:
+      "O mecanismo de IA não pôde ser inicializado. Tente mudar para o Modo de Demonstração nas Configurações ou reinicie o aplicativo.",
     databaseError: "Erro no banco de dados",
-    databaseErrorDesc: "Seu banco de dados local não está respondendo. Seus dados estão seguros — reinicie o aplicativo. Se o problema persistir, exporte seus dados.",
+    databaseErrorDesc:
+      "Seu banco de dados local não está respondendo. Seus dados estão seguros — reinicie o aplicativo. Se o problema persistir, exporte seus dados.",
     triageInterrupted: "Triagem interrompida",
-    triageInterruptedDesc: "A avaliação não pôde ser concluída. Os dados do paciente foram salvos. Você pode tentar novamente ou usar o modo manual.",
+    triageInterruptedDesc:
+      "A avaliação não pôde ser concluída. Os dados do paciente foram salvos. Você pode tentar novamente ou usar o modo manual.",
     scanFailed: "Escaneamento falhou",
-    scanFailedDesc: "Não foi possível processar o documento. Tente uma foto mais nítida ou faça upload da galeria.",
+    scanFailedDesc:
+      "Não foi possível processar o documento. Tente uma foto mais nítida ou faça upload da galeria.",
     tryAgain: "Tentar novamente",
     retry: "Repetir",
     downloadErrorData: "Baixar dados de erro",
@@ -2352,7 +2452,8 @@ export const translations = {
     noActiveSession: "Nenhuma sessão ativa",
     testConnection: "Testar conexão",
     csvExport: "Exportar CSV",
-    insufficientDataForExport: "Dados insuficientes para exportação (mínimo de 5 registos necessários)",
+    insufficientDataForExport:
+      "Dados insuficientes para exportação (mínimo de 5 registos necessários)",
     skip: "Pular",
     kioskMode: "Modo quiosque",
     kioskModeDesc:
@@ -2379,7 +2480,8 @@ export const translations = {
     findNearestFacility: "Encontrar Instalação Mais Próxima",
     alertTime: "Hora do Alerta",
     redFlagOverride: "Substituição de bandeira vermelha - classificação AI contornada",
-    redFlagDisclaimer: "Este alerta foi acionado por uma regra de segurança clínica crítica, não pelo modelo de IA. O nível de urgência foi definido como VERMELHO (emergência) independentemente da confiança da IA.",
+    redFlagDisclaimer:
+      "Este alerta foi acionado por uma regra de segurança clínica crítica, não pelo modelo de IA. O nível de urgência foi definido como VERMELHO (emergência) independentemente da confiança da IA.",
     callEmergencyServices: "Chamar Serviços de Emergência",
     iUnderstand: "Eu Entendo",
     hapticFeedback: "Feedback tátil",
@@ -2393,10 +2495,12 @@ export const translations = {
     minutes: "minutos",
     outbreakDetected: "Surto detectado",
     viewDetails: "Ver detalhes",
-    redFlagDetected: "Padrões de sintomas de bandeira vermelha detectados pelas regras de segurança. Urgência alterada para VERMELHO.",
+    redFlagDetected:
+      "Padrões de sintomas de bandeira vermelha detectados pelas regras de segurança. Urgência alterada para VERMELHO.",
     suspected: "Suspeito",
     viewAssessmentAnyway: "Ver avaliação mesmo assim",
-    redFlagUrgencyOverride: "Esta avaliação foi atualizada para urgência VERMELHA com base nas regras de segurança clínica.",
+    redFlagUrgencyOverride:
+      "Esta avaliação foi atualizada para urgência VERMELHA com base nas regras de segurança clínica.",
     imciPathway: "Avaliação Pediátrica (IMCI)",
     imciDesc: "Criança menor de 5 anos — usar avaliação integrada IMCI da OMS",
     imciDangerSigns: "Verificar sinais de perigo IMCI",
@@ -2534,7 +2638,8 @@ export const translations = {
     batchRegisterSuccess: "تم التسجيل بنجاح",
     batchRegisterErrors: "فشل التسجيل",
     batchRegisterNoValidRows: "الرجاء إضافة مريض واحد على الأقل مع المعرف والعمر",
-    batchRegisterHelp: "أدخل تفاصيل المريض لكل صف. يمكن إنشاء المعرفات بشكل متسلسل. يتم تخزين جميع البيانات دون اتصال.",
+    batchRegisterHelp:
+      "أدخل تفاصيل المريض لكل صف. يمكن إنشاء المعرفات بشكل متسلسل. يتم تخزين جميع البيانات دون اتصال.",
     networkOfflineMessage: "أنت غير متصل — ستتم المزامنة عند الاتصال",
     networkSyncing: "جارٍ المزامنة...",
     networkPendingItems: "عناصر قيد الانتظار:",
@@ -2554,7 +2659,8 @@ export const translations = {
     contraindications: "موانع الاستخدام",
     warnings: "تحذيرات",
     medicalDisclaimer: "إخلاء مسؤولية طبية",
-    medicalDisclaimerText: "هذه الحاسبة هي أداة للمساعدة في حسابات الجرعات. تحقق دائمًا من الحسابات واستشمر المراجع الحالية للأدوية. يجب أن يوجه الحكم السريري والعوامل الخاصة بالمريض دائمًا قرارات الجرعة النهائية.",
+    medicalDisclaimerText:
+      "هذه الحاسبة هي أداة للمساعدة في حسابات الجرعات. تحقق دائمًا من الحسابات واستشمر المراجع الحالية للأدوية. يجب أن يوجه الحكم السريري والعوامل الخاصة بالمريض دائمًا قرارات الجرعة النهائية.",
     supervisor: "المشرف",
     regionOverview: "نظرة عامة على المنطقة",
     connectivityRequired: "عرض المشرف يتطلب اتصالاً.",
@@ -2586,9 +2692,9 @@ export const translations = {
     sceneTooDark: "المشهد مظلم جدًا. انتقل إلى منطقة أكثر إشراقًا.",
     holdSteady: "أمسك الكاميرا بثبات.",
     captureAnyway: "التقط على أي حال",
-     likelyCondition: "الحالة المحتملة",
-     icd10Code: "ICD-10",
-     confidence: "الثقة",
+    likelyCondition: "الحالة المحتملة",
+    icd10Code: "ICD-10",
+    confidence: "الثقة",
     belowThreshold: "أقل من عتبة {pct}% — يوصى بالإحالة",
     referralAdvised: "ينصح بالإحالة",
     treatLocally: "عالج محليًا",
@@ -2600,8 +2706,10 @@ export const translations = {
     lowProbability: "احتمال منخفض",
     whyThisDiagnosis: "لماذا هذا التشخيص؟",
     sources: "المصادر",
-    aiDisclaimer: "هذا تقييم أولي مدعوم بالذكاء الاصطناعي ولا يشكل تشخيصًا سريريًا. تحقق دائمًا بالحكم السريري وأحِل عند الشك.",
-    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
+    aiDisclaimer:
+      "هذا تقييم أولي مدعوم بالذكاء الاصطناعي ولا يشكل تشخيصًا سريريًا. تحقق دائمًا بالحكم السريري وأحِل عند الشك.",
+    validationDisclaimer:
+      "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "مسح المستند",
     labPrescriptionReferral: "مختبر، وصفة طبية، إحالة",
     readingDocument: "جارٍ قراءة المستند...",
@@ -2611,13 +2719,17 @@ export const translations = {
     somethingWentWrong: "حدث خطأ ما",
     unexpectedError: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
     cameraUnavailable: "الكاميرا غير متاحة",
-    cameraErrorDesc: "تم رفض الوصول إلى الكاميرا أو أنها غير متاحة على هذا الجهاز. يمكنك تحميل صورة بدلاً من ذلك.",
+    cameraErrorDesc:
+      "تم رفض الوصول إلى الكاميرا أو أنها غير متاحة على هذا الجهاز. يمكنك تحميل صورة بدلاً من ذلك.",
     aiEngineError: "خطأ في محرك الذكاء الاصطناعي",
-    engineErrorDesc: "تعذر تشغيل محرك الذكاء الاصطناعي. حاول التبديل إلى وضع التجربة في الإعدادات، أو أعد تشغيل التطبيق.",
+    engineErrorDesc:
+      "تعذر تشغيل محرك الذكاء الاصطناعي. حاول التبديل إلى وضع التجربة في الإعدادات، أو أعد تشغيل التطبيق.",
     databaseError: "خطأ في قاعدة البيانات",
-    databaseErrorDesc: "قاعدة البيانات المحلية لا تستجيب. بياناتك آمنة — أعد تشغيل التطبيق. إذا استمرت المشكلة، قم بتصدير بياناتك.",
+    databaseErrorDesc:
+      "قاعدة البيانات المحلية لا تستجيب. بياناتك آمنة — أعد تشغيل التطبيق. إذا استمرت المشكلة، قم بتصدير بياناتك.",
     triageInterrupted: "تم مقاطعة الفرز",
-    triageInterruptedDesc: "لم يكتمل التقييم. تم حفظ بيانات المريض. يمكنك المحاولة مرة أخرى أو استخدام الوضع اليدوي.",
+    triageInterruptedDesc:
+      "لم يكتمل التقييم. تم حفظ بيانات المريض. يمكنك المحاولة مرة أخرى أو استخدام الوضع اليدوي.",
     scanFailed: "فشل المسح",
     scanFailedDesc: "تعذرت معالجة المستند. جرب صورة أوضح أو حمّلها من المعرض.",
     tryAgain: "حاول مرة أخرى",
@@ -2783,7 +2895,8 @@ export const translations = {
     findNearestFacility: "العثور على أقرب منشأة",
     alertTime: "وقت التنبيه",
     redFlagOverride: "تجاوز علامة حمراء - تم تجاوز تصنيف الذكاء الاصطناعي",
-    redFlagDisclaimer: "تم تشغيل هذا التنبيه بواسطة قاعدة سلامة سريرية حرجة، وليس بواسطة نموذج الذكاء الاصطناعي. تم تعيين مستوى الإلحاح على أحمر (طوارئ) بغض النظر عن ثقة الذكاء الاصطناعي.",
+    redFlagDisclaimer:
+      "تم تشغيل هذا التنبيه بواسطة قاعدة سلامة سريرية حرجة، وليس بواسطة نموذج الذكاء الاصطناعي. تم تعيين مستوى الإلحاح على أحمر (طوارئ) بغض النظر عن ثقة الذكاء الاصطناعي.",
     callEmergencyServices: "اتصل بخدمات الطوارئ",
     iUnderstand: "أنا أفهم",
     hapticFeedback: "ردود فعل لمسية",
@@ -2797,10 +2910,12 @@ export const translations = {
     minutes: "دقائق",
     outbreakDetected: "تم اكتشاف تفشي",
     viewDetails: "عرض التفاصيل",
-    redFlagDetected: "تم اكتشاف أنماط أعراض العلم الأحمر بواسطة قواعد السلامة. تم تغيير حالة الطوارئ إلى الأحمر.",
+    redFlagDetected:
+      "تم اكتشاف أنماط أعراض العلم الأحمر بواسطة قواعد السلامة. تم تغيير حالة الطوارئ إلى الأحمر.",
     suspected: "مشتبه به",
     viewAssessmentAnyway: "عرض التقييم على أي حال",
-    redFlagUrgencyOverride: "تم ترقية هذا التقييم إلى حالة طوارئ حمراء بناءً على قواعد السلامة السريرية.",
+    redFlagUrgencyOverride:
+      "تم ترقية هذا التقييم إلى حالة طوارئ حمراء بناءً على قواعد السلامة السريرية.",
     imciPathway: "تقييم الأطفال (IMCI)",
     imciDesc: "طفل أقل من 5 سنوات — استخدم تقييم IMCI المتكامل لمنظمة الصحة العالمية",
     imciDangerSigns: "التحقق من علامات الخطر IMCI",
@@ -2882,12 +2997,14 @@ export const translations = {
     medical: "Médico",
     display: "Pantalla",
     theme: "Tema",
-    themeDesc: "Elija su esquema de colores preferido. El modo oscuro es más fácil para los ojos en poca luz.",
+    themeDesc:
+      "Elija su esquema de colores preferido. El modo oscuro es más fácil para los ojos en poca luz.",
     systemDefault: "Predeterminado del sistema",
     light: "Claro",
     dark: "Oscuro",
     sunlightMode: "Modo luz solar",
-    sunlightModeDesc: "Contraste máximo, bordes más gruesos, texto más grande — ideal para uso al aire libre",
+    sunlightModeDesc:
+      "Contraste máximo, bordes más gruesos, texto más grande — ideal para uso al aire libre",
     minConfidence: "Confianza mínima para atención local",
     alwaysRefer: "siempre derivar",
     neverRefer: "nunca derivar",
@@ -2931,7 +3048,8 @@ export const translations = {
     autoMerged: "Combinado automáticamente",
     dedupFailed: "Deduplicación falló",
     batchRegister: "Registro por lotes",
-    batchRegisterDesc: "Registre varios pacientes rápidamente para eventos de detección comunitaria",
+    batchRegisterDesc:
+      "Registre varios pacientes rápidamente para eventos de detección comunitaria",
     batchRegisterCommonCharacteristics: "Características comunes",
     villageCode: "Código de aldea",
     householdId: "ID del hogar",
@@ -2944,7 +3062,8 @@ export const translations = {
     batchRegisterSuccess: "Registrado con éxito",
     batchRegisterErrors: "Error al registrar",
     batchRegisterNoValidRows: "Agregue al menos un paciente con ID y edad",
-    batchRegisterHelp: "Ingrese los detalles del paciente para cada fila. Los ID se pueden generar secuencialmente. Todos los datos se almacenan sin conexión.",
+    batchRegisterHelp:
+      "Ingrese los detalles del paciente para cada fila. Los ID se pueden generar secuencialmente. Todos los datos se almacenan sin conexión.",
     networkOfflineMessage: "Estás sin conexión — los datos se sincronizarán cuando estés conectado",
     networkSyncing: "Sincronizando...",
     networkPendingItems: "elementos pendientes:",
@@ -2964,7 +3083,8 @@ export const translations = {
     contraindications: "Contraindicaciones",
     warnings: "Advertencias",
     medicalDisclaimer: "Descargo de Responsabilidad Médica",
-    medicalDisclaimerText: "Esta calculadora es una herramienta para ayudar en los cálculos de dosis. Siempre verifique los cálculos y consulte las referencias actuales de medicamentos. El juicio clínico y los factores específicos del paciente deben guiar siempre las decisiones finales de dosificación.",
+    medicalDisclaimerText:
+      "Esta calculadora es una herramienta para ayudar en los cálculos de dosis. Siempre verifique los cálculos y consulte las referencias actuales de medicamentos. El juicio clínico y los factores específicos del paciente deben guiar siempre las decisiones finales de dosificación.",
     supervisor: "Supervisor",
     regionOverview: "Resumen de la región",
     connectivityRequired: "La vista de supervisor requiere conectividad.",
@@ -2996,9 +3116,9 @@ export const translations = {
     sceneTooDark: "Escena demasiado oscura. Muévase a un área más iluminada.",
     holdSteady: "Mantenga la cámara firme.",
     captureAnyway: "Capturar de todos modos",
-     likelyCondition: "Condición probable",
-     icd10Code: "ICD-10",
-     confidence: "Confianza",
+    likelyCondition: "Condición probable",
+    icd10Code: "ICD-10",
+    confidence: "Confianza",
     belowThreshold: "Por debajo del umbral del {pct}% — derivación recomendada",
     referralAdvised: "Derivación aconsejada",
     treatLocally: "Tratar localmente",
@@ -3012,8 +3132,10 @@ export const translations = {
     lowProbability: "Baja probabilidad",
     whyThisDiagnosis: "¿Por qué este diagnóstico?",
     sources: "Fuentes",
-    aiDisclaimer: "Esta es una evaluación preliminar asistida por IA y no constituye un diagnóstico clínico. Verifique siempre con juicio clínico y derive ante la duda.",
-    validationDisclaimer: "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
+    aiDisclaimer:
+      "Esta es una evaluación preliminar asistida por IA y no constituye un diagnóstico clínico. Verifique siempre con juicio clínico y derive ante la duda.",
+    validationDisclaimer:
+      "This assessment is part of an ongoing clinical validation process. Validation results are available in the app documentation.",
     scanningDoc: "Escanear documento",
     labPrescriptionReferral: "Laboratorio, receta, derivación",
     readingDocument: "Leyendo documento...",
@@ -3023,15 +3145,20 @@ export const translations = {
     somethingWentWrong: "Algo salió mal",
     unexpectedError: "Ocurrió un error inesperado. Por favor, inténtelo de nuevo.",
     cameraUnavailable: "Cámara no disponible",
-    cameraErrorDesc: "El acceso a la cámara fue denegado o no está disponible en este dispositivo. Puedes subir una foto.",
+    cameraErrorDesc:
+      "El acceso a la cámara fue denegado o no está disponible en este dispositivo. Puedes subir una foto.",
     aiEngineError: "Error del motor de IA",
-    engineErrorDesc: "El motor de IA no pudo inicializarse. Intenta cambiar al Modo Demo en Configuración o reinicia la aplicación.",
+    engineErrorDesc:
+      "El motor de IA no pudo inicializarse. Intenta cambiar al Modo Demo en Configuración o reinicia la aplicación.",
     databaseError: "Error de base de datos",
-    databaseErrorDesc: "Tu base de datos local no responde. Tus datos están seguros — reinicia la aplicación. Si el problema persiste, exporta tus datos.",
+    databaseErrorDesc:
+      "Tu base de datos local no responde. Tus datos están seguros — reinicia la aplicación. Si el problema persiste, exporta tus datos.",
     triageInterrupted: "Triaje interrumpido",
-    triageInterruptedDesc: "La evaluación no pudo completarse. Los datos del paciente se han guardado. Puede intentarlo de nuevo o usar el modo manual.",
+    triageInterruptedDesc:
+      "La evaluación no pudo completarse. Los datos del paciente se han guardado. Puede intentarlo de nuevo o usar el modo manual.",
     scanFailed: "Escaneo falló",
-    scanFailedDesc: "No se pudo procesar el documento. Prueba con una foto más clara o súbela desde la galería.",
+    scanFailedDesc:
+      "No se pudo procesar el documento. Prueba con una foto más clara o súbela desde la galería.",
     tryAgain: "Intentar de nuevo",
     retry: "Reintentar",
     downloadErrorData: "Descargar datos de error",
@@ -3199,7 +3326,8 @@ export const translations = {
     findNearestFacility: "Encontrar Instalación Más Cercana",
     alertTime: "Hora de Alerta",
     redFlagOverride: "Invalidación de bandera roja - clasificación IA anulada",
-    redFlagDisclaimer: "Esta alerta fue activada por una regla de seguridad clínica crítica, no por el modelo de IA. El nivel de urgencia se ha establecido en ROJO (emergencia) independientemente de la confianza de la IA.",
+    redFlagDisclaimer:
+      "Esta alerta fue activada por una regla de seguridad clínica crítica, no por el modelo de IA. El nivel de urgencia se ha establecido en ROJO (emergencia) independientemente de la confianza de la IA.",
     callEmergencyServices: "Llamar a Servicios de Emergencia",
     iUnderstand: "Entiendo",
     hapticFeedback: "Retroalimentación háptica",
@@ -3213,10 +3341,12 @@ export const translations = {
     minutes: "minutos",
     outbreakDetected: "Brote detectado",
     viewDetails: "Ver detalles",
-    redFlagDetected: "Patrones de síntomas de bandera roja detectados por las reglas de seguridad. Urgencia sobrescrita a ROJO.",
+    redFlagDetected:
+      "Patrones de síntomas de bandera roja detectados por las reglas de seguridad. Urgencia sobrescrita a ROJO.",
     suspected: "Sospechado",
     viewAssessmentAnyway: "Ver evaluación de todos modos",
-    redFlagUrgencyOverride: "Esta evaluación ha sido actualizada a urgencia ROJA según las reglas de seguridad clínica.",
+    redFlagUrgencyOverride:
+      "Esta evaluación ha sido actualizada a urgencia ROJA según las reglas de seguridad clínica.",
     imciPathway: "Evaluación Pediátrica (IMCI)",
     imciDesc: "Niño menor de 5 años — usar evaluación integrada IMCI de la OMS",
     imciDangerSigns: "Verificar signos de peligro IMCI",

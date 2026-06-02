@@ -1,5 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import { pendingCount, processSyncQueue, type SyncProgressItem, getDeadLetterItems, retryDeadLetterItem, deleteDeadLetterItem } from "@/lib/sync";
+import {
+  pendingCount,
+  processSyncQueue,
+  type SyncProgressItem,
+  getDeadLetterItems,
+  retryDeadLetterItem,
+  deleteDeadLetterItem,
+} from "@/lib/sync";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import {
   CloudUpload,
@@ -61,27 +68,27 @@ export function SyncStatus({ className }: { className?: string }) {
     };
   }, []);
 
-   useEffect(() => {
-     if (!online || pending === 0 || syncing) return;
-     const items: SyncProgressItem[] = [];
-     setSyncing(true);
-     setSummary(null);
-     processSyncQueue((item) => {
-       items.push(item);
-     }).then((result) => {
-       setSyncing(false);
-       const s: SyncSummary = { 
-         total: items.length, 
-         ok: result.ok, 
-         failed: result.failed, 
-         deadLetter: result.deadLetter, 
-         items 
-       };
-       setSummary(s);
-       if (summaryTimeout.current) clearTimeout(summaryTimeout.current);
-       summaryTimeout.current = setTimeout(() => setSummary(null), 8000);
-     });
-   }, [online, pending, syncing]);
+  useEffect(() => {
+    if (!online || pending === 0 || syncing) return;
+    const items: SyncProgressItem[] = [];
+    setSyncing(true);
+    setSummary(null);
+    processSyncQueue((item) => {
+      items.push(item);
+    }).then((result) => {
+      setSyncing(false);
+      const s: SyncSummary = {
+        total: items.length,
+        ok: result.ok,
+        failed: result.failed,
+        deadLetter: result.deadLetter,
+        items,
+      };
+      setSummary(s);
+      if (summaryTimeout.current) clearTimeout(summaryTimeout.current);
+      summaryTimeout.current = setTimeout(() => setSummary(null), 8000);
+    });
+  }, [online, pending, syncing]);
 
   const showSummary = summary && !syncing && summary.total > 0;
   const hasDeadLetter = deadLetterItems.length > 0;
@@ -111,9 +118,7 @@ export function SyncStatus({ className }: { className?: string }) {
         )}
       >
         {syncing && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
-        {!syncing && hasDeadLetter && (
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-        )}
+        {!syncing && hasDeadLetter && <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />}
         {!syncing && showSummary && summary.failed > 0 && (
           <XCircle className="h-3.5 w-3.5 text-destructive" />
         )}
@@ -150,16 +155,14 @@ export function SyncStatus({ className }: { className?: string }) {
             <p className="text-xs font-medium text-amber-800">
               {t("deadLetterItems")} ({deadLetterItems.length})
             </p>
-            <button 
+            <button
               onClick={() => setShowDeadLetter(true)}
               className="text-xs text-amber-600 hover:text-amber-800 underline"
             >
               {t("viewDetails")}
             </button>
           </div>
-          <p className="text-xs text-amber-700">
-            {t("deadLetterDescription")}
-          </p>
+          <p className="text-xs text-amber-700">{t("deadLetterDescription")}</p>
         </div>
       )}
 
@@ -170,7 +173,7 @@ export function SyncStatus({ className }: { className?: string }) {
             <p className="text-xs font-medium text-amber-800">
               {t("deadLetterItems")} ({deadLetterItems.length})
             </p>
-            <button 
+            <button
               onClick={() => setShowDeadLetter(false)}
               className="text-xs text-amber-600 hover:text-amber-800"
             >
@@ -187,9 +190,7 @@ export function SyncStatus({ className }: { className?: string }) {
                   <p className="truncate font-medium text-amber-900">
                     {item.table}: {item.recordId.slice(0, 8)}
                   </p>
-                  <p className="mt-0.5 break-words text-[10px] text-amber-700">
-                    {item.lastError}
-                  </p>
+                  <p className="mt-0.5 break-words text-[10px] text-amber-700">{item.lastError}</p>
                 </div>
                 <div className="flex gap-1">
                   <button
@@ -216,9 +217,10 @@ export function SyncStatus({ className }: { className?: string }) {
       {/* Regular Sync Queue Section */}
       {expanded && showSummary && summary.items.length > 0 && (
         <div className="absolute right-0 top-full z-50 mt-1 w-72 rounded-xl border bg-card p-3 shadow-lg">
-           <p className="mb-2 text-xs font-medium text-muted-foreground">
-             {t("syncResults")} ({summary.ok} {t("ok")}, {summary.failed} {t("failed")}, {summary.deadLetter} {t("deadLetter")})
-           </p>
+          <p className="mb-2 text-xs font-medium text-muted-foreground">
+            {t("syncResults")} ({summary.ok} {t("ok")}, {summary.failed} {t("failed")},{" "}
+            {summary.deadLetter} {t("deadLetter")})
+          </p>
           <ul className="max-h-48 space-y-1 overflow-y-auto">
             {summary.items.map((item) => (
               <li

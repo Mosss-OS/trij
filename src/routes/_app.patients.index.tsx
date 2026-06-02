@@ -9,7 +9,17 @@ import { useI18n } from "@/lib/i18n";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { BadgeInfo, Search, UserRound, Plus, GitMerge, Lock, Unlock, Loader2, Users } from "lucide-react";
+import {
+  BadgeInfo,
+  Search,
+  UserRound,
+  Plus,
+  GitMerge,
+  Lock,
+  Unlock,
+  Loader2,
+  Users,
+} from "lucide-react";
 import { MergeDialog } from "@/components/MergeDialog";
 import { toast } from "sonner";
 import { findPotentialDuplicates, runDedup, type MatchScore } from "@/lib/dedup";
@@ -71,7 +81,10 @@ function PatientsList() {
 
   useEffect(() => {
     if (results.length > 0) {
-      log("patient:list", { resourceType: "patient", details: `Listed ${results.length} patients` });
+      log("patient:list", {
+        resourceType: "patient",
+        details: `Listed ${results.length} patients`,
+      });
     }
   }, [results.length]);
 
