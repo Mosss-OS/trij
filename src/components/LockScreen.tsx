@@ -51,7 +51,9 @@ export function LockScreen() {
   };
 
   useEffect(() => {
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -114,32 +116,6 @@ export function LockScreen() {
     );
   }
 
-  if (noPinConfigured) {
-    return (
-      <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background px-6">
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
-            <Lock className="h-7 w-7 text-destructive" />
-          </div>
-          <h1 className="mt-2 font-display text-xl font-semibold">{t("trij")}</h1>
-          <p className="text-sm text-muted-foreground text-center max-w-xs">
-            No PIN has been configured for this account. The app locked due to inactivity, but there is no PIN to unlock it.
-          </p>
-          <p className="text-xs text-muted-foreground text-center max-w-xs mt-2">
-            Sign out and start fresh, or contact your supervisor for assistance.
-          </p>
-        </div>
-        <button
-          onClick={() => { clearAuth(); setScreenLocked(false); }}
-          className="mt-8 flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          <LogOut className="h-4 w-4" />
-          Sign out
-        </button>
-      </div>
-    );
-  }
-
   if (biometricEnabled && bioAttempts < 3 && !usePin) {
     return (
       <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background px-6">
@@ -159,7 +135,37 @@ export function LockScreen() {
           onClick={() => setUsePin(true)}
           className="mt-8 text-xs text-muted-foreground underline hover:text-foreground"
         >
-          {t("usePinInstead")}
+          {noPinConfigured ? t("signOut") : t("usePinInstead")}
+        </button>
+      </div>
+    );
+  }
+
+  if (noPinConfigured) {
+    return (
+      <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-background px-6">
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
+            <Lock className="h-7 w-7 text-destructive" />
+          </div>
+          <h1 className="mt-2 font-display text-xl font-semibold">{t("trij")}</h1>
+          <p className="text-sm text-muted-foreground text-center max-w-xs">
+            No PIN has been configured for this account. The app locked due to inactivity, but there
+            is no PIN to unlock it.
+          </p>
+          <p className="text-xs text-muted-foreground text-center max-w-xs mt-2">
+            Sign out and start fresh, or contact your supervisor for assistance.
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            clearAuth();
+            setScreenLocked(false);
+          }}
+          className="mt-8 flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
         </button>
       </div>
     );
@@ -179,7 +185,9 @@ export function LockScreen() {
         {pin.map((d, i) => (
           <input
             key={i}
-            ref={(el) => { inputRefs.current[i] = el; }}
+            ref={(el) => {
+              inputRefs.current[i] = el;
+            }}
             type="password"
             inputMode="numeric"
             maxLength={1}
@@ -209,7 +217,10 @@ export function LockScreen() {
 
       {biometricEnabled && (
         <button
-          onClick={() => { setUsePin(false); setBioAttempts(0); }}
+          onClick={() => {
+            setUsePin(false);
+            setBioAttempts(0);
+          }}
           className="mt-4 text-xs text-muted-foreground underline hover:text-foreground"
         >
           {t("useBiometricInstead")}
