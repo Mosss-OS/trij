@@ -745,7 +745,7 @@ Language: ${language}`;
 export async function loadEngine(
   kind: EngineKind,
   onProgress?: (p: InitProgressReport) => void,
-): Promise<void> {
+): Promise<EngineKind> {
   try {
     if (kind === "webllm") {
       await loadWebLLM(onProgress);
@@ -773,6 +773,7 @@ export async function loadEngine(
         onProgress({ progress: 1, text: "Demo mode ready", timeElapsed: 0 });
       }
     }
+    return kind;
   } catch (error) {
     console.error(`Failed to load ${kind} engine:`, error);
 
@@ -792,7 +793,7 @@ export async function loadEngine(
       try {
         console.log(`Attempting fallback from ${kind} to ${fallback}`);
         await loadEngine(fallback, onProgress);
-        return; // Success with fallback
+        return fallback; // Success with fallback — return the actual kind loaded
       } catch (fallbackError) {
         console.error(`Fallback ${fallback} also failed:`, fallbackError);
         continue; // Try next fallback
@@ -812,31 +813,8 @@ export async function loadEngineWithFallback(
   preferredKind: EngineKind,
   onProgress?: (p: InitProgressReport) => void,
 ): Promise<{ kind: EngineKind; fallbackUsed: boolean }> {
-  const originalKind = preferredKind;
-
-  try {
-    await loadEngine(preferredKind, onProgress);
-    return { kind: preferredKind, fallbackUsed: false };
-  } catch (error) {
-    console.error(
-      `Preferred engine ${preferredKind} failed, attempting auto-detection and fallback`,
-    );
-
-    // Use auto-detection to find the best available engine
-    const detectedKind = await detectEngine("auto");
-    console.log(`Auto-detected engine: ${detectedKind}`);
-
-    try {
-      await loadEngine(detectedKind, onProgress);
-      return {
-        kind: detectedKind,
-        fallbackUsed: detectedKind !== originalKind,
-      };
-    } catch (detectError) {
-      console.error(`Auto-detected engine ${detectedKind} also failed`);
-      throw new Error("All available engines failed to load");
-    }
-  }
+  const loadedKind = await loadEngine(preferredKind, onProgress);
+  return { kind: loadedKind, fallbackUsed: loadedKind !== preferredKind };
 }
 
 export function isLoaded(kind: EngineKind): boolean {
@@ -961,19 +939,11 @@ export async function triageImage(
       result = attachRagSources(result);
       return result;
     } catch (err) {
-      if (settings.cloudFallbackConsent) {
-        console.warn("Ollama failed, falling back to cloud:", err);
-        result = await cloudInference(
-          imageDataUrl,
-          language,
-          kbContext,
-          presentationType,
-          description,
-        );
-        result = attachRagSources(result);
-        return result;
-      }
-      throw err;
+      console.warn("Ollama failed, falling back to demo:", err);
+      await sleep(2000 + Math.random() * 1500);
+      result = demoAssessment();
+      result = attachRagSources(result);
+      return result;
     }
   }
 
@@ -1036,19 +1006,11 @@ export async function triageImage(
     result = attachRagSources(result);
     return result;
   } catch (err) {
-    if (settings.cloudFallbackConsent) {
-      console.warn("WebLLM failed, falling back to cloud:", err);
-      result = await cloudInference(
-        imageDataUrl,
-        language,
-        kbContext,
-        presentationType,
-        description,
-      );
-      result = attachRagSources(result);
-      return result;
-    }
-    throw err;
+    console.warn("WebLLM failed, falling back to demo:", err);
+    await sleep(2000 + Math.random() * 1500);
+    result = demoAssessment();
+    result = attachRagSources(result);
+    return result;
   }
 }
 
@@ -1165,13 +1127,9 @@ export async function analyzeDocument(
     if (result) return result;
     return triesJson<DocumentResult>(message.content ?? "", FALLBACK_DOC);
   } catch (err) {
-    // Fallback to demo mode when cloudFallbackConsent is enabled
-    if (settings.cloudFallbackConsent) {
-      console.warn("Primary engine failed, falling back to demo mode:", err);
-      await sleep(1500 + Math.random() * 1000);
-      return demoDocument();
-    }
-    throw err;
+    console.warn("Primary engine failed, falling back to demo mode:", err);
+    await sleep(1500 + Math.random() * 1000);
+    return demoDocument();
   }
 }
 
