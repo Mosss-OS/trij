@@ -14,6 +14,7 @@ interface SettingsState {
   engineKind: EngineKind | "auto";
   ollamaUrl: string;
   ollamaModel: string;
+  googleApiKey: string;
   disclaimerAccepted: boolean;
   disclaimerAcceptedAt: string | null;
   chwName: string;
@@ -47,6 +48,7 @@ interface SettingsState {
   setEngineKind: (k: EngineKind | "auto") => void;
   setOllamaUrl: (u: string) => void;
   setOllamaModel: (m: string) => void;
+  setGoogleApiKey: (key: string) => void;
   acceptDisclaimer: (chwName: string) => void;
   setChwName: (name: string) => void;
   setMinConfidenceForLocalCare: (v: number) => void;
@@ -74,6 +76,7 @@ export const useSettingsStore = create<SettingsState>()(
       engineKind: "auto",
       ollamaUrl: "http://localhost:11434",
       ollamaModel: "gemma4:latest",
+      googleApiKey: "",
       disclaimerAccepted: false,
       disclaimerAcceptedAt: null,
       chwName: "",
@@ -107,6 +110,7 @@ export const useSettingsStore = create<SettingsState>()(
       setEngineKind: (engineKind) => set({ engineKind }),
       setOllamaUrl: (ollamaUrl) => set({ ollamaUrl }),
       setOllamaModel: (ollamaModel) => set({ ollamaModel }),
+      setGoogleApiKey: (googleApiKey) => set({ googleApiKey }),
       acceptDisclaimer: (chwName) =>
         set({
           disclaimerAccepted: true,
@@ -114,7 +118,8 @@ export const useSettingsStore = create<SettingsState>()(
           chwName,
         }),
       setChwName: (chwName) => set({ chwName }),
-      setMinConfidenceForLocalCare: (minConfidenceForLocalCare) => set({ minConfidenceForLocalCare }),
+      setMinConfidenceForLocalCare: (minConfidenceForLocalCare) =>
+        set({ minConfidenceForLocalCare }),
       setThinkingMode: (enabled: boolean) => set({ thinkingMode: enabled }),
       setKioskMode: (enabled: boolean) => set({ kioskMode: enabled }),
       setFieldMode: (enabled: boolean) => set({ fieldMode: enabled }),
@@ -125,9 +130,7 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({
           encryptionEnabled,
           encryptionSalt:
-            encryptionEnabled && !state.encryptionSalt
-              ? generateSalt()
-              : state.encryptionSalt,
+            encryptionEnabled && !state.encryptionSalt ? generateSalt() : state.encryptionSalt,
         })),
       setLocalAntibioticProtocol: (localAntibioticProtocol) => set({ localAntibioticProtocol }),
       setTheme: (theme) => set({ theme }),

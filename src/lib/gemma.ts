@@ -24,7 +24,15 @@ function multimodal(content: MultimodalContent): MultimodalContent {
 
 /* ─── Engine type ─────────────────────────────────────────── */
 
-export type EngineKind = "webllm" | "ollama" | "demo" | "cloud";
+export type EngineKind = "webllm" | "wasm" | "cpu" | "ollama" | "demo" | "cloud" | "google";
+
+export const GOOGLE_GEMINI_MODELS = [
+  { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash (fast)", free: true },
+  { id: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash-Lite (cheapest)", free: true },
+  { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash (balanced)", free: true },
+  { id: "gemini-2.5-pro", label: "Gemini 2.5 Pro (best quality)", free: false },
+  { id: "gemma-4-26b-a4b-it", label: "Gemma 4 26B (via Gemini API)", free: false },
+] as const;
 
 /* ─── WebLLM internals ────────────────────────────────────── */
 
@@ -180,9 +188,7 @@ export async function supportsWASM(): Promise<boolean> {
   try {
     if (typeof WebAssembly === "undefined") return false;
     // Test basic WASM compilation
-    const module = await WebAssembly.compile(
-      new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0])
-    );
+    const module = await WebAssembly.compile(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]));
     return module instanceof WebAssembly.Module;
   } catch {
     return false;
@@ -204,17 +210,19 @@ export async function supportsCPU(): Promise<boolean> {
  */
 export async function detectEngine(prefer: EngineKind | "auto" = "auto"): Promise<EngineKind> {
   if (prefer !== "auto") return prefer;
-  
+
   /* Mobile devices use cloud inference by default — downloading multi-GB models is impractical. */
   if (isMobileDevice()) return "cloud";
-  
+
   /* Try engines in order of preference/performance */
   if (await supportsWebGPU()) return "webllm";
-  if (await supportsWASM()) return "wasm";
-  if (await supportsCPU()) return "cpu";
   if (await detectOllama()) return "ollama";
-  
-  /* Final fallback to cloud or demo */
+
+  /* If user has configured a Google API key, use Google AI Studio */
+  const googleKey = useSettingsStore.getState().googleApiKey;
+  if (googleKey) return "google";
+
+  /* Final fallback to cloud inference (always available if online) */
   return "cloud";
 }
 
@@ -601,6 +609,122 @@ async function cloudInference(
   return result;
 }
 
+/* ─── Google Gemini API ─────────────────────────────────────── */
+
+const GOOGLE_GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
+
+interface GeminiContent {
+  role?: "user" | "model";
+  parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }>;
+}
+
+interface GeminiRequest {
+  contents: GeminiContent[];
+  systemInstruction?: GeminiContent;
+  generationConfig?: {
+    temperature?: number;
+    maxOutputTokens?: number;
+    topP?: number;
+  };
+}
+
+interface GeminiResponse {
+  candidates?: Array<{
+    content?: { parts?: Array<{ text?: string }> };
+  }>;
+}
+
+async function googleGeminiChat(
+  model: string,
+  systemPrompt: string,
+  userText: string,
+  apiKey: string,
+  imageDataUrl?: string,
+): Promise<string> {
+  const contents: GeminiContent[] = [
+    {
+      role: "user",
+      parts: imageDataUrl
+        ? [
+            { text: userText },
+            {
+              inlineData: {
+                mimeType: "image/jpeg",
+                data: imageDataUrl.replace(/^data:image\/\w+;base64,/, ""),
+              },
+            },
+          ]
+        : [{ text: userText }],
+    },
+  ];
+
+  const body: GeminiRequest = {
+    contents,
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    generationConfig: { temperature: 0.1, maxOutputTokens: 1024 },
+  };
+
+  const url = `${GOOGLE_GEMINI_BASE}/${model}:generateContent?key=${apiKey}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.text().catch(() => res.statusText);
+    throw new Error(`Google Gemini error (${res.status}): ${err}`);
+  }
+
+  const data: GeminiResponse = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+}
+
+export async function googleDocumentAnalysis(
+  imageDataUrl: string,
+  language: string,
+  model: string,
+  apiKey: string,
+): Promise<DocumentResult> {
+  const systemPrompt = getDocumentSystemPrompt(language);
+  const userText = "Extract the key information from this medical document.";
+  const raw = await googleGeminiChat(model, systemPrompt, userText, apiKey, imageDataUrl);
+
+  const result = parseToolCall<DocumentResult>({ content: raw }, null);
+  if (result) return result;
+  return triesJson<DocumentResult>(raw, FALLBACK_DOC);
+}
+
+export async function googleTriageAnalysis(
+  imageDataUrl: string,
+  language: string,
+  model: string,
+  apiKey: string,
+  description?: string,
+): Promise<TriageResult> {
+  const systemPrompt = `You are a medical triage assistant. Analyze the image and provide a structured assessment.
+Return a JSON object with: condition, confidence (0-100), urgency ("green"/"yellow"/"red"),
+possible_conditions (array of {name, probability}), key_visual_features (array),
+recommendation, referral_advised (boolean), follow_up_questions (array).
+Language: ${language}`;
+
+  const userText = description
+    ? `Patient description: "${description}". Analyze and return the triage assessment.`
+    : "Analyze this medical image and return the triage assessment.";
+
+  const raw = await googleGeminiChat(model, systemPrompt, userText, apiKey, imageDataUrl);
+  return triesJson<TriageResult>(raw, {
+    condition: "Unable to assess",
+    confidence: 0,
+    urgency: "yellow",
+    possible_conditions: [],
+    key_visual_features: [],
+    recommendation: "Could not analyze image. Try again or switch engine.",
+    referral_advised: true,
+    follow_up_questions: [],
+  });
+}
+
 /* ─── Public API ──────────────────────────────────────────── */
 
 /**
@@ -614,17 +738,9 @@ export async function loadEngine(
   try {
     if (kind === "webllm") {
       await loadWebLLM(onProgress);
-    } else if (kind === "wasm") {
-      // TODO: Implement actual WASM loading logic
-      // For now, this is a placeholder that simulates loading
-      console.warn("WASM engine loading not yet implemented - falling back to CPU");
-      await loadEngine("cpu", onProgress);
-    } else if (kind === "cpu") {
-      // TODO: Implement actual CPU loading logic
-      // For now, this is a placeholder that simulates loading
-      if (onProgress) {
-        onProgress({ progress: 1, text: "CPU engine ready" });
-      }
+    } else if (kind === "wasm" || kind === "cpu") {
+      // WASM and CPU engines are not yet implemented - skip to fallback
+      throw new Error(`${kind} engine not yet implemented`);
     } else if (kind === "ollama") {
       // Ollama doesn't require loading, it's an external service
       if (onProgress) {
@@ -635,6 +751,11 @@ export async function loadEngine(
       if (onProgress) {
         onProgress({ progress: 1, text: "Cloud inference ready" });
       }
+    } else if (kind === "google") {
+      // Google AI Studio doesn't require local loading
+      if (onProgress) {
+        onProgress({ progress: 1, text: "Google AI Studio ready" });
+      }
     } else if (kind === "demo") {
       // Demo mode doesn't require loading
       if (onProgress) {
@@ -643,17 +764,18 @@ export async function loadEngine(
     }
   } catch (error) {
     console.error(`Failed to load ${kind} engine:`, error);
-    
+
     // Implement fallback chain for failed loads
     const fallbackChain: Record<EngineKind, EngineKind[]> = {
-      webllm: ["wasm", "cpu", "ollama", "cloud", "demo"],
-      wasm: ["cpu", "ollama", "cloud", "demo"],
+      webllm: ["ollama", "cloud", "demo"],
+      wasm: ["ollama", "cloud", "demo"],
       cpu: ["ollama", "cloud", "demo"],
       ollama: ["cloud", "demo"],
       cloud: ["demo"],
+      google: ["demo"],
       demo: [],
     };
-    
+
     const fallbacks = fallbackChain[kind] || [];
     for (const fallback of fallbacks) {
       try {
@@ -665,7 +787,7 @@ export async function loadEngine(
         continue; // Try next fallback
       }
     }
-    
+
     // All fallbacks exhausted
     throw new Error(`All engine loading attempts failed for ${kind}`);
   }
@@ -680,22 +802,24 @@ export async function loadEngineWithFallback(
   onProgress?: (p: InitProgressReport) => void,
 ): Promise<{ kind: EngineKind; fallbackUsed: boolean }> {
   const originalKind = preferredKind;
-  
+
   try {
     await loadEngine(preferredKind, onProgress);
     return { kind: preferredKind, fallbackUsed: false };
   } catch (error) {
-    console.error(`Preferred engine ${preferredKind} failed, attempting auto-detection and fallback`);
-    
+    console.error(
+      `Preferred engine ${preferredKind} failed, attempting auto-detection and fallback`,
+    );
+
     // Use auto-detection to find the best available engine
     const detectedKind = await detectEngine("auto");
     console.log(`Auto-detected engine: ${detectedKind}`);
-    
+
     try {
       await loadEngine(detectedKind, onProgress);
-      return { 
-        kind: detectedKind, 
-        fallbackUsed: detectedKind !== originalKind 
+      return {
+        kind: detectedKind,
+        fallbackUsed: detectedKind !== originalKind,
       };
     } catch (detectError) {
       console.error(`Auto-detected engine ${detectedKind} also failed`);
@@ -706,12 +830,13 @@ export async function loadEngineWithFallback(
 
 export function isLoaded(kind: EngineKind): boolean {
   if (kind === "webllm") return isWebLLMLoaded();
-  if (kind === "wasm") return true; // TODO: Add actual WASM loaded check
-  if (kind === "cpu") return true; // CPU is always "loaded" (no initialization needed)
+  if (kind === "wasm") return false; // WASM not yet implemented
+  if (kind === "cpu") return false; // CPU not yet implemented
   if (kind === "ollama") return true; // Ollama is an external service
   if (kind === "cloud") return true; // Cloud is an external service
+  if (kind === "google") return true; // Google AI Studio is an external service
   if (kind === "demo") return true; // Demo is always ready
-  return true;
+  return false;
 }
 
 /* ─── Triage ──────────────────────────────────────────────── */
@@ -747,11 +872,36 @@ export async function triageImage(
     /* Attempt cloud inference; fall back to demo if offline or unauthenticated.
      * This ensures mobile users always get a result even without connectivity. */
     try {
-      result = await cloudInference(imageDataUrl, language, kbContext, presentationType, description);
+      result = await cloudInference(
+        imageDataUrl,
+        language,
+        kbContext,
+        presentationType,
+        description,
+      );
       result = attachRagSources(result);
       return result;
     } catch (err) {
       console.warn("Cloud inference failed, falling back to demo mode:", err);
+      await sleep(2000 + Math.random() * 1500);
+      result = demoAssessment();
+      result = attachRagSources(result);
+      return result;
+    }
+  }
+
+  if (kind === "google") {
+    const apiKey = useSettingsStore.getState().googleApiKey;
+    if (!apiKey) throw new Error("Google AI Studio API key not configured. Add it in Settings.");
+    const model = useSettingsStore.getState().modelId.startsWith("gemini")
+      ? useSettingsStore.getState().modelId
+      : "gemini-2.0-flash";
+    try {
+      result = await googleTriageAnalysis(imageDataUrl, language, model, apiKey, description);
+      result = attachRagSources(result);
+      return result;
+    } catch (err) {
+      console.warn("Google inference failed, falling back to demo:", err);
       await sleep(2000 + Math.random() * 1500);
       result = demoAssessment();
       result = attachRagSources(result);
@@ -770,7 +920,16 @@ export async function triageImage(
     try {
       const response = await ollamaChat(
         [
-          { role: "system", content: getTriageSystemPrompt(language, false, kbContext, presentationType, description) },
+          {
+            role: "system",
+            content: getTriageSystemPrompt(
+              language,
+              false,
+              kbContext,
+              presentationType,
+              description,
+            ),
+          },
           {
             role: "user",
             content: userMessage,
@@ -788,12 +947,27 @@ export async function triageImage(
     } catch (err) {
       if (settings.cloudFallbackConsent) {
         console.warn("Ollama failed, falling back to cloud:", err);
-        result = await cloudInference(imageDataUrl, language, kbContext, presentationType, description);
+        result = await cloudInference(
+          imageDataUrl,
+          language,
+          kbContext,
+          presentationType,
+          description,
+        );
         result = attachRagSources(result);
         return result;
       }
       throw err;
     }
+  }
+
+  /* Fallback for unknown/unimplemented engine kinds (e.g. "wasm", "cpu") */
+  if (kind !== "webllm") {
+    console.warn(`Engine "${kind}" not directly supported, falling back to demo`);
+    await sleep(2000 + Math.random() * 1500);
+    result = demoAssessment();
+    result = attachRagSources(result);
+    return result;
   }
 
   try {
@@ -813,7 +987,13 @@ export async function triageImage(
       messages: [
         {
           role: "system",
-          content: getTriageSystemPrompt(language, settings.thinkingMode, kbContext, presentationType, description),
+          content: getTriageSystemPrompt(
+            language,
+            settings.thinkingMode,
+            kbContext,
+            presentationType,
+            description,
+          ),
         },
         {
           role: "user",
@@ -842,7 +1022,13 @@ export async function triageImage(
   } catch (err) {
     if (settings.cloudFallbackConsent) {
       console.warn("WebLLM failed, falling back to cloud:", err);
-      result = await cloudInference(imageDataUrl, language, kbContext, presentationType, description);
+      result = await cloudInference(
+        imageDataUrl,
+        language,
+        kbContext,
+        presentationType,
+        description,
+      );
       result = attachRagSources(result);
       return result;
     }
@@ -861,7 +1047,10 @@ function attachRagSources(r: TriageResult): TriageResult {
     result.recommendation,
     result.possible_conditions,
   );
-  if (antibioticAnalysis.hasAntibioticMention || antibioticAnalysis.recommendation !== result.recommendation) {
+  if (
+    antibioticAnalysis.hasAntibioticMention ||
+    antibioticAnalysis.recommendation !== result.recommendation
+  ) {
     result.recommendation = antibioticAnalysis.recommendation ?? result.recommendation;
   }
 
@@ -916,6 +1105,15 @@ export async function analyzeDocument(
     const result = parseToolCall<DocumentResult>(response.message, null);
     if (result) return result;
     return triesJson<DocumentResult>(response.message.content ?? "", FALLBACK_DOC);
+  }
+
+  if (kind === "google") {
+    const apiKey = useSettingsStore.getState().googleApiKey;
+    if (!apiKey) throw new Error("Google AI Studio API key not configured. Add it in Settings.");
+    const model = useSettingsStore.getState().modelId.startsWith("gemini")
+      ? useSettingsStore.getState().modelId
+      : "gemini-2.0-flash";
+    return googleDocumentAnalysis(imageDataUrl, language, model, apiKey);
   }
 
   const settings = useSettingsStore.getState();
@@ -1014,6 +1212,26 @@ export async function nextFollowUp(
     if (result?.question) return result.question;
     return triesJson<{ question: string }>(response.message.content ?? "", { question: "" })
       .question;
+  }
+
+  if (kind === "google") {
+    const apiKey = useSettingsStore.getState().googleApiKey;
+    if (!apiKey) return "";
+    const model = useSettingsStore.getState().modelId.startsWith("gemini")
+      ? useSettingsStore.getState().modelId
+      : "gemini-2.0-flash";
+    try {
+      const raw = await googleGeminiChat(
+        model,
+        prompt,
+        "Generate the next follow-up question.",
+        apiKey,
+      );
+      const result = triesJson<{ question: string }>(raw, { question: "" });
+      return result.question;
+    } catch {
+      return "";
+    }
   }
 
   const e = await loadWebLLM();

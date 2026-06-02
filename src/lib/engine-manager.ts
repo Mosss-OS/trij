@@ -1,4 +1,4 @@
-export type EngineKind = "webllm" | "wasm" | "cpu" | "ollama" | "demo" | "cloud";
+export type EngineKind = "webllm" | "wasm" | "cpu" | "ollama" | "demo" | "cloud" | "google";
 
 export interface EngineCapability {
   kind: EngineKind;
@@ -62,6 +62,16 @@ export const ENGINE_CAPABILITIES: Record<EngineKind, EngineCapability> = {
     wasmRequired: false,
     fullyOffline: false,
   },
+  google: {
+    kind: "google",
+    label: "Google AI Studio",
+    estimatedLatency: "2–5 seconds",
+    estimatedTokensPerSec: 50,
+    gpuRequired: false,
+    webgpuRequired: false,
+    wasmRequired: false,
+    fullyOffline: false,
+  },
   demo: {
     kind: "demo",
     label: "Demo",
@@ -74,14 +84,7 @@ export const ENGINE_CAPABILITIES: Record<EngineKind, EngineCapability> = {
   },
 };
 
-export const ENGINE_PRECEDENCE: EngineKind[] = [
-  "webllm",
-  "wasm",
-  "cpu",
-  "ollama",
-  "cloud",
-  "demo",
-];
+export const ENGINE_PRECEDENCE: EngineKind[] = ["webllm", "wasm", "cpu", "ollama", "cloud", "demo"];
 
 let _benchmarkResults: Record<string, number> = {};
 const BENCHMARK_STORAGE_KEY = "trij-engine-benchmarks";
