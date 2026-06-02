@@ -5,6 +5,17 @@ import { ResumableDownload } from "@/components/ResumableDownload";
 import { Download, Trash2, HardDrive, AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { supportsWebGPU, loadEngine, type EngineKind, isLoaded } from "@/lib/gemma";
+import {
+  getStorageInfo,
+  getModelStatus,
+  clearModelCache,
+  formatBytes,
+  hasEnoughStorage,
+  type StorageInfo,
+  type ModelStatus,
+} from "@/lib/model-cache";
 
 interface DownloadableModel {
   url: string;
@@ -32,7 +43,9 @@ export function ModelDownloadManager() {
     mountRef.current = true;
     supportsWebGPU().then(setHasWebGPU);
     getStorageInfo().then(setStorage);
-    return () => { mountRef.current = false; };
+    return () => {
+      mountRef.current = false;
+    };
   }, []);
 
   useEffect(() => {
