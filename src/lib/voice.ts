@@ -98,4 +98,8 @@ export const LANGUAGES = [
   { code: "hi-IN", label: "हिन्दी" },
   { code: "ar-SA", label: "العربية" },
   { code: "pt-BR", label: "Português" },
+  { code: "pcm", label: "Pidgin" },
+  { code: "yo", label: "Yorùbá" },
+  { code: "ha", label: "Hausa" },
+  { code: "ig", label: "Igbo" },
 ];
