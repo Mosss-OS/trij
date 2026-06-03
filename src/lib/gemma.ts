@@ -1416,6 +1416,95 @@ export async function nextVoiceTurn(
   return { decision, messages: updated };
 }
 
+/* ─── Patient Symptom-Only Triage ─────────────────────────── */
+
+export async function patientSymptomTriage(
+  description: string,
+  ageRange: string,
+  duration: string,
+  language: string,
+): Promise<TriageResult> {
+  const systemPrompt = `You are Trij, a medical triage assistant for patient self-assessment.
+The user is describing their own symptoms (or someone else's).
+Use the triage_assessment function to return your assessment.
+
+IMPORTANT SAFETY RULES:
+- If you are not confident (less than 70%), set confidence accordingly.
+- Your assessment is advisory only — always recommend seeing a doctor for serious concerns.
+- First do no harm: when in doubt, recommend referral.
+- Never recommend specific antibiotic names.
+
+Urgency rules:
+- GREEN: minor, can rest at home, monitor symptoms
+- YELLOW: needs medical attention within 24-48 hours
+- RED: emergency, seek care immediately
+
+Respond in ${language}.`;
+
+  const userText = `Patient age range: ${ageRange}. Duration: ${duration}. 
+Symptoms described: "${description}". 
+Provide a triage assessment with condition, urgency (green/yellow/red), confidence (0-100), recommendation, and follow-up questions.`;
+
+  const apiKey = useSettingsStore.getState().googleApiKey;
+  if (apiKey) {
+    try {
+      const model = useSettingsStore.getState().modelId.startsWith("gemini")
+        ? useSettingsStore.getState().modelId
+        : "gemini-2.0-flash";
+      const raw = await googleGeminiChat(model, systemPrompt, userText, apiKey);
+      return triesJson<TriageResult>(raw, demoPatientAssessment(description));
+    } catch {
+      await sleep(1500 + Math.random() * 1000);
+      return demoPatientAssessment(description);
+    }
+  }
+
+  await sleep(1500 + Math.random() * 1000);
+  return demoPatientAssessment(description);
+}
+
+function demoPatientAssessment(description: string): TriageResult {
+  const desc = description.toLowerCase();
+  let urgency: "red" | "yellow" | "green" = "green";
+  let condition = "Minor illness";
+  let recommendation = "Rest at home and monitor symptoms. Consult a doctor if symptoms worsen.";
+
+  if (desc.includes("chest pain") || desc.includes("difficulty breath") || desc.includes("unconscious") || desc.includes("severe bleed")) {
+    urgency = "red";
+    condition = "Emergency condition";
+    recommendation = "Go to the nearest hospital immediately. This could be life-threatening.";
+  } else if (desc.includes("fever") || desc.includes("vomit") || desc.includes("severe pain") || desc.includes("headache") || desc.includes("injury") || desc.includes("burn") || desc.includes("rash") || desc.includes("infection")) {
+    urgency = "yellow";
+    condition = "Needs medical attention";
+    recommendation = "Visit a clinic or see a doctor within 24 hours. Monitor symptoms closely.";
+  } else if (desc.includes("cough") || desc.includes("cold") || desc.includes("sore throat") || desc.includes("stomach ache") || desc.includes("diarrhoea") || desc.includes("itch") || desc.includes("tired")) {
+    urgency = "green";
+    condition = "Minor condition — home care";
+    recommendation = "Rest at home, stay hydrated, and monitor symptoms. Use over-the-counter remedies as needed.";
+  }
+
+  return {
+    condition,
+    confidence: {
+      confidence_point: 75,
+      confidence_interval: [60, 90] as [number, number],
+      uncertainty_source: "model_knowledge",
+      uncertainty_reason: "Demo mode — based on symptom keywords",
+    },
+    urgency,
+    possible_conditions: [{ name: condition, probability: 75 }],
+    key_visual_features: [],
+    recommendation,
+    referral_advised: urgency !== "green",
+    follow_up_questions: [
+      "How long have you had these symptoms?",
+      "Have you taken any medication?",
+      "Do you have any other symptoms?",
+      "Any known allergies or medical conditions?",
+    ],
+  };
+}
+
 /* ─── Helpers ─────────────────────────────────────────────── */
 
 function sleep(ms: number) {
