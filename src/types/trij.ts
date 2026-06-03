@@ -93,6 +93,7 @@ export interface Assessment {
   urgency?: Urgency;
   possibleConditions?: PossibleCondition[];
   keyVisualFeatures?: string[];
+  visualFeatureRegions?: VisualFeatureRegion[];
   differentialDiagnosis?: {
     primaryDiagnosis: {
       name: string;
@@ -200,6 +201,16 @@ export interface SyncConflict {
   createdAt: string;
 }
 
+export interface VisualFeatureRegion {
+  label: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  description: string;
+  color?: string;
+}
+
 export interface TriageResult {
   condition: string;
   icd10_code?: string;
@@ -216,6 +227,7 @@ export interface TriageResult {
   key_visual_features: string[];
   recommendation: string;
   referral_advised?: boolean;
+  visual_feature_regions?: VisualFeatureRegion[];
   rag_sources?: { condition: string; treatment: string; who_guideline: string }[];
   follow_up_questions?: string[];
   differential_diagnosis?: {

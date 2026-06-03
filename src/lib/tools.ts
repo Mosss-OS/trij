@@ -91,6 +91,22 @@ export const TRIAGE_TOOL: ToolDefinition = {
           description: "Key visual features that drove the assessment (empty array for text-only assessments)",
           items: { type: "string" },
         },
+        visual_feature_regions: {
+          type: "array",
+          description: "Optional spatial regions in the image corresponding to key visual features. Each region uses percentage coordinates (0-100) relative to the image dimensions.",
+          items: {
+            type: "object",
+            properties: {
+              label: { type: "string", description: "Short label for this feature (e.g. 'Erythema', 'Ulcer', 'Rash border')" },
+              x: { type: "number", description: "Left edge as percentage of image width (0-100)" },
+              y: { type: "number", description: "Top edge as percentage of image height (0-100)" },
+              width: { type: "number", description: "Width as percentage of image width (0-100)" },
+              height: { type: "number", description: "Height as percentage of image height (0-100)" },
+              description: { type: "string", description: "Clinical explanation of this visual feature and how it contributes to the diagnosis" },
+            },
+            required: ["label", "x", "y", "width", "height", "description"],
+          },
+        },
         recommendation: {
           type: "string",
           description: "Treatment or referral recommendation for the CHW",

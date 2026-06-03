@@ -78,6 +78,7 @@ import { CloudInferenceIndicator } from "@/components/CloudInferenceIndicator";
 import { AiFailureOverlay, classifyAiError } from "@/components/AiFailureOverlay";
 import type { AiFailureKind } from "@/components/AiFailureOverlay";
 import { AiFeedbackWidget } from "@/components/AiFeedbackWidget";
+import { SaliencyOverlay } from "@/components/SaliencyOverlay";
 import type { AiFeedback } from "@/types/trij";
 
 interface QAPair {
@@ -1987,13 +1988,15 @@ function TriagePage() {
 
         {step === "result" && result && (
           <div className="mt-6 space-y-5">
-            {image && (
+            {image && result.visual_feature_regions && result.visual_feature_regions.length > 0 ? (
+              <SaliencyOverlay imageUrl={image} regions={result.visual_feature_regions} />
+            ) : image ? (
               <img
                 src={image}
                 alt="Captured wound or skin condition photo assessment result"
                 className="aspect-video w-full rounded-2xl object-cover"
               />
-            )}
+            ) : null}
             {notifiableFlags.length > 0 && (
               <div className="flex items-start gap-3 rounded-2xl border border-red-400/30 bg-red-50 p-4">
                 <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
