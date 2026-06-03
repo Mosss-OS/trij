@@ -214,13 +214,14 @@ export async function detectEngine(prefer: EngineKind | "auto" = "auto"): Promis
   /* Mobile devices use cloud inference by default — downloading multi-GB models is impractical. */
   if (isMobileDevice()) return "cloud";
 
+  /* If user has configured a Google API key, use Google AI Studio
+   * Prefer Google over WebLLM for document analysis (better OCR/vision quality) and triage. */
+  const googleKey = useSettingsStore.getState().googleApiKey;
+  if (googleKey) return "google";
+
   /* Try engines in order of preference/performance */
   if (await supportsWebGPU()) return "webllm";
   if (await detectOllama()) return "ollama";
-
-  /* If user has configured a Google API key, use Google AI Studio */
-  const googleKey = useSettingsStore.getState().googleApiKey;
-  if (googleKey) return "google";
 
   /* Final fallback to cloud inference (always available if online) */
   return "cloud";
@@ -1061,37 +1062,11 @@ async function cloudDocumentAnalysis(
   language: string,
 ): Promise<DocumentResult> {
   const apiKey = useSettingsStore.getState().googleApiKey;
-  if (apiKey) {
-    const model = useSettingsStore.getState().modelId.startsWith("gemini")
-      ? useSettingsStore.getState().modelId
-      : "gemini-2.0-flash";
-    return googleDocumentAnalysis(imageDataUrl, language, model, apiKey);
-  }
-  const settings = useSettingsStore.getState();
-  const supabaseUrl = settings.supabaseUrl || DEFAULT_CLOUD_URL;
-  const token = useSessionStore.getState().session?.access_token;
-  if (!token) throw new Error("No auth session for cloud inference");
-  const res = await fetch(
-    supabaseUrl.endsWith("/infer-gemma4")
-      ? supabaseUrl
-      : `${supabaseUrl}/functions/v1/infer-gemma4`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        image: imageDataUrl,
-        prompt:
-          "Extract the key information from this medical document and return a structured document analysis.",
-        language,
-      }),
-    },
-  );
-  if (!res.ok) throw new Error(`Cloud document analysis failed (${res.status})`);
-  const raw: string = await res.text();
-  return triesJson<DocumentResult>(raw, FALLBACK_DOC);
+  if (!apiKey) throw new Error("No Google API key configured for cloud document analysis");
+  const model = useSettingsStore.getState().modelId.startsWith("gemini")
+    ? useSettingsStore.getState().modelId
+    : "gemini-2.0-flash";
+  return googleDocumentAnalysis(imageDataUrl, language, model, apiKey);
 }
 
 export async function analyzeDocument(
