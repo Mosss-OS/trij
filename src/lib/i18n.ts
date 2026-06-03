@@ -467,6 +467,8 @@ export const translations = {
     enhanced: "Enhanced",
     original: "Original",
     imageEnhanced: "Image enhanced for better analysis",
+    memoryPressureCritical: "Your device is low on memory. Switching to Demo mode for stability.",
+    memoryPressureWarning: "Memory is limited. Close other tabs for best AI performance.",
     manualAssessment: "Manual assessment",
     manualAssessmentDesc:
       "Select the urgency level and likely condition based on your clinical judgment.",

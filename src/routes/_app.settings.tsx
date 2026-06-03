@@ -44,6 +44,7 @@ import {
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import { OllamaSetup } from "@/components/OllamaSetup";
 import { StorageMonitor } from "@/components/StorageMonitor";
+import { MemoryMonitor } from "@/components/MemoryMonitor";
 import { useGemma } from "@/hooks/useGemma";
 import { useSessionStore } from "@/stores/sessionStore";
 import { hasPinForUser, setupPin } from "@/lib/pin-auth";
@@ -599,6 +600,7 @@ function SettingsPage() {
 
         <Section title={t("storage")}>
           <StorageMonitor />
+          <MemoryMonitor />
         </Section>
 
         <Section title={t("medical")}>

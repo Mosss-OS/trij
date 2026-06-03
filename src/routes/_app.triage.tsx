@@ -81,6 +81,7 @@ import { AiFailureOverlay, classifyAiError } from "@/components/AiFailureOverlay
 import type { AiFailureKind } from "@/components/AiFailureOverlay";
 import { AiFeedbackWidget } from "@/components/AiFeedbackWidget";
 import { SaliencyOverlay } from "@/components/SaliencyOverlay";
+import { detectMemoryPressure, getEngineSuggestion, subscribeToMemoryPressure, startMemoryMonitoring, type MemoryPressureLevel } from "@/lib/memory-manager";
 import type { AiFeedback } from "@/types/trij";
 
 interface QAPair {
@@ -179,6 +180,12 @@ function TriagePage() {
     const completedThisWeek = hasCompletedThisWeek(offlineUser.id);
     setHasCheckedThisWeek(completedThisWeek);
   }, [offlineUser]);
+
+  /* Start memory monitoring on mount */
+  useEffect(() => {
+    const stop = startMemoryMonitoring(30000);
+    return stop;
+  }, []);
 
   const triggerCheckIn = () => {
     if (!offlineUser || hasCheckedThisWeek) return;
@@ -445,6 +452,21 @@ function TriagePage() {
       .catch(() => {});
   }, [user]);
 
+  /* Monitor memory pressure and suggest switching engines */
+  const prevPressure = useRef<MemoryPressureLevel>("normal");
+  useEffect(() => {
+    const unsub = subscribeToMemoryPressure((level) => {
+      if (level === "critical" && prevPressure.current !== "critical") {
+        toast.warning(t("memoryPressureCritical"), { duration: 6000 });
+        if (engineKind === "auto") {
+          kindRef.current = "demo";
+        }
+      }
+      prevPressure.current = level;
+    });
+    return unsub;
+  }, [engineKind, t]);
+
   const persistDraft = async (
     p: Patient,
     res: TriageResult,
@@ -654,6 +676,16 @@ function TriagePage() {
   };
 
   const proceedWithAnalysis = async (dataUrl: string) => {
+    const pressure = detectMemoryPressure();
+    if (pressure === "critical" && engineKind === "auto") {
+      kindRef.current = "demo";
+      setStep("analyzing");
+      toast.warning(t("memoryPressureCritical"), { duration: 5000 });
+    }
+    if (pressure === "warning" && engineKind === "auto") {
+      toast.info(t("memoryPressureWarning"), { duration: 4000 });
+    }
+
     setStep("analyzing");
     try {
       let kind = engineKind === "auto" ? await detectEngine() : engineKind;
@@ -745,6 +777,10 @@ function TriagePage() {
       }
 
       setStep("result");
+
+      // Release GPU buffers to free memory
+      const { releaseGpuBuffers } = await import("@/lib/memory-manager");
+      releaseGpuBuffers().catch(() => {});
     } catch (err) {
       setAiFailureKind(classifyAiError(err));
       setPendingCapture(dataUrl);
