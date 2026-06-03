@@ -93,6 +93,7 @@ export interface Assessment {
   urgency?: Urgency;
   possibleConditions?: PossibleCondition[];
   keyVisualFeatures?: string[];
+  imageEnhancement?: ImageEnhancement;
   visualFeatureRegions?: VisualFeatureRegion[];
   differentialDiagnosis?: {
     primaryDiagnosis: {
@@ -201,6 +202,13 @@ export interface SyncConflict {
   createdAt: string;
 }
 
+export interface ImageEnhancement {
+  applied: boolean;
+  originalBrightness: number;
+  enhancedBrightness?: number;
+  techniques: string[];
+}
+
 export interface VisualFeatureRegion {
   label: string;
   x: number;
@@ -227,6 +235,7 @@ export interface TriageResult {
   key_visual_features: string[];
   recommendation: string;
   referral_advised?: boolean;
+  image_enhancement?: ImageEnhancement;
   visual_feature_regions?: VisualFeatureRegion[];
   rag_sources?: { condition: string; treatment: string; who_guideline: string }[];
   follow_up_questions?: string[];

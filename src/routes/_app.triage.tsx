@@ -21,6 +21,7 @@ import {
   Stethoscope,
   Check,
   AlertTriangle,
+  Sun,
 } from "lucide-react";
 import {
   triageImage,
@@ -35,6 +36,7 @@ import {
 } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import { assessImageQuality, getQualityLabel, type QualityResult } from "@/lib/image-quality";
+import { enhanceImage, isLowLight, type EnhancementMetadata } from "@/lib/image-processing";
 import type { TriageResult, Patient, Assessment, VitalSigns, ConsentRecord } from "@/types/trij";
 import { checkRedFlags, type RedFlagResult, type SymptomInput } from "@/lib/red-flags";
 import { evaluateVitalSigns } from "@/lib/vital-signs";
@@ -249,6 +251,10 @@ function TriagePage() {
   const [result, setResult] = useState<TriageResult | null>(null);
   const [qualityResult, setQualityResult] = useState<QualityResult | null>(null);
   const [qualityWarnProceed, setQualityWarnProceed] = useState(false);
+  const [enhancementMeta, setEnhancementMeta] = useState<EnhancementMetadata | null>(null);
+  const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
+  const [enhanceEnabled, setEnhanceEnabled] = useState(true);
+  const [showEnhancement, setShowEnhancement] = useState(false);
   const [voiceHistory, setVoiceHistory] = useState<QAPair[]>([]);
   const [voiceBusy, setVoiceBusy] = useState(false);
   const [voiceProcessing, setVoiceProcessing] = useState(false);
@@ -612,6 +618,26 @@ function TriagePage() {
 
   const onCapture = async (dataUrl: string) => {
     setImage(dataUrl);
+    setEnhancedImage(null);
+    setEnhancementMeta(null);
+    setEnhanceEnabled(true);
+    setShowEnhancement(false);
+
+    let effectiveUrl = dataUrl;
+    let effectiveMeta: EnhancementMetadata | null = null;
+
+    const isDark = await isLowLight(dataUrl);
+    if (isDark) {
+      const { result: enhancedUrl, metadata } = await enhanceImage(dataUrl);
+      setEnhancedImage(enhancedUrl);
+      setEnhancementMeta(metadata);
+      setShowEnhancement(true);
+      if (metadata.applied) {
+        effectiveUrl = enhancedUrl;
+        effectiveMeta = metadata;
+      }
+    }
+
     setProgress(0);
     setProgressText(t("checkingQuality"));
     const q = await assessImageQuality(dataUrl);
@@ -624,7 +650,7 @@ function TriagePage() {
       setStep("quality");
       return;
     }
-    proceedWithAnalysis(dataUrl);
+    proceedWithAnalysis(effectiveUrl);
   };
 
   const proceedWithAnalysis = async (dataUrl: string) => {
@@ -1099,6 +1125,7 @@ function TriagePage() {
           ? voiceHistory.map((qa) => `Q: ${qa.question}\nA: ${qa.answer}`).join("\n")
           : undefined,
       aiFeedback: aiFeedbackRef.current,
+      imageEnhancement: enhancementMeta ?? undefined,
       nutrition: nutritionResult ?? undefined,
       symptoms: symptoms.length > 0 ? symptoms : undefined,
       language,
@@ -1906,7 +1933,49 @@ function TriagePage() {
 
         {step === "quality" && qualityResult && (
           <div className="mt-6 space-y-5">
-            {image && (
+            {showEnhancement && enhancedImage && enhancementMeta?.applied && (
+              <div className="space-y-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+                <h3 className="text-center text-sm font-semibold">{t("enhanceImage")}</h3>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <p className="mb-1 text-center text-xs text-muted-foreground">{t("before")}</p>
+                    <img
+                      src={image!}
+                      alt="Original"
+                      className="h-32 w-full rounded-xl object-cover ring-1 ring-border"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="mb-1 text-center text-xs text-muted-foreground">{t("after")}</p>
+                    <img
+                      src={enhancedImage}
+                      alt="Enhanced"
+                      className="h-32 w-full rounded-xl object-cover ring-2 ring-primary/40"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xs text-muted-foreground">{t("useEnhanced")}:</span>
+                  <Button
+                    variant={enhanceEnabled ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setEnhanceEnabled(true)}
+                    className="text-xs"
+                  >
+                    {t("enhanced")}
+                  </Button>
+                  <Button
+                    variant={!enhanceEnabled ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setEnhanceEnabled(false)}
+                    className="text-xs"
+                  >
+                    {t("original")}
+                  </Button>
+                </div>
+              </div>
+            )}
+            {image && !(showEnhancement && enhancedImage && enhancementMeta?.applied) && (
               <img
                 src={image}
                 alt="Captured photo"
@@ -1955,7 +2024,7 @@ function TriagePage() {
                   <Button variant="outline" onClick={() => setStep("capture")} className="gap-2">
                     {t("retakePhoto")} <ScanLine className="h-4 w-4" />
                   </Button>
-                  <Button onClick={() => proceedWithAnalysis(image!)} className="gap-2">
+                  <Button onClick={() => proceedWithAnalysis(enhanceEnabled && enhancedImage ? enhancedImage : image!)} className="gap-2">
                     {t("proceedAnyway")} <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -1988,11 +2057,17 @@ function TriagePage() {
 
         {step === "result" && result && (
           <div className="mt-6 space-y-5">
+            {enhancementMeta?.applied && (
+              <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs font-medium text-primary">
+                <Sun className="h-3.5 w-3.5" />
+                {t("imageEnhanced")}
+              </div>
+            )}
             {image && result.visual_feature_regions && result.visual_feature_regions.length > 0 ? (
-              <SaliencyOverlay imageUrl={image} regions={result.visual_feature_regions} />
+              <SaliencyOverlay imageUrl={enhanceEnabled && enhancedImage ? enhancedImage : image} regions={result.visual_feature_regions} />
             ) : image ? (
               <img
-                src={image}
+                src={enhanceEnabled && enhancedImage ? enhancedImage : image}
                 alt="Captured wound or skin condition photo assessment result"
                 className="aspect-video w-full rounded-2xl object-cover"
               />
