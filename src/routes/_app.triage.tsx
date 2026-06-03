@@ -34,6 +34,7 @@ import {
   type EngineKind,
 } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
+import { assessImageQuality, getQualityLabel, type QualityResult } from "@/lib/image-quality";
 import type { TriageResult, Patient, Assessment, VitalSigns, ConsentRecord } from "@/types/trij";
 import { checkRedFlags, type RedFlagResult, type SymptomInput } from "@/lib/red-flags";
 import { evaluateVitalSigns } from "@/lib/vital-signs";
@@ -129,6 +130,7 @@ type Step =
   | "nutrition"
   | "symptoms"
   | "capture"
+  | "quality"
   | "analyzing"
   | "result"
   | "voice"
@@ -244,6 +246,8 @@ function TriagePage() {
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
   const [result, setResult] = useState<TriageResult | null>(null);
+  const [qualityResult, setQualityResult] = useState<QualityResult | null>(null);
+  const [qualityWarnProceed, setQualityWarnProceed] = useState(false);
   const [voiceHistory, setVoiceHistory] = useState<QAPair[]>([]);
   const [voiceBusy, setVoiceBusy] = useState(false);
   const [voiceProcessing, setVoiceProcessing] = useState(false);
@@ -607,6 +611,22 @@ function TriagePage() {
 
   const onCapture = async (dataUrl: string) => {
     setImage(dataUrl);
+    setProgress(0);
+    setProgressText(t("checkingQuality"));
+    const q = await assessImageQuality(dataUrl);
+    setQualityResult(q);
+    if (q.score < 60) {
+      setStep("quality");
+      return;
+    }
+    if (q.score < 80) {
+      setStep("quality");
+      return;
+    }
+    proceedWithAnalysis(dataUrl);
+  };
+
+  const proceedWithAnalysis = async (dataUrl: string) => {
     setStep("analyzing");
     try {
       let kind = engineKind === "auto" ? await detectEngine() : engineKind;
@@ -1883,6 +1903,66 @@ function TriagePage() {
           </div>
         )}
 
+        {step === "quality" && qualityResult && (
+          <div className="mt-6 space-y-5">
+            {image && (
+              <img
+                src={image}
+                alt="Captured photo"
+                className="mx-auto h-48 w-48 rounded-2xl object-cover ring-4 ring-primary/20"
+              />
+            )}
+            {qualityResult.score < 60 ? (
+              <div className="space-y-4 rounded-2xl border border-destructive/40 bg-destructive/5 p-5 text-center">
+                <AlertTriangle className="mx-auto h-8 w-8 text-destructive" />
+                <h3 className="text-lg font-semibold">{t("imageTooPoor")}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("improveLightingOrDistance")}
+                </p>
+                {qualityResult.issues.length > 0 && (
+                  <ul className="mx-auto max-w-xs space-y-1 text-left text-sm text-muted-foreground">
+                    {qualityResult.issues.map((issue, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
+                        {issue}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Button onClick={() => setStep("capture")} className="mt-2 gap-2">
+                  {t("retakePhoto")} <ScanLine className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4 rounded-2xl border border-amber-400/40 bg-amber-50/50 p-5 text-center dark:bg-amber-950/20">
+                <AlertTriangle className="mx-auto h-8 w-8 text-amber-500" />
+                <h3 className="text-lg font-semibold">{t("imageQualityWarn")}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("qualityScore")}: {qualityResult.score}/100 ({getQualityLabel(qualityResult.score)})
+                </p>
+                {qualityResult.issues.length > 0 && (
+                  <ul className="mx-auto max-w-xs space-y-1 text-left text-sm text-muted-foreground">
+                    {qualityResult.issues.map((issue, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                        {issue}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="flex justify-center gap-3">
+                  <Button variant="outline" onClick={() => setStep("capture")} className="gap-2">
+                    {t("retakePhoto")} <ScanLine className="h-4 w-4" />
+                  </Button>
+                  <Button onClick={() => proceedWithAnalysis(image!)} className="gap-2">
+                    {t("proceedAnyway")} <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {step === "analyzing" && (
           <div className="mt-10 flex flex-col items-center gap-5 text-center">
             {image && (
@@ -2062,6 +2142,7 @@ function TriagePage() {
                     symptoms: `${t("symptomChecklist")}.`,
                     imci: `${t("imciPathway")}.`,
                     capture: t("voiceGuideCapture"),
+                    quality: t("checkingQuality"),
                     analyzing: t("analyzing") + "...",
                     result: result
                       ? `${t("voiceGuideResult")}. ${t("likelyCondition")}: ${result.condition}. ${t(
@@ -2125,6 +2206,7 @@ function Stepper({
     nutrition: 0,
     symptoms: 0,
     capture: 0,
+    quality: 0,
     analyzing: 1,
     result: 2,
     voice: 2,
