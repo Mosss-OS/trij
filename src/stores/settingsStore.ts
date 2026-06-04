@@ -144,7 +144,7 @@ export const useSettingsStore = create<SettingsState>()(
       ),
       merge: (persisted, current) => ({
         ...current,
-        ...persisted,
+        ...(persisted as Partial<SettingsState>),
         googleApiKey:
           (persisted as Partial<SettingsState>).googleApiKey ||
           (typeof import.meta !== "undefined"

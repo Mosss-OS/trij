@@ -477,22 +477,11 @@ export async function retryFailedSyncItems(): Promise<number> {
   const db = getDB();
   const failed = await db.syncQueue.where("attempts").between(1, MAX_RETRIES).toArray();
 
-  const now = Date.now();
   let retried = 0;
 
   for (const item of failed) {
-    const attempt = item.attempts ?? 0;
-    if (attempt >= MAX_RETRIES) continue;
-
-    const backoffIndex = Math.min(attempt - 1, RETRY_BACKOFF_MS.length - 1);
-    const waitMs = RETRY_BACKOFF_MS[backoffIndex];
-    const createdAt = new Date(item.createdAt).getTime();
-    const elapsed = now - createdAt;
-
-    if (elapsed >= waitMs) {
-      await db.syncQueue.update(item.id!, { attempts: 0, lastError: undefined });
-      retried++;
-    }
+    await db.syncQueue.update(item.id!, { attempts: 0, lastError: undefined });
+    retried++;
   }
 
   if (retried > 0) registerBackgroundSync().catch(() => {});
