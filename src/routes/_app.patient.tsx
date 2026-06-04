@@ -309,13 +309,13 @@ function PatientPortalPage() {
               </Button>
             )}
 
-            {result.follow_up_questions.length > 0 && (
+            {!!result.follow_up_questions?.length && (
               <div className="rounded-2xl border border-amber-200 bg-white p-5 shadow-sm">
                 <h3 className="mb-2 font-semibold text-amber-800">
                   {t("follow_up_questions")}
                 </h3>
                 <ul className="list-inside list-disc space-y-1 text-gray-700">
-                  {result.follow_up_questions.map((q, i) => (
+                  {result.follow_up_questions?.map((q, i) => (
                     <li key={i}>{q}</li>
                   ))}
                 </ul>
