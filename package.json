@@ -59,6 +59,7 @@
     "framer-motion": "^12.38.0",
     "input-otp": "^1.4.2",
     "jspdf": "^4.2.1",
+    "jsqr": "^1.4.0",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "lucide-react": "^0.575.0",

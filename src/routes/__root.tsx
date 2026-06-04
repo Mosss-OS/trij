@@ -140,6 +140,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "canonical", href: SITE_URL },
       { rel: "icon", href: LOGO_URL, type: "image/png" },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "apple-touch-icon", href: LOGO_URL, type: "image/png" },
       { rel: "dns-prefetch", href: "https://api.supabase.com" },
       { rel: "preconnect", href: "https://api.supabase.com", crossOrigin: "anonymous" },

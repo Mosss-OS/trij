@@ -23,6 +23,7 @@ import {
   GraduationCap,
   Clock,
   Activity,
+  QrCode,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -207,10 +208,19 @@ function PatientPortalPage() {
 
             <Button
               onClick={handleStartTriage}
-              className="mb-6 h-16 w-full rounded-2xl bg-amber-600 text-lg font-bold text-white shadow-lg shadow-amber-600/30 hover:bg-amber-700"
+              className="mb-3 h-16 w-full rounded-2xl bg-amber-600 text-lg font-bold text-white shadow-lg shadow-amber-600/30 hover:bg-amber-700"
             >
               <Heart className="mr-2 h-6 w-6" />
               {t("triageStart")}
+            </Button>
+
+            <Button
+              onClick={() => navigate({ to: "/patient/scan" })}
+              variant="outline"
+              className="mb-6 h-14 w-full rounded-2xl border-amber-300 text-base font-bold text-amber-700 hover:bg-amber-100"
+            >
+              <QrCode className="mr-2 h-5 w-5" />
+              {t("qrScanTitle") || "Scan Patient Card"}
             </Button>
 
             <div className="mb-8 rounded-2xl border border-amber-200 bg-white p-4 shadow-sm">

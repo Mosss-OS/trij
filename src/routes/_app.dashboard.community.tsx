@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
-import "leaflet.markercluster";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
@@ -119,7 +118,12 @@ function clusterIcon(cluster: L.MarkerCluster) {
 
 function MarkerCluster({ reports }: { reports: Report[] }) {
   const map = useMap();
+  const [ready, setReady] = useState(false);
   useEffect(() => {
+    import("leaflet.markercluster").then(() => setReady(true));
+  }, []);
+  useEffect(() => {
+    if (!ready) return;
     const mcg = L.markerClusterGroup({
       chunkedLoading: true,
       spiderfyOnMaxZoom: true,
@@ -148,7 +152,7 @@ function MarkerCluster({ reports }: { reports: Report[] }) {
     });
     map.addLayer(mcg);
     return () => { map.removeLayer(mcg); };
-  }, [map, reports]);
+  }, [map, reports, ready]);
   return null;
 }
 
