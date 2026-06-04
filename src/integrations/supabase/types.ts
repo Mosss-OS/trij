@@ -135,6 +135,71 @@ export type Database = {
           },
         ]
       }
+      consultations: {
+        Row: {
+          id: string
+          patient_id: string
+          assessment_id: string | null
+          chw_user_id: string
+          chw_name: string
+          status: string
+          priority: string
+          images: string[] | null
+          voice_transcript: string | null
+          chw_notes: string
+          clinical_context: Json | null
+          response: Json | null
+          created_at: string
+          responded_at: string | null
+          synced_at: string | null
+          version: number
+        }
+        Insert: {
+          id?: string
+          patient_id: string
+          assessment_id?: string | null
+          chw_user_id: string
+          chw_name: string
+          status?: string
+          priority?: string
+          images?: string[] | null
+          voice_transcript?: string | null
+          chw_notes?: string
+          clinical_context?: Json | null
+          response?: Json | null
+          created_at?: string
+          responded_at?: string | null
+          synced_at?: string | null
+          version?: number
+        }
+        Update: {
+          id?: string
+          patient_id?: string
+          assessment_id?: string | null
+          chw_user_id?: string
+          chw_name?: string
+          status?: string
+          priority?: string
+          images?: string[] | null
+          voice_transcript?: string | null
+          chw_notes?: string
+          clinical_context?: Json | null
+          response?: Json | null
+          created_at?: string
+          responded_at?: string | null
+          synced_at?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consultations_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           age_years: number | null
@@ -150,7 +215,7 @@ export type Database = {
         }
         Insert: {
           age_years?: number | null
-          chw_user_id: string
+          chw_user_id?: string
           created_at?: string
           id?: string
           identifier: string
