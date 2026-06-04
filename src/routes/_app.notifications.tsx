@@ -34,6 +34,7 @@ const ICONS: Record<NotificationKind, typeof Bell> = {
   supervisor_message: MessageSquare,
   protocol_update: AlertTriangle,
   app_update: RefreshCw,
+  consultation_response: MessageSquare,
 };
 
 function NotificationsPage() {

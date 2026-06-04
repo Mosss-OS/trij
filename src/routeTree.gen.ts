@@ -23,6 +23,7 @@ import { Route as AppHelpRouteImport } from './routes/_app.help'
 import { Route as AppFaqRouteImport } from './routes/_app.faq'
 import { Route as AppDocumentRouteImport } from './routes/_app.document'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppConsultationsRouteImport } from './routes/_app.consultations'
 import { Route as AppCalculatorRouteImport } from './routes/_app.calculator'
 import { Route as AppAuditRouteImport } from './routes/_app.audit'
 import { Route as AppPatientsIndexRouteImport } from './routes/_app.patients.index'
@@ -32,6 +33,8 @@ import { Route as AppPatientScanRouteImport } from './routes/_app.patient.scan'
 import { Route as AppPatientRecordRouteImport } from './routes/_app.patient.record'
 import { Route as AppPatientMedicationsRouteImport } from './routes/_app.patient.medications'
 import { Route as AppDashboardCommunityRouteImport } from './routes/_app.dashboard.community'
+import { Route as AppConsultationsRequestRouteImport } from './routes/_app.consultations.request'
+import { Route as AppConsultationsIdRouteImport } from './routes/_app.consultations.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -102,6 +105,11 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppConsultationsRoute = AppConsultationsRouteImport.update({
+  id: '/consultations',
+  path: '/consultations',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCalculatorRoute = AppCalculatorRouteImport.update({
   id: '/calculator',
   path: '/calculator',
@@ -148,12 +156,23 @@ const AppDashboardCommunityRoute = AppDashboardCommunityRouteImport.update({
   path: '/community',
   getParentRoute: () => AppDashboardRoute,
 } as any)
+const AppConsultationsRequestRoute = AppConsultationsRequestRouteImport.update({
+  id: '/request',
+  path: '/request',
+  getParentRoute: () => AppConsultationsRoute,
+} as any)
+const AppConsultationsIdRoute = AppConsultationsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppConsultationsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/audit': typeof AppAuditRoute
   '/calculator': typeof AppCalculatorRoute
+  '/consultations': typeof AppConsultationsRouteWithChildren
   '/dashboard': typeof AppDashboardRouteWithChildren
   '/document': typeof AppDocumentRoute
   '/faq': typeof AppFaqRoute
@@ -165,6 +184,8 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
+  '/consultations/$id': typeof AppConsultationsIdRoute
+  '/consultations/request': typeof AppConsultationsRequestRoute
   '/dashboard/community': typeof AppDashboardCommunityRoute
   '/patient/medications': typeof AppPatientMedicationsRoute
   '/patient/record': typeof AppPatientRecordRoute
@@ -178,6 +199,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/audit': typeof AppAuditRoute
   '/calculator': typeof AppCalculatorRoute
+  '/consultations': typeof AppConsultationsRouteWithChildren
   '/dashboard': typeof AppDashboardRouteWithChildren
   '/document': typeof AppDocumentRoute
   '/faq': typeof AppFaqRoute
@@ -189,6 +211,8 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
+  '/consultations/$id': typeof AppConsultationsIdRoute
+  '/consultations/request': typeof AppConsultationsRequestRoute
   '/dashboard/community': typeof AppDashboardCommunityRoute
   '/patient/medications': typeof AppPatientMedicationsRoute
   '/patient/record': typeof AppPatientRecordRoute
@@ -204,6 +228,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_app/audit': typeof AppAuditRoute
   '/_app/calculator': typeof AppCalculatorRoute
+  '/_app/consultations': typeof AppConsultationsRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRouteWithChildren
   '/_app/document': typeof AppDocumentRoute
   '/_app/faq': typeof AppFaqRoute
@@ -215,6 +240,8 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/supervisor': typeof AppSupervisorRoute
   '/_app/triage': typeof AppTriageRoute
+  '/_app/consultations/$id': typeof AppConsultationsIdRoute
+  '/_app/consultations/request': typeof AppConsultationsRequestRoute
   '/_app/dashboard/community': typeof AppDashboardCommunityRoute
   '/_app/patient/medications': typeof AppPatientMedicationsRoute
   '/_app/patient/record': typeof AppPatientRecordRoute
@@ -230,6 +257,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/audit'
     | '/calculator'
+    | '/consultations'
     | '/dashboard'
     | '/document'
     | '/faq'
@@ -241,6 +269,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/supervisor'
     | '/triage'
+    | '/consultations/$id'
+    | '/consultations/request'
     | '/dashboard/community'
     | '/patient/medications'
     | '/patient/record'
@@ -254,6 +284,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/audit'
     | '/calculator'
+    | '/consultations'
     | '/dashboard'
     | '/document'
     | '/faq'
@@ -265,6 +296,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/supervisor'
     | '/triage'
+    | '/consultations/$id'
+    | '/consultations/request'
     | '/dashboard/community'
     | '/patient/medications'
     | '/patient/record'
@@ -279,6 +312,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/_app/audit'
     | '/_app/calculator'
+    | '/_app/consultations'
     | '/_app/dashboard'
     | '/_app/document'
     | '/_app/faq'
@@ -290,6 +324,8 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/supervisor'
     | '/_app/triage'
+    | '/_app/consultations/$id'
+    | '/_app/consultations/request'
     | '/_app/dashboard/community'
     | '/_app/patient/medications'
     | '/_app/patient/record'
@@ -405,6 +441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/consultations': {
+      id: '/_app/consultations'
+      path: '/consultations'
+      fullPath: '/consultations'
+      preLoaderRoute: typeof AppConsultationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/calculator': {
       id: '/_app/calculator'
       path: '/calculator'
@@ -468,8 +511,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardCommunityRouteImport
       parentRoute: typeof AppDashboardRoute
     }
+    '/_app/consultations/request': {
+      id: '/_app/consultations/request'
+      path: '/request'
+      fullPath: '/consultations/request'
+      preLoaderRoute: typeof AppConsultationsRequestRouteImport
+      parentRoute: typeof AppConsultationsRoute
+    }
+    '/_app/consultations/$id': {
+      id: '/_app/consultations/$id'
+      path: '/$id'
+      fullPath: '/consultations/$id'
+      preLoaderRoute: typeof AppConsultationsIdRouteImport
+      parentRoute: typeof AppConsultationsRoute
+    }
   }
 }
+
+interface AppConsultationsRouteChildren {
+  AppConsultationsIdRoute: typeof AppConsultationsIdRoute
+  AppConsultationsRequestRoute: typeof AppConsultationsRequestRoute
+}
+
+const AppConsultationsRouteChildren: AppConsultationsRouteChildren = {
+  AppConsultationsIdRoute: AppConsultationsIdRoute,
+  AppConsultationsRequestRoute: AppConsultationsRequestRoute,
+}
+
+const AppConsultationsRouteWithChildren =
+  AppConsultationsRoute._addFileChildren(AppConsultationsRouteChildren)
 
 interface AppDashboardRouteChildren {
   AppDashboardCommunityRoute: typeof AppDashboardCommunityRoute
@@ -502,6 +572,7 @@ const AppPatientRouteWithChildren = AppPatientRoute._addFileChildren(
 interface AppRouteChildren {
   AppAuditRoute: typeof AppAuditRoute
   AppCalculatorRoute: typeof AppCalculatorRoute
+  AppConsultationsRoute: typeof AppConsultationsRouteWithChildren
   AppDashboardRoute: typeof AppDashboardRouteWithChildren
   AppDocumentRoute: typeof AppDocumentRoute
   AppFaqRoute: typeof AppFaqRoute
@@ -521,6 +592,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAuditRoute: AppAuditRoute,
   AppCalculatorRoute: AppCalculatorRoute,
+  AppConsultationsRoute: AppConsultationsRouteWithChildren,
   AppDashboardRoute: AppDashboardRouteWithChildren,
   AppDocumentRoute: AppDocumentRoute,
   AppFaqRoute: AppFaqRoute,
