@@ -1,8 +1,8 @@
 create table public.consultations (
   id          text primary key,
-  patient_id  text not null references public.patients(id) on delete cascade,
-  assessment_id text,
-  chw_user_id text not null,
+  patient_id  uuid not null references public.patients(id) on delete cascade,
+  assessment_id uuid references public.assessments(id) on delete set null,
+  chw_user_id uuid not null,
   chw_name    text not null,
   status      text not null default 'pending' check (status in ('pending','assigned','in_progress','completed','cancelled')),
   priority    text not null default 'routine' check (priority in ('routine','urgent')),
@@ -35,25 +35,25 @@ create policy "chw_update_own_consultations"
   on public.consultations for update
   using (auth.uid() = chw_user_id);
 
--- supervisor/admin can read all consultations
-create policy "supervisor_select_all_consultations"
+-- admin can read all consultations
+create policy "admin_select_all_consultations"
   on public.consultations for select
   using (
     exists (
       select 1 from public.user_roles
       where user_id = auth.uid()
-        and role in ('supervisor', 'admin')
+        and role = 'admin'
     )
   );
 
--- supervisor/admin can update any consultation (for clinician response)
-create policy "supervisor_update_consultations"
+-- admin can update any consultation (for clinician response)
+create policy "admin_update_consultations"
   on public.consultations for update
   using (
     exists (
       select 1 from public.user_roles
       where user_id = auth.uid()
-        and role in ('supervisor', 'admin')
+        and role = 'admin'
     )
   );
 
