@@ -1,6 +1,5 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from "react-leaflet";
 import L from "leaflet";
-import "leaflet.markercluster";
 import { useEffect, useState } from "react";
 import { Outbreak } from "@/lib/outbreak";
 
@@ -102,8 +101,13 @@ function ClusterGroup({
   counts: Record<string, number>;
 }) {
   const map = useMap();
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    import("leaflet.markercluster").then(() => setReady(true));
+  }, []);
 
   useEffect(() => {
+    if (!ready) return;
     const mcg = L.markerClusterGroup({
       chunkedLoading: true,
       spiderfyOnMaxZoom: true,
@@ -134,7 +138,7 @@ function ClusterGroup({
     return () => {
       map.removeLayer(mcg);
     };
-  }, [map, locations, counts]);
+  }, [map, locations, counts, ready]);
 
   return null;
 }

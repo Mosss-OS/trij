@@ -15,9 +15,13 @@ import {
   deleteRecord,
   getRecordCount,
   isKeyCached,
+  getPatientId,
+  getQrPayload,
   type HealthRecord,
   type PatientRecordInput,
+  type PatientQrPayload,
 } from "@/lib/patient-records";
+import QRCode from "qrcode";
 import {
   Lock,
   Unlock,
@@ -25,11 +29,15 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   FileText,
   AlertTriangle,
   Stethoscope,
   Home,
   Clock,
+  QrCode,
+  ShieldCheck,
+  UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -61,6 +69,9 @@ function PatientRecordPage() {
     medications: "",
     facility: "",
   });
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [showQr, setShowQr] = useState(false);
+  const patientId = getPatientId();
 
   useEffect(() => {
     if (isKeyCached() && unlockWithKey()) {
@@ -83,6 +94,9 @@ function PatientRecordPage() {
     try {
       const all = await getRecords();
       setRecords(all);
+      const payload = await getQrPayload();
+      const qr = await QRCode.toDataURL(JSON.stringify(payload), { width: 200, margin: 2, color: { dark: "#92400e", light: "#fffbeb" } });
+      setQrDataUrl(qr);
     } catch {
       setRecords([]);
     }
@@ -455,6 +469,35 @@ function PatientRecordPage() {
           </div>
         )}
 
+        {!showQr && (
+          <button
+            onClick={() => setShowQr(true)}
+            className="mb-4 flex w-full items-center gap-3 rounded-2xl border border-amber-300 bg-amber-100/50 p-4 text-left transition-colors hover:bg-amber-100"
+          >
+            <QrCode className="h-8 w-8 shrink-0 text-amber-600" />
+            <div>
+              <p className="font-medium text-amber-900">{t("showHealthCard") || "My Health Card"}</p>
+              <p className="text-xs text-amber-600">{t("healthCardDesc") || "Show this QR to a doctor to share your health records"}</p>
+            </div>
+            <ChevronRight className="ml-auto h-5 w-5 text-amber-400" />
+          </button>
+        )}
+
+        {showQr && qrDataUrl && (
+          <div className="mb-4 rounded-2xl border border-amber-200 bg-white p-5 text-center shadow-sm">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="font-semibold text-amber-800">{t("myHealthCard") || "My Health Card"}</h3>
+              <button onClick={() => setShowQr(false)} className="text-sm text-amber-500">
+                {t("close") || "Close"}
+              </button>
+            </div>
+            <img src={qrDataUrl} alt="Health Card QR" className="mx-auto h-44 w-44" />
+            <p className="mt-2 text-xs text-amber-600">
+              {t("healthCardShowDesc") || "Show this to any doctor or clinic to share your records"}
+            </p>
+          </div>
+        )}
+
         <div className="space-y-3">
           {records.map((record) => {
             const isExpanded = expandedId === record.id;
@@ -476,6 +519,14 @@ function PatientRecordPage() {
                     <p className="flex items-center gap-1 text-xs text-amber-600">
                       <Clock className="h-3 w-3" />
                       {new Date(record.date).toLocaleDateString()}
+                      {record.addedBy === "doctor" && record.verifiedBy && (
+                        <span className="ml-1 inline-flex items-center gap-0.5 text-[10px] text-emerald-600">
+                          <ShieldCheck className="h-3 w-3" /> {t("verified") || "Verified"}
+                        </span>
+                      )}
+                      {record.addedBy === "self" && (
+                        <span className="ml-1 text-[10px] text-amber-400">{t("self") || "Self"}</span>
+                      )}
                     </p>
                   </div>
                   <span
@@ -511,6 +562,19 @@ function PatientRecordPage() {
                       <div className="mb-2">
                         <span className="text-xs font-medium text-amber-700">{t("facilityName")}:</span>
                         <p className="text-sm text-gray-700">{record.facility}</p>
+                      </div>
+                    )}
+                    {record.verifiedBy && (
+                      <div className="mb-2 rounded-lg border border-emerald-200 bg-emerald-50 p-2">
+                        <p className="flex items-center gap-1 text-xs font-medium text-emerald-700">
+                          <ShieldCheck className="h-3 w-3" />
+                          {t("verifiedBy") || "Verified by"} {record.verifiedBy.name}
+                        </p>
+                        <p className="text-xs text-emerald-600">
+                          {record.verifiedBy.facility}
+                          {record.verifiedBy.licenseId && ` · ${record.verifiedBy.licenseId}`}
+                        </p>
+                        <p className="text-[10px] text-emerald-500">{new Date(record.verifiedBy.date).toLocaleDateString()}</p>
                       </div>
                     )}
                     <button

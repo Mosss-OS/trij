@@ -3,6 +3,13 @@ import { encrypt, decrypt, deriveKey, generateSalt, cacheKey, clearKey, isKeyCac
 export { isKeyCached };
 import type { TriageResult } from "@/types/trij";
 
+export interface VerifiedBy {
+  name: string;
+  facility: string;
+  licenseId?: string;
+  date: string;
+}
+
 export interface HealthRecord {
   id: string;
   date: string;
@@ -13,9 +20,18 @@ export interface HealthRecord {
   medications?: string;
   notes?: string;
   facility?: string;
-  addedBy: "self" | "chw";
+  addedBy: "self" | "chw" | "doctor";
+  verifiedBy?: VerifiedBy;
   encryptedData: string;
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface PatientQrPayload {
+  patientId: string;
+  version: number;
+  recordCount: number;
+  summary: string;
   updatedAt: string;
 }
 
@@ -165,4 +181,72 @@ export async function deleteRecord(id: string): Promise<void> {
 export async function getRecordCount(): Promise<number> {
   const db = getDB();
   return db.records.count();
+}
+
+export function getPatientId(): string {
+  const stored = localStorage.getItem("trij-patient-id");
+  if (stored) return stored;
+  const id = crypto.randomUUID();
+  localStorage.setItem("trij-patient-id", id);
+  return id;
+}
+
+export async function getQrPayload(): Promise<PatientQrPayload> {
+  const patientId = getPatientId();
+  const records = await getRecords();
+  const latest = records[0];
+  return {
+    patientId,
+    version: 1,
+    recordCount: records.length,
+    summary: latest ? latest.complaint : "",
+    updatedAt: latest ? latest.date : new Date().toISOString(),
+  };
+}
+
+export interface DoctorRecordInput {
+  diagnosis: string;
+  notes: string;
+  medications?: string;
+  facility: string;
+  doctorName: string;
+  licenseId?: string;
+}
+
+export async function addDoctorRecord(
+  patientId: string,
+  input: DoctorRecordInput,
+): Promise<HealthRecord> {
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const plaintext = JSON.stringify({
+    complaint: input.diagnosis,
+    notes: input.notes,
+    medications: input.medications || "",
+    facility: input.facility,
+  });
+  const encryptedData = await encrypt(plaintext);
+  const record: HealthRecord = {
+    id,
+    date: now,
+    type: "manual",
+    complaint: input.diagnosis,
+    urgencyLevel: "unknown",
+    notes: input.notes,
+    medications: input.medications,
+    facility: input.facility,
+    addedBy: "doctor",
+    verifiedBy: {
+      name: input.doctorName,
+      facility: input.facility,
+      licenseId: input.licenseId,
+      date: now,
+    },
+    encryptedData,
+    createdAt: now,
+    updatedAt: now,
+  };
+  const db = getDB();
+  await db.records.put(record);
+  return record;
 }

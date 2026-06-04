@@ -16,6 +16,7 @@ import { Route as AppTriageRouteImport } from './routes/_app.triage'
 import { Route as AppSupervisorRouteImport } from './routes/_app.supervisor'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppReferralsRouteImport } from './routes/_app.referrals'
+import { Route as AppPatientRouteImport } from './routes/_app.patient'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppMaternalRouteImport } from './routes/_app.maternal'
 import { Route as AppHelpRouteImport } from './routes/_app.help'
@@ -27,6 +28,10 @@ import { Route as AppAuditRouteImport } from './routes/_app.audit'
 import { Route as AppPatientsIndexRouteImport } from './routes/_app.patients.index'
 import { Route as AppPatientsBatchRegisterRouteImport } from './routes/_app.patients.batch-register'
 import { Route as AppPatientsPatientIdRouteImport } from './routes/_app.patients.$patientId'
+import { Route as AppPatientScanRouteImport } from './routes/_app.patient.scan'
+import { Route as AppPatientRecordRouteImport } from './routes/_app.patient.record'
+import { Route as AppPatientMedicationsRouteImport } from './routes/_app.patient.medications'
+import { Route as AppDashboardCommunityRouteImport } from './routes/_app.dashboard.community'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -60,6 +65,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
 const AppReferralsRoute = AppReferralsRouteImport.update({
   id: '/referrals',
   path: '/referrals',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPatientRoute = AppPatientRouteImport.update({
+  id: '/patient',
+  path: '/patient',
   getParentRoute: () => AppRoute,
 } as any)
 const AppNotificationsRoute = AppNotificationsRouteImport.update({
@@ -118,22 +128,47 @@ const AppPatientsPatientIdRoute = AppPatientsPatientIdRouteImport.update({
   path: '/patients/$patientId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPatientScanRoute = AppPatientScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AppPatientRoute,
+} as any)
+const AppPatientRecordRoute = AppPatientRecordRouteImport.update({
+  id: '/record',
+  path: '/record',
+  getParentRoute: () => AppPatientRoute,
+} as any)
+const AppPatientMedicationsRoute = AppPatientMedicationsRouteImport.update({
+  id: '/medications',
+  path: '/medications',
+  getParentRoute: () => AppPatientRoute,
+} as any)
+const AppDashboardCommunityRoute = AppDashboardCommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => AppDashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/audit': typeof AppAuditRoute
   '/calculator': typeof AppCalculatorRoute
-  '/dashboard': typeof AppDashboardRoute
+  '/dashboard': typeof AppDashboardRouteWithChildren
   '/document': typeof AppDocumentRoute
   '/faq': typeof AppFaqRoute
   '/help': typeof AppHelpRoute
   '/maternal': typeof AppMaternalRoute
   '/notifications': typeof AppNotificationsRoute
+  '/patient': typeof AppPatientRouteWithChildren
   '/referrals': typeof AppReferralsRoute
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
+  '/dashboard/community': typeof AppDashboardCommunityRoute
+  '/patient/medications': typeof AppPatientMedicationsRoute
+  '/patient/record': typeof AppPatientRecordRoute
+  '/patient/scan': typeof AppPatientScanRoute
   '/patients/$patientId': typeof AppPatientsPatientIdRoute
   '/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/patients/': typeof AppPatientsIndexRoute
@@ -143,16 +178,21 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/audit': typeof AppAuditRoute
   '/calculator': typeof AppCalculatorRoute
-  '/dashboard': typeof AppDashboardRoute
+  '/dashboard': typeof AppDashboardRouteWithChildren
   '/document': typeof AppDocumentRoute
   '/faq': typeof AppFaqRoute
   '/help': typeof AppHelpRoute
   '/maternal': typeof AppMaternalRoute
   '/notifications': typeof AppNotificationsRoute
+  '/patient': typeof AppPatientRouteWithChildren
   '/referrals': typeof AppReferralsRoute
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
+  '/dashboard/community': typeof AppDashboardCommunityRoute
+  '/patient/medications': typeof AppPatientMedicationsRoute
+  '/patient/record': typeof AppPatientRecordRoute
+  '/patient/scan': typeof AppPatientScanRoute
   '/patients/$patientId': typeof AppPatientsPatientIdRoute
   '/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/patients': typeof AppPatientsIndexRoute
@@ -164,16 +204,21 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_app/audit': typeof AppAuditRoute
   '/_app/calculator': typeof AppCalculatorRoute
-  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/dashboard': typeof AppDashboardRouteWithChildren
   '/_app/document': typeof AppDocumentRoute
   '/_app/faq': typeof AppFaqRoute
   '/_app/help': typeof AppHelpRoute
   '/_app/maternal': typeof AppMaternalRoute
   '/_app/notifications': typeof AppNotificationsRoute
+  '/_app/patient': typeof AppPatientRouteWithChildren
   '/_app/referrals': typeof AppReferralsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/supervisor': typeof AppSupervisorRoute
   '/_app/triage': typeof AppTriageRoute
+  '/_app/dashboard/community': typeof AppDashboardCommunityRoute
+  '/_app/patient/medications': typeof AppPatientMedicationsRoute
+  '/_app/patient/record': typeof AppPatientRecordRoute
+  '/_app/patient/scan': typeof AppPatientScanRoute
   '/_app/patients/$patientId': typeof AppPatientsPatientIdRoute
   '/_app/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/_app/patients/': typeof AppPatientsIndexRoute
@@ -191,10 +236,15 @@ export interface FileRouteTypes {
     | '/help'
     | '/maternal'
     | '/notifications'
+    | '/patient'
     | '/referrals'
     | '/settings'
     | '/supervisor'
     | '/triage'
+    | '/dashboard/community'
+    | '/patient/medications'
+    | '/patient/record'
+    | '/patient/scan'
     | '/patients/$patientId'
     | '/patients/batch-register'
     | '/patients/'
@@ -210,10 +260,15 @@ export interface FileRouteTypes {
     | '/help'
     | '/maternal'
     | '/notifications'
+    | '/patient'
     | '/referrals'
     | '/settings'
     | '/supervisor'
     | '/triage'
+    | '/dashboard/community'
+    | '/patient/medications'
+    | '/patient/record'
+    | '/patient/scan'
     | '/patients/$patientId'
     | '/patients/batch-register'
     | '/patients'
@@ -230,10 +285,15 @@ export interface FileRouteTypes {
     | '/_app/help'
     | '/_app/maternal'
     | '/_app/notifications'
+    | '/_app/patient'
     | '/_app/referrals'
     | '/_app/settings'
     | '/_app/supervisor'
     | '/_app/triage'
+    | '/_app/dashboard/community'
+    | '/_app/patient/medications'
+    | '/_app/patient/record'
+    | '/_app/patient/scan'
     | '/_app/patients/$patientId'
     | '/_app/patients/batch-register'
     | '/_app/patients/'
@@ -294,6 +354,13 @@ declare module '@tanstack/react-router' {
       path: '/referrals'
       fullPath: '/referrals'
       preLoaderRoute: typeof AppReferralsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/patient': {
+      id: '/_app/patient'
+      path: '/patient'
+      fullPath: '/patient'
+      preLoaderRoute: typeof AppPatientRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/notifications': {
@@ -373,18 +440,75 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPatientsPatientIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/patient/scan': {
+      id: '/_app/patient/scan'
+      path: '/scan'
+      fullPath: '/patient/scan'
+      preLoaderRoute: typeof AppPatientScanRouteImport
+      parentRoute: typeof AppPatientRoute
+    }
+    '/_app/patient/record': {
+      id: '/_app/patient/record'
+      path: '/record'
+      fullPath: '/patient/record'
+      preLoaderRoute: typeof AppPatientRecordRouteImport
+      parentRoute: typeof AppPatientRoute
+    }
+    '/_app/patient/medications': {
+      id: '/_app/patient/medications'
+      path: '/medications'
+      fullPath: '/patient/medications'
+      preLoaderRoute: typeof AppPatientMedicationsRouteImport
+      parentRoute: typeof AppPatientRoute
+    }
+    '/_app/dashboard/community': {
+      id: '/_app/dashboard/community'
+      path: '/community'
+      fullPath: '/dashboard/community'
+      preLoaderRoute: typeof AppDashboardCommunityRouteImport
+      parentRoute: typeof AppDashboardRoute
+    }
   }
 }
+
+interface AppDashboardRouteChildren {
+  AppDashboardCommunityRoute: typeof AppDashboardCommunityRoute
+}
+
+const AppDashboardRouteChildren: AppDashboardRouteChildren = {
+  AppDashboardCommunityRoute: AppDashboardCommunityRoute,
+}
+
+const AppDashboardRouteWithChildren = AppDashboardRoute._addFileChildren(
+  AppDashboardRouteChildren,
+)
+
+interface AppPatientRouteChildren {
+  AppPatientMedicationsRoute: typeof AppPatientMedicationsRoute
+  AppPatientRecordRoute: typeof AppPatientRecordRoute
+  AppPatientScanRoute: typeof AppPatientScanRoute
+}
+
+const AppPatientRouteChildren: AppPatientRouteChildren = {
+  AppPatientMedicationsRoute: AppPatientMedicationsRoute,
+  AppPatientRecordRoute: AppPatientRecordRoute,
+  AppPatientScanRoute: AppPatientScanRoute,
+}
+
+const AppPatientRouteWithChildren = AppPatientRoute._addFileChildren(
+  AppPatientRouteChildren,
+)
 
 interface AppRouteChildren {
   AppAuditRoute: typeof AppAuditRoute
   AppCalculatorRoute: typeof AppCalculatorRoute
-  AppDashboardRoute: typeof AppDashboardRoute
+  AppDashboardRoute: typeof AppDashboardRouteWithChildren
   AppDocumentRoute: typeof AppDocumentRoute
   AppFaqRoute: typeof AppFaqRoute
   AppHelpRoute: typeof AppHelpRoute
   AppMaternalRoute: typeof AppMaternalRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
+  AppPatientRoute: typeof AppPatientRouteWithChildren
   AppReferralsRoute: typeof AppReferralsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSupervisorRoute: typeof AppSupervisorRoute
@@ -397,12 +521,13 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAuditRoute: AppAuditRoute,
   AppCalculatorRoute: AppCalculatorRoute,
-  AppDashboardRoute: AppDashboardRoute,
+  AppDashboardRoute: AppDashboardRouteWithChildren,
   AppDocumentRoute: AppDocumentRoute,
   AppFaqRoute: AppFaqRoute,
   AppHelpRoute: AppHelpRoute,
   AppMaternalRoute: AppMaternalRoute,
   AppNotificationsRoute: AppNotificationsRoute,
+  AppPatientRoute: AppPatientRouteWithChildren,
   AppReferralsRoute: AppReferralsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSupervisorRoute: AppSupervisorRoute,
