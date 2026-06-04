@@ -7,6 +7,7 @@ import type {
   ReferralFeedback,
   SyncQueueItem,
   SyncConflict,
+  ConsultationRequest,
 } from "@/types/trij";
 import { registerBackgroundSync } from "./sw-register";
 
@@ -145,7 +146,7 @@ export async function pendingCount(): Promise<number> {
 }
 
 async function fetchServerRecord(
-  table: "patients" | "assessments",
+  table: "patients" | "assessments" | "consultations",
   recordId: string,
 ): Promise<{ data: Record<string, unknown> | null; version?: number } | null> {
   const { data, error } = await supabase.from(table).select("*").eq("id", recordId).single();
@@ -338,6 +339,54 @@ export async function processSyncQueue(
         } as never);
         if (error) throw error;
         await db.assessments.update(a.id, { syncedAt: new Date().toISOString() });
+      } else if (item.table === "consultations") {
+        const c = item.payload as ConsultationRequest;
+        if (!c.id || !c.patientId || !c.chwUserId) {
+          throw new Error("Invalid consultation data: missing required fields");
+        }
+
+        const serverRec = await fetchServerRecord("consultations", c.id);
+        if (serverRec && serverRec.version !== undefined && serverRec.version > c.version) {
+          const conflict: SyncConflict = {
+            table: "consultations",
+            recordId: c.id,
+            localVersion: c.version,
+            serverVersion: serverRec.version,
+            localData: c,
+            serverData: serverRec.data,
+            createdAt: new Date().toISOString(),
+          };
+          await db.syncConflicts.add(conflict);
+          await db.consultations.put({
+            ...c,
+            ...(serverRec.data as Partial<ConsultationRequest>),
+            version: serverRec.version,
+          } as ConsultationRequest);
+          await db.syncQueue.delete(item.id!);
+          ok++;
+          onProgress?.({ ...progress, status: "ok" });
+          continue;
+        }
+
+        const { error } = await supabase.from("consultations").upsert({
+          id: c.id,
+          patient_id: c.patientId,
+          assessment_id: c.assessmentId ?? null,
+          chw_user_id: c.chwUserId,
+          chw_name: c.chwName,
+          status: c.status,
+          priority: c.priority,
+          images: c.images,
+          voice_transcript: c.voiceTranscript ?? null,
+          chw_notes: c.chwNotes,
+          clinical_context: c.clinicalContext as never,
+          response: (c.response ?? null) as never,
+          created_at: c.createdAt,
+          responded_at: c.respondedAt ?? null,
+          version: c.version,
+        } as never);
+        if (error) throw error;
+        await db.consultations.update(c.id, { syncedAt: new Date().toISOString() });
       } else {
         throw new Error(`Unknown table type: ${item.table}`);
       }
@@ -553,6 +602,49 @@ export async function updateFollowUpStatus(
     attempts: 0,
   });
   registerBackgroundSync().catch(() => {});
+}
+
+export async function queueConsultation(c: ConsultationRequest) {
+  const db = getDB();
+  const existing = await db.consultations.get(c.id);
+  const updated = { ...c, version: nextVersion(existing?.version) };
+  await db.consultations.put(updated);
+  await db.syncQueue.add({
+    table: "consultations",
+    action: "insert",
+    recordId: c.id,
+    payload: updated,
+    createdAt: new Date().toISOString(),
+    attempts: 0,
+  });
+  registerBackgroundSync().catch(() => {});
+}
+
+export async function pollConsultationResponses(): Promise<number> {
+  const db = getDB();
+  const pending = await db.consultations
+    .where("status")
+    .anyOf("pending", "assigned", "in_progress")
+    .toArray();
+  let updates = 0;
+  for (const c of pending) {
+    const { data, error } = await supabase
+      .from("consultations")
+      .select("status, response, responded_at, version")
+      .eq("id", c.id)
+      .single();
+    if (error || !data) continue;
+    if (data.status === "completed" && data.response && (data.version ?? 0) > c.version) {
+      await db.consultations.update(c.id, {
+        status: "completed",
+        response: data.response as ConsultationRequest["response"],
+        respondedAt: data.responded_at ?? undefined,
+        version: data.version ?? c.version + 1,
+      });
+      updates++;
+    }
+  }
+  return updates;
 }
 
 export async function saveReferralFeedback(

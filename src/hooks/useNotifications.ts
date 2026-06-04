@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getDB } from "@/lib/db";
+import { pollConsultationResponses } from "@/lib/sync";
 import type { InAppNotification, NotificationKind } from "@/types/trij";
 
 const DAYS_30_MS = 30 * 24 * 60 * 60 * 1000;
@@ -9,6 +10,7 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const cleanedRef = useRef(false);
+  const prevResponseCountRef = useRef(0);
 
   const load = useCallback(async () => {
     try {
@@ -40,7 +42,31 @@ export function useNotifications() {
 
   useEffect(() => {
     load();
-    const interval = setInterval(load, 30000);
+    const interval = setInterval(async () => {
+      try {
+        const updates = await pollConsultationResponses();
+        if (updates > 0) {
+          const db = getDB();
+          const pending = await db.consultations.where("status").equals("completed").toArray();
+          const latestResponseCount = pending.filter((c) => c.response).length;
+          if (latestResponseCount > prevResponseCountRef.current) {
+            await db.notifications.add({
+              id: crypto.randomUUID(),
+              kind: "consultation_response",
+              title: "New consultation response",
+              body: `${updates} consultation response${updates > 1 ? "s" : ""} received`,
+              linkTo: "/consultations",
+              read: false,
+              createdAt: new Date().toISOString(),
+            });
+            prevResponseCountRef.current = latestResponseCount;
+            load();
+          }
+        }
+      } catch {
+        /* polling may fail silently */
+      }
+    }, 30000);
     return () => clearInterval(interval);
   }, [load]);
 

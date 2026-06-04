@@ -1,5 +1,5 @@
 import { Link, useRouter } from "@tanstack/react-router";
-import { LayoutGrid, Camera, Users, Bell, Menu, X } from "lucide-react";
+import { LayoutGrid, Camera, Users, Bell, Menu, X, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { translations } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n";
@@ -35,11 +35,13 @@ export function BottomNav() {
     ? [
         { to: "/triage", labelKey: "newTriage", icon: Camera, pictogramIcon: CameraLarge, primary: true },
         { to: "/patients", labelKey: "patients", icon: Users, pictogramIcon: Person },
+        { to: "/consultations", labelKey: "navConsultations", icon: MessageSquare },
       ]
     : [
         { to: "/dashboard", labelKey: "home", icon: LayoutGrid, pictogramIcon: HomeIcon },
         { to: "/triage", labelKey: "newTriage", icon: Camera, pictogramIcon: CameraLarge, primary: true },
         { to: "/patients", labelKey: "patients", icon: Users, pictogramIcon: Person },
+        { to: "/consultations", labelKey: "navConsultations", icon: MessageSquare },
         { to: "/notifications", labelKey: "notifications", icon: Bell, pictogramIcon: NotificationIcon },
       ];
 
@@ -97,7 +99,7 @@ export function BottomNav() {
         aria-label="Main navigation"
         className={`lg:hidden fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur safe-area-bottom ${kioskMode || fieldMode ? "pb-2 pt-1" : ""}`}
       >
-        <div className={`mx-auto grid max-w-4xl ${fieldMode ? "grid-cols-2" : "grid-cols-4"}`}>
+        <div className={`mx-auto grid max-w-4xl ${fieldMode ? "grid-cols-3" : "grid-cols-5"}`}>
           {items.map(({ to, labelKey, icon: Icon, pictogramIcon: PictogramIcon, primary }) => {
             const active = current === to || current.startsWith(to + "/");
             const isBell = labelKey === "notifications";

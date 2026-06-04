@@ -176,9 +176,42 @@ export interface FollowUp {
   version: number;
 }
 
+export interface ConsultationRequest {
+  id: string;
+  patientId: string;
+  assessmentId?: string;
+  chwUserId: string;
+  chwName: string;
+  status: "pending" | "assigned" | "in_progress" | "completed" | "cancelled";
+  priority: "routine" | "urgent";
+  images: string[];
+  voiceTranscript?: string;
+  chwNotes: string;
+  clinicalContext: {
+    condition?: string;
+    urgency?: string;
+    vitals?: VitalSigns;
+    recommendation?: string;
+    possibleConditions?: PossibleCondition[];
+  };
+  response?: {
+    advice: string;
+    diagnosis?: string;
+    additionalTests?: string;
+    prescription?: string;
+    clinicianName: string;
+    clinicianId: string;
+    respondedAt: string;
+  };
+  createdAt: string;
+  respondedAt?: string;
+  syncedAt?: string;
+  version: number;
+}
+
 export interface SyncQueueItem {
   id?: number;
-  table: "patients" | "assessments" | "follow_ups";
+  table: "patients" | "assessments" | "follow_ups" | "consultations";
   action: "insert" | "update" | "delete";
   recordId: string;
   payload: unknown;
@@ -189,7 +222,7 @@ export interface SyncQueueItem {
 
 export interface SyncConflict {
   id?: number;
-  table: "patients" | "assessments";
+  table: "patients" | "assessments" | "consultations";
   recordId: string;
   localVersion: number;
   serverVersion: number;
@@ -262,7 +295,8 @@ export type NotificationKind =
   | "sync_complete"
   | "supervisor_message"
   | "protocol_update"
-  | "app_update";
+  | "app_update"
+  | "consultation_response";
 
 export interface InAppNotification {
   id: string;
@@ -294,7 +328,9 @@ export type AuditAction =
   | "followup:read"
   | "referral:read"
   | "supervisor:read"
-  | "red_flag:triggered";
+  | "red_flag:triggered"
+  | "consultation:create"
+  | "consultation:read";
 
 export interface AuditEvent {
   id?: number;

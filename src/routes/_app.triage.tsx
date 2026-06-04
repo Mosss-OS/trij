@@ -21,6 +21,7 @@ import {
   Stethoscope,
   Check,
   AlertTriangle,
+  UserRound,
 } from "lucide-react";
 import {
   triageImage,
@@ -1963,6 +1964,23 @@ function TriagePage() {
               </Button>
               <Button variant="outline" className="flex-1 gap-2" onClick={startVoiceAssessment}>
                 <MessageSquare className="h-4 w-4" /> {t("voiceFollowUp")}
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 gap-2 text-amber-700 border-amber-300 hover:bg-amber-50"
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  if (patient) params.set("patientId", typeof patient === "object" && "id" in patient ? (patient as { id: string }).id : "");
+                  if (result) {
+                    params.set("condition", result.condition);
+                    params.set("urgency", result.urgency);
+                  }
+                  if (image) params.set("images", JSON.stringify([image]));
+                  if (vitalSigns.systolicBP || vitalSigns.heartRate) params.set("vitals", JSON.stringify(vitalSigns));
+                  navigate({ to: "/consultations/request", search: Object.fromEntries(params) as never });
+                }}
+              >
+                <Stethoscope className="h-4 w-4" /> {t("consultationRequest")}
               </Button>
               <Button onClick={save} className="flex-1 gap-2" size="lg">
                 <Save className="h-4 w-4" /> {t("save")}
