@@ -1,3 +1,15 @@
+/**
+ * Vital Signs Assessment Module
+ * 
+ * This module evaluates vital signs against age-specific normal ranges to detect
+ * abnormalities that may indicate serious medical conditions. It implements
+ * age-based thresholds for temperature, heart rate, respiratory rate, blood pressure,
+ * and oxygen saturation based on standard pediatric and adult reference values.
+ * 
+ * The evaluation considers both abnormal and critical thresholds, with critical
+ * values triggering immediate red urgency overrides.
+ */
+
 export type VitalSignAgeGroup = "infant" | "toddler" | "child" | "adult" | "elderly";
 
 export interface VitalSignAlert {
@@ -23,6 +35,19 @@ interface NormalRange {
   label: string;
 }
 
+/**
+ * Classify a patient into an age group for vital signs evaluation.
+ * 
+ * Age groups are defined as:
+ * - Infant: 0 to < 1 year
+ * - Toddler: 1 to < 5 years  
+ * - Child: 5 to < 13 years
+ * - Adult: 13 to < 65 years
+ * - Elderly: 65+ years
+ * 
+ * @param ageYears - Patient's age in years (can be fractional)
+ * @returns The appropriate VitalSignAgeGroup for the patient's age
+ */
 function classifyAge(ageYears: number): VitalSignAgeGroup {
   if (ageYears < 1) return "infant";
   if (ageYears < 5) return "toddler";

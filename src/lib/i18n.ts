@@ -4,6 +4,45 @@ export type Language = "en-US" | "fr-FR" | "sw-KE" | "hi-IN" | "pt-BR" | "ar-SA"
 
 export const rtlLanguages: Language[] = ["ar-SA"];
 
+export interface LanguageInfo {
+  code: Language;
+  label: string;
+  nativeLabel: string;
+  status: "certified" | "conditional" | "draft";
+  coverage: number;
+}
+
+export const LANGUAGE_INFO: LanguageInfo[] = [
+  { code: "en-US", label: "English", nativeLabel: "English", status: "certified", coverage: 100 },
+  { code: "es-ES", label: "Spanish", nativeLabel: "Español", status: "conditional", coverage: 44 },
+  { code: "fr-FR", label: "French", nativeLabel: "Français", status: "conditional", coverage: 44 },
+  { code: "sw-KE", label: "Swahili", nativeLabel: "Kiswahili", status: "conditional", coverage: 44 },
+  { code: "hi-IN", label: "Hindi", nativeLabel: "हिन्दी", status: "conditional", coverage: 44 },
+  { code: "ar-SA", label: "Arabic", nativeLabel: "العربية", status: "conditional", coverage: 44 },
+  { code: "pt-BR", label: "Portuguese", nativeLabel: "Português", status: "conditional", coverage: 44 },
+  { code: "pcm", label: "Pidgin", nativeLabel: "Pidgin", status: "draft", coverage: 13 },
+  { code: "yo", label: "Yoruba", nativeLabel: "Yorùbá", status: "draft", coverage: 12 },
+  { code: "ha", label: "Hausa", nativeLabel: "Hausa", status: "draft", coverage: 12 },
+  { code: "ig", label: "Igbo", nativeLabel: "Igbo", status: "draft", coverage: 12 },
+];
+
+/**
+ * Fill missing translation keys with English fallback so every locale
+ * has all keys present.  This runs once at module load.
+ */
+function fillMissingTranslations() {
+  const source = translations["en-US"];
+  const sourceKeys = Object.keys(source) as (keyof typeof source)[];
+  for (const [code, locale] of Object.entries(translations)) {
+    if (code === "en-US") continue;
+    for (const key of sourceKeys) {
+      if (!(key in locale)) {
+        (locale as Record<string, string>)[key] = source[key];
+      }
+    }
+  }
+}
+
 export const translations = {
   "en-US": {
     dashboard: "Dashboard",
@@ -926,6 +965,20 @@ export const translations = {
     consultationView: "View Details",
     consultationClinicianName: "Clinician",
     consultationNewResponse: "New response received for a consultation request",
+    clinicianTitle: "Clinician Dashboard",
+    clinicianConsultations: "All Consultation Requests",
+    clinicianRespond: "Respond",
+    clinicianAssignToMe: "Assign to Me",
+    clinicianMarkInProgress: "Mark In Progress",
+    clinicianCompleteResponse: "Submit Response",
+    clinicianResponsePlaceholder: "Enter your clinical advice...",
+    clinicianDiagnosisPlaceholder: "Enter diagnosis...",
+    clinicianTestsPlaceholder: "Enter additional tests needed...",
+    clinicianPrescriptionPlaceholder: "Enter prescription details...",
+    clinicianNoConsultations: "No consultation requests yet",
+    clinicianResponseSaved: "Response saved successfully!",
+    clinicianStatusUpdated: "Status updated successfully",
+    clinicianViewDetails: "View Details",
   },
   "fr-FR": {
     dashboard: "Tableau de bord",
@@ -3925,6 +3978,8 @@ export const translations = {
     navCommunityMap: "Map obodo",
   },
 };
+
+fillMissingTranslations();
 
 export function useI18n() {
   const language = useSettingsStore((s) => s.language) as Language;

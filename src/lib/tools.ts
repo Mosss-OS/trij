@@ -1,3 +1,24 @@
+/**
+ * AI Tool Definitions for Gemini Integration
+ * 
+ * This module defines the function calling interface between the Trij application
+ * and the Gemini AI models. It specifies the structure and parameters for the
+ * tools that the AI can invoke to return structured medical assessments.
+ * 
+ * The tools define:
+ * - triage_assessment: For analyzing patient condition and returning structured triage results
+ * - document_analysis: For extracting key information from medical documents (lab reports, prescriptions)
+ * - generate_follow_up: For creating targeted follow-up questions during patient interviews
+ * 
+ * Each tool definition includes:
+ * - Function name (what the AI will call)
+ * - Detailed description (when and how the AI should use the tool)
+ * - Parameters schema (JSON Schema defining expected input structure)
+ * 
+ * These tools enable the AI to return structured, validated data rather than free-form text,
+ * making it easier to process results programmatically while maintaining clinical accuracy.
+ */
+
 import type { TriageResult, DocumentResult } from "@/types/trij";
 
 export interface ToolDefinition {

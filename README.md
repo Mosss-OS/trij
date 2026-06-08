@@ -7,8 +7,10 @@
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E)
 ![Gemma 4](https://img.shields.io/badge/Gemma_4-Google_DeepMind-4285F4)
+![Offline First](https://img.shields.io/badge/Offline-First-success)
+![200+ Tests](https://img.shields.io/badge/tests-200%2B-brightgreen)
 
-**Trij** is an offline-first progressive web app that brings AI-assisted medical triage to **community health workers in remote areas**. Powered by **Google DeepMind's Gemma 4** models — entirely on-device.
+**Trij** is an offline-first progressive web app that brings AI-assisted medical triage to **community health workers in remote areas**. Powered by **Google DeepMind's Gemma 4** — entirely on-device. No internet, no cloud costs, no patient data leaving the phone.
 
 Built for the **Gemma 4 Good Hackathon** (Kaggle + Google DeepMind, $200K prize pool).  
 **Track:** Health & Sciences / Global Resilience.
@@ -23,21 +25,28 @@ Take a photo → AI assesses → Get urgency + recommendation → Save offline �
 
 No internet needed. No patient data leaves the device.
 
-> **Tip:** Add a 30s screen recording GIF here showing the triage flow (camera → analysis → result → save). Videos/photos of the app in action dramatically increase engagement on GitHub.
-
 ---
 
 ## Features
 
-- **📸 Wound & rash triage** — Snap a photo, Gemma 4 analyzes it on-device
-- **📄 Medical document scanner** — OCR + analysis of lab reports, prescriptions
-- **🎤 Voice-guided assessments** — Speak in your language, get spoken responses
-- **📋 Patient records** — Create, view, and track patients offline
-- **🏷️ Urgency triage** — Green (routine), Yellow (soon), Red (urgent)
-- **📎 Referral PDFs** — Auto-generated referral slips for clinic handoff
-- **🔄 Offline-first sync** — All data stored locally, syncs when online
-- **🌍 Multilingual** — English, Spanish, French, Swahili, Hindi, Arabic, Portuguese
-- **🔒 Privacy-first** — All AI runs on-device. No cloud AI API.
+| Feature | Description |
+|---------|-------------|
+| **📸 Wound & rash triage** | Snap a photo, Gemma 4 analyzes it on-device — classification, urgency, management advice |
+| **📄 Medical document scanner** | OCR + analysis of lab reports, prescriptions, referrals |
+| **🎤 Voice-guided assessments** | Speak in 7 languages, get spoken responses — hands-free for CHWs |
+| **📋 Patient records** | Create, view, and track patients offline with AES-GCM encrypted storage |
+| **🏷️ Urgency triage** | Green (routine), Yellow (soon), Red (urgent) — with AI explainability heatmaps |
+| **📎 Referral PDFs** | Auto-generated referral slips for clinic handoff |
+| **🔄 Offline-first sync** | All data stored in IndexedDB, syncs to Supabase when online |
+| **🌍 Multilingual** | 7 languages with certification system — English (Certified), 6 more in review |
+| **🔒 Privacy-first** | All AI runs on-device. No cloud AI API. No images uploaded. |
+| **📱 Patient QR sharing** | Encrypted health card via QR code — scan, view, verify chain |
+| **🏥 Async telemedicine** | Request specialist consultation — queues offline, syncs when online |
+| **🩺 Clinician dashboard** | Dedicated interface for clinicians to review and respond to consultations |
+| **🧠 AI explainability** | Saliency heatmaps show what the model focused on — bounding-box overlays |
+| **📷 Image quality validation** | Blur, exposure, and resolution checks before AI analysis — with low-light preprocessing |
+| **🏪 Facility lookup** | 19 hospitals across 6 regions with Haversine distance-based nearest facility finder |
+| **🧪 200+ unit tests** | Vital signs, maternal health, nutrition, red flags, outbreak detection, WHO standards |
 
 ---
 
@@ -46,7 +55,7 @@ No internet needed. No patient data leaves the device.
 | Layer        | Technology                                    |
 | ------------ | --------------------------------------------- |
 | **Frontend** | Vite + TanStack Start + React 19 + TypeScript |
-| **AI**       | WebLLM (WebGPU) + Ollama bridge + Demo mode   |
+| **AI**       | WebLLM (WebGPU) + Ollama bridge               |
 | **Styling**  | Tailwind CSS v4 + shadcn/ui                   |
 | **Offline**  | Dexie.js (IndexedDB) + background sync        |
 | **Backend**  | Supabase (Auth, Postgres, Storage, RLS)       |
@@ -84,17 +93,15 @@ npx supabase db push
 
 ### 3. Set up Gemma 4 (choose one)
 
-| Option        | Setup                    | Notes                                |
-| ------------- | ------------------------ | ------------------------------------ |
-| **Demo mode** | Nothing to do            | App works immediately with mock data |
-| **Ollama**    | `ollama pull gemma4`     | Best real-model experience on laptop |
-| **WebLLM**    | Requires Chrome + WebGPU | Loads ~1.5GB model on first triage   |
+| Option     | Setup                    | Notes                                |
+| ---------- | ------------------------ | ------------------------------------ |
+| **Ollama** | `ollama pull gemma4`     | Best real-model experience on laptop |
+| **WebLLM** | Requires Chrome + WebGPU | Loads ~1.5GB model on first triage   |
 
 For Ollama:
 
 ```bash
 ollama pull gemma4
-# Or download from Kaggle: scripts/download-gemma4.sh
 ```
 
 ### 4. Run
@@ -105,57 +112,102 @@ bun run dev
 
 Open http://localhost:5173 — sign up, and you're ready.
 
-### Alternative: Docker (full stack)
-
-```bash
-cp .env.docker .env
-docker compose up
-```
-
-This starts the app (hot-reload), Ollama with Gemma 4, and a local Supabase stack.  
-Open http://localhost:5173.
-
 ---
 
 ## Project structure
 
 ```
 src/
-├── routes/          # TanStack file routes
-│   ├── index.tsx    # Login / sign-up
-│   ├── _app.tsx     # Auth layout
-│   ├── _app.dashboard.tsx
-│   ├── _app.triage.tsx        # Camera → AI → result
-│   ├── _app.document.tsx      # Document scanner
-│   ├── _app.patients.index.tsx
-│   ├── _app.patients.$patientId.tsx
-│   ├── _app.supervisor.tsx
-│   └── _app.settings.tsx
-├── components/      # Reusable UI components
-├── lib/             # Core logic
-│   ├── gemma.ts         # WebLLM + Ollama + demo engines
-│   ├── gemma-prompt.ts  # System prompts for Gemma 4
-│   ├── db.ts            # Dexie IndexedDB schema
-│   ├── sync.ts          # Background sync engine
-│   ├── voice.ts         # Speech I/O
-│   └── referral.ts      # PDF generation
+├── routes/
+│   ├── index.tsx                          # Login / sign-up
+│   ├── _app.tsx                           # Auth layout
+│   ├── _app.dashboard.tsx                 # Main dashboard
+│   ├── _app.triage.tsx                    # Camera → AI → result
+│   ├── _app.document.tsx                  # Document scanner
+│   ├── _app.patients.index.tsx            # Patient list
+│   ├── _app.patients.$patientId.tsx       # Patient record
+│   ├── _app.patient.record.tsx            # Patient health card
+│   ├── _app.patient.scan.tsx             # QR scanner
+│   ├── _app.consultations.tsx            # Consultations list
+│   ├── _app.clinician.consultations.tsx  # Clinician dashboard
+│   ├── _app.clinician.consultations.$id.tsx  # Respond to consultation
+│   ├── _app.supervisor.tsx               # Supervisor view
+│   └── _app.settings.tsx                 # Settings
+├── components/                          # Reusable UI components
+│   ├── SaliencyOverlay.tsx              # AI explainability heatmap
+│   └── ...
+├── lib/                                 # Core logic
+│   ├── gemma.ts                         # WebLLM + Ollama engines
+│   ├── gemma-prompt.ts                  # System prompts for Gemma 4
+│   ├── db.ts                            # Dexie IndexedDB schema (v10)
+│   ├── sync.ts                          # Background sync engine
+│   ├── voice.ts                         # Speech I/O
+│   ├── referral.ts                      # PDF generation
+│   ├── image-quality.ts                 # Blur/exposure/resolution checks
+│   ├── image-processing.ts              # CLAHE, denoise, gamma correction
+│   ├── memory-manager.ts               # WebGPU memory pressure handling
+│   ├── facilities.ts                    # 19-hospital facility database
+│   ├── i18n.ts                          # 7-language translation system
+│   ├── vital-signs.ts                   # Vital signs assessment
+│   ├── maternal.ts                      # Maternal health indicators
+│   ├── nutrition.ts                     # Nutrition assessment
+│   ├── red-flags.ts                     # Critical red flag detection
+│   ├── outbreak-flags.ts               # Outbreak pattern detection
+│   ├── who-standards.ts                # WHO guideline compliance
+│   └── patient-records.ts              # AES-GCM encrypted records
 ├── hooks/
-│   ├── useGemma.ts      # Model lifecycle hook
+│   ├── useGemma.ts                     # Model lifecycle hook
 │   └── useOnlineStatus.ts
-├── stores/          # Zustand state
+├── stores/                             # Zustand state
 └── types/
 ```
 
 ---
 
-## Hackathon submission
+## Async Telemedicine & Clinician Dashboard
 
-- **Technical writeup**: [TECHNICAL_WRITEUP.md](./TECHNICAL_WRITEUP.md)
-- **SRS**: [SRS.md](./SRS.md)
-- **Development prompt**: [DEVELOPMENT_PROMPT.md](./DEVELOPMENT_PROMPT.md)
-- **Model setup**: [scripts/download-gemma4.sh](./scripts/download-gemma4.sh)
-- **Clinical validation**: [CLINICAL_VALIDATION.md](./CLINICAL_VALIDATION.md) — validation protocol, metrics, and published results
-- **Compliance**: [docs/compliance/COMPLIANCE.md](./docs/compliance/COMPLIANCE.md) — HIPAA, GDPR, Nigeria DPA, India DPDP Act, WHO SMART
+Trij supports **asynchronous consultation requests** — CHWs can request specialist review of a triage case, and clinicians respond via a dedicated dashboard.
+
+- **Consultation request**: From patient record → "Request Consultation" — includes triage images, AI assessment, and CHW notes
+- **Offline queuing**: Requests queue in IndexedDB when offline, sync automatically when connectivity returns
+- **Clinician dashboard**: `/clinician/consultations` lists all open cases; click through to review AI assessment, add diagnosis and management plan
+- **Polling**: Clinicians poll every 30s for new requests; CHWs poll for responses
+- **Supabase RLS**: Clinicians authenticated via `role = 'admin'` in Supabase Auth
+
+---
+
+## Datasets & Bias Audit
+
+Trij includes a **Fitzpatrick skin tone bias audit pipeline** to evaluate model performance across skin tones — essential before deploying any dermatology AI in diverse populations.
+
+| Dataset | Images | FST Labels | Source | Status |
+|---------|--------|------------|--------|--------|
+| **MSKCC Skin Tone** | 4,872 | Yes (I–VI) | ISIC Archive (CC-BY) | ✅ Downloaded |
+| **SCIN** (Google) | 5,032 | Yes (4,979) | Google Research | ✅ Extracted |
+| **Fitzpatrick17k** | 16,577 (CSV) | Yes (Scale/Centaur) | Groh et al. | ✅ Metadata, ❌ Images dead |
+| **DDI** | — | — | Stanford AIMI | ❌ Manual request |
+| **DDI-2** | — | — | Daneshjou Lab | ❌ Manual request |
+
+**Audit result (simulated on 4,872 MSKCC images): 🔴 RED — 12.8% accuracy gap** between FST I–II (83.0%) and FST V–VI (70.2%). Real model inference blocked pending GPU-equipped machine.
+
+See [`BIAS_AUDIT.md`](./BIAS_AUDIT.md) and [`docs/bias-audit/`](./docs/bias-audit/) for full pipeline, methodology, and results.
+
+---
+
+## Clinical Validation
+
+Clinical validation framework available at [`docs/clinical-validation/`](./docs/clinical-validation/):
+- **Partner outreach plan** — target NGOs, ministries of health, CHW training organizations
+- **IRB protocol template** — ready for institutional ethics board submission
+- **One-pager** — for partner engagement and stakeholder briefings
+
+Target: Real-world pilot studies in Q3 2026.
+
+---
+
+## References & Citations
+
+The bias audit uses publicly available datasets. See [`docs/bias-audit/README.md`](./docs/bias-audit/README.md) for full citation details. The combined audit dataset is available on [Hugging Face](https://huggingface.co/datasets/Mosss-os/trij-bias-audit-dataset).
 
 ---
 
@@ -196,7 +248,7 @@ Trij is actively looking for mission-aligned investors to scale impact.
 > - **Rule-based digital IMCI tools** — no image analysis, no voice, no document OCR. Limited to decision-tree algorithms.
 > - **Closed-source on-device AI apps** — can't be audited, customized, or extended by the communities they serve.
 >
-> What we understand that competitors don't: **On-devide AI + open-source + offline-first is the only combination that works at scale for community health in low-resource settings.** Cloud-dependent tools fail where connectivity is unreliable. Closed-source tools can't be localized or verified. Rule-based tools can't analyze images or voice. Trij combines all three capabilities — image assessment, voice guidance, document OCR — in a single free, open-source PWA that runs on any modern smartphone with or without internet.
+> What we understand that competitors don't: **On-device AI + open-source + offline-first is the only combination that works at scale for community health in low-resource settings.** Cloud-dependent tools fail where connectivity is unreliable. Closed-source tools can't be localized or verified. Rule-based tools can't analyze images or voice. Trij combines all three capabilities — image assessment, voice guidance, document OCR — in a single free, open-source PWA that runs on any modern smartphone with or without internet.
 
 **What's your revenue and/or growth rate?**
 > Currently pre-revenue. The app is free and open-source (Apache 2.0). Built for the Gemma 4 Good Hackathon and launched publicly on Product Hunt. Early traction includes organic interest from global health NGOs, CHW training programs, and digital health communities. Revenue model under exploration: premium deployment support for NGOs/governments, API access for health system integration, and managed hosting for institutions. Core triage functionality will remain free and open-source.

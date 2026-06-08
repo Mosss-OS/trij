@@ -1,7 +1,19 @@
 /**
  * WHO Child Growth Standards (2006) Reference Data
- * Simplified implementation for Z-score calculations
- * Based on WHO Multicentre Growth Reference Study (MGRS)
+ * 
+ * This module implements the WHO Child Growth Standards for assessing child
+ * nutritional status. It provides Z-score calculations for weight-for-age,
+ * height-for-age, weight-for-height, and BMI-for-age using the LMS method.
+ * 
+ * The standards are based on the WHO Multicentre Growth Reference Study (MGRS)
+ * and are used to classify children as:
+ * - SAM: Severe Acute Malnutrition (WHZ < -3)
+ * - MAM: Moderate Acute Malnutrition (WHZ < -2)
+ * - Normal: Adequate growth
+ * - Overweight: Risk of obesity
+ * - Obese: High risk of obesity complications
+ * 
+ * All calculations are performed client-side with no external dependencies.
  */
 
 export interface WHOGrowthStandard {

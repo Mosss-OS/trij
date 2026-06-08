@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Stethoscope,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/consultations")({
@@ -58,6 +59,15 @@ function ConsultationsPage() {
     <div className="mx-auto max-w-lg px-4 pb-24 pt-4">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">{t("consultationTitle")}</h1>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={() => navigate({ to: "/clinician/consultations" })}
+        >
+          <Stethoscope className="h-4 w-4" />
+          {t("clinicianTitle") || "Clinician"}
+        </Button>
       </div>
 
       {loading ? (

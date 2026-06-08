@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-06-07T22:04:11Z",
+  "total_samples": 4872,
+  "simulated": true,
+  "metrics": {
+    "accuracy": {
+      "light_mean": 0.9212961413271243,
+      "dark_mean": 0.7933652597215524,
+      "gap": 0.12793088160557198
+    },
+    "sensitivity": {
+      "light_mean": 0.46064807066356217,
+      "dark_mean": 0.3966826298607762,
+      "gap": 0.06396544080278599
+    },
+    "specificity": {
+      "light_mean": 0.46064807066356217,
+      "dark_mean": 0.3966826298607762,
+      "gap": 0.06396544080278599
+    },
+    "urgency_agreement": {
+      "light_mean": 0.8908621795429683,
+      "dark_mean": 0.9041023049227989,
+      "gap": -0.013240125379830547
+    }
+  },
+  "overall_status": "RED - Block deployment"
+}

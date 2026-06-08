@@ -1,3 +1,22 @@
+/**
+ * Patient Health Record Management
+ * 
+ * This module handles all patient-owned health record functionality, including:
+ * - Secure local storage of health records in IndexedDB (via Dexie)
+ * - Patient ID generation and management (via localStorage)
+ * - QR code payload generation for patient health cards
+ * - Encryption/decryption of health records using AES-GCM
+ * - Adding visit notes by CHWs and doctors
+ * - Doctor verification badge system
+ * 
+ * Health records are stored locally on the device and can be shared via QR codes.
+ * Doctors can append visit notes to patient records, which are marked with
+ * a verifiedBy badge indicating the doctor's name and facility.
+ * 
+ * All cryptographic operations use industry-standard AES-GCM with PBKDF2 key
+ * derivation derived from the patient's PIN.
+ */
+
 import Dexie, { type Table } from "dexie";
 import { encrypt, decrypt, deriveKey, generateSalt, cacheKey, clearKey, isKeyCached } from "./crypto";
 export { isKeyCached };

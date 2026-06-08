@@ -4,6 +4,7 @@ import { I18nErrorBoundary } from "@/components/ErrorBoundary";
 import { ModelDownloadManager } from "@/components/ModelDownloadManager";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { LANGUAGES } from "@/lib/voice";
+import { LANGUAGE_INFO } from "@/lib/i18n";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -304,11 +305,31 @@ function SettingsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {LANGUAGES.map((l) => (
-                  <SelectItem key={l.code} value={l.code}>
-                    {l.label}
-                  </SelectItem>
-                ))}
+                {LANGUAGES.map((l) => {
+                  const info = LANGUAGE_INFO.find((i) => i.code === l.code);
+                  return (
+                    <SelectItem key={l.code} value={l.code}>
+                      <span className="flex items-center gap-2">
+                        {l.label}
+                        {info?.status === "certified" && (
+                          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+                            Certified
+                          </span>
+                        )}
+                        {info?.status === "conditional" && (
+                          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                            Conditional
+                          </span>
+                        )}
+                        {info?.status === "draft" && (
+                          <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">
+                            Draft
+                          </span>
+                        )}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>

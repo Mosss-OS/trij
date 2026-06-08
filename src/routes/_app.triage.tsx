@@ -59,6 +59,7 @@ import { queuePatient, queueAssessment } from "@/lib/sync";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { saveVoiceDraft, getVoiceDraft, clearVoiceDraft, listVoiceDrafts } from "@/lib/voice-draft";
 import { getCurrentPosition } from "@/lib/geolocation";
+import { getNearestFacilityWithGeolocation } from "@/lib/facilities";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import {
@@ -678,6 +679,16 @@ function TriagePage() {
             })),
           ),
         });
+        getNearestFacilityWithGeolocation().then((nr) => {
+          const f = nr.facility;
+          if (f) {
+            setRedFlagResult((prev) =>
+              prev
+                ? { ...prev, nearestFacility: `${f.name} (${nr.distanceKm} km)` }
+                : prev,
+            );
+          }
+        });
       } else {
         setResult(r);
       }
@@ -778,6 +789,16 @@ function TriagePage() {
               category: f.rule.category,
             })),
           ),
+        });
+        getNearestFacilityWithGeolocation().then((nr) => {
+          const f = nr.facility;
+          if (f) {
+            setRedFlagResult((prev) =>
+              prev
+                ? { ...prev, nearestFacility: `${f.name} (${nr.distanceKm} km)` }
+                : prev,
+            );
+          }
         });
       } else {
         setResult(r);
@@ -1208,32 +1229,6 @@ function TriagePage() {
               setPendingCapture(null);
               setTimeout(() => onCapture(data), 100);
             }
-          }}
-          onUseDemo={() => {
-            setAiFailureKind(null);
-            setPendingCapture(null);
-            pendingTextRef.current = false;
-            const data = pendingCapture;
-            setPendingCapture(null);
-            const runDemo = async () => {
-              kindRef.current = "demo";
-              setStep("analyzing");
-              try {
-                const r = await triageImage(
-                  data || "",
-                  language,
-                  "demo",
-                  ollamaUrl,
-                  presentationType,
-                  symptomDescription,
-                );
-                setResult(r);
-                setStep("result");
-              } catch {
-                setStep("capture");
-              }
-            };
-            runDemo();
           }}
           onManualAssessment={(r) => {
             setAiFailureKind(null);

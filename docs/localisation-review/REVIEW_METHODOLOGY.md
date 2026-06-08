@@ -61,17 +61,24 @@ After remediation, each language receives a rating:
 
 ## Current Status
 
-| Language | Locale | Reviewer | Clinical Accuracy | Coverage | Overall Rating |
+| Language | Locale | Reviewer | Clinical Accuracy | Translated Coverage | Overall Rating |
 |---|---|---|---|---|---|
-| French | fr-FR | — | Pending | 100% | Draft |
-| Swahili | sw-KE | — | Pending | 100% | Draft |
-| Hindi | hi-IN | — | Pending | 100% | Draft |
-| Portuguese | pt-BR | — | Pending | 100% | Draft |
-| Arabic | ar-SA | — | Pending | 100% | Draft |
-| Spanish | es-ES | — | Pending | 100% | Draft |
+| English | en-US | — | Reviewed | 100% | Certified |
+| French | fr-FR | — | Pending | 44% | Conditional |
+| Swahili | sw-KE | — | Pending | 44% | Conditional |
+| Hindi | hi-IN | — | Pending | 44% | Conditional |
+| Portuguese | pt-BR | — | Pending | 44% | Conditional |
+| Arabic | ar-SA | — | Pending | 44% | Conditional |
+| Spanish | es-ES | — | Pending | 44% | Conditional |
+| Pidgin | pcm | — | Pending | 13% | Draft |
+| Yoruba | yo | — | Pending | 12% | Draft |
+| Hausa | ha | — | Pending | 12% | Draft |
+| Igbo | ig | — | Pending | 12% | Draft |
 
-> **Translation coverage** (all UI keys present): 100% for all locales.  
-> **Next milestone:** Engage native speaker clinician reviewers and begin Step 2 for each language.
+> **Runtime coverage** (all UI keys present via English fallback): 100% for all locales.  
+> **Translated coverage** (keys with actual translation, not English fallback): listed above.  
+> Missing keys are auto-filled with the English source text at startup via `fillMissingTranslations()` in `src/lib/i18n.ts`.  
+> **Next milestone:** Engage native speaker clinician reviewers and begin Step 2 for each non-English locale.
 
 ---
 

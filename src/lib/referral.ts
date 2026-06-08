@@ -1,3 +1,23 @@
+/**
+ * Medical Referral Generation Module
+ * 
+ * This module creates printable medical referral slips for patients who require
+ * further evaluation at a healthcare facility. It generates PDF documents that
+ * include:
+ * - Patient and assessment information
+ * - QR code containing encoded referral data for easy digital retrieval
+ * - Triage urgency level and clinical details
+ * - CHW contact information for follow-up
+ * 
+ * The referral slips are designed to be given to patients to take to the next
+ * level of care, ensuring continuity of information between community health
+ * workers and facility-based providers.
+ * 
+ * The QR code encodes a minimal dataset that can be scanned at the receiving
+ * facility to retrieve the full assessment from the Trij system, reducing
+ * data entry errors and improving referral completion rates.
+ */
+
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import type { Patient, Assessment } from "@/types/trij";

@@ -1,3 +1,24 @@
+/**
+ * Maternal Health Assessment Module
+ * 
+ * This module implements emergency obstetric and neonatal danger sign detection
+ * based on WHO guidelines. It assesses pregnant and postpartum patients for
+ * life-threatening conditions that require immediate referral.
+ * 
+ * The assessment covers three phases:
+ * - Antenatal: During pregnancy
+ * - Postnatal: After birth (mother)
+ * - Neonatal: Newborn infant
+ * 
+ * Each phase has specific danger signs that, when present, indicate potential
+ * emergencies requiring urgent medical attention. The module provides:
+ * - Danger sign detection based on clinical input
+ * - Urgency level determination (red/yellow/green)
+ * - Suspected condition identification
+ * - Treatment recommendations
+ * - Referral guidance
+ */
+
 export type MaternalPhase = "antenatal" | "postnatal" | "neonatal";
 
 export type AntenatalDangerSign =
