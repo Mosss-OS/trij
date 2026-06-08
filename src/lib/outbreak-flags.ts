@@ -1,3 +1,27 @@
+/**
+ * Outbreak / Notifiable Conditions Detection Module
+ * 
+ * This module contains a database of notifiable (reportable) diseases that require
+ * immediate public health notification when suspected. It enables community health
+ * workers to identify potential outbreak conditions based on clinical presentations
+ * and trigger appropriate notification protocols.
+ * 
+ * The module includes:
+ * - A curated list of high-priority infectious diseases with outbreak potential
+ * - Keyword matching algorithms to detect suspected cases from symptom descriptions
+ * - Specific notification protocols for each condition based on international
+ *   public health guidelines
+ * 
+ * When a notifiable condition is suspected, the system provides:
+ * - Immediate notification instructions for health authorities
+ * - Isolation and containment recommendations
+ * - Guidance on sample collection and transport when applicable
+ * - Contact tracing protocols where relevant
+ * 
+ * This supports early detection and response to potential outbreaks, helping to
+ * prevent wider community spread through timely public health intervention.
+ */
+
 export const NOTIFIABLE_CONDITIONS: Array<{
   name: string;
   keywords: string[];

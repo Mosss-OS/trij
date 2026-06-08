@@ -35,6 +35,8 @@ import { Route as AppPatientMedicationsRouteImport } from './routes/_app.patient
 import { Route as AppDashboardCommunityRouteImport } from './routes/_app.dashboard.community'
 import { Route as AppConsultationsRequestRouteImport } from './routes/_app.consultations.request'
 import { Route as AppConsultationsIdRouteImport } from './routes/_app.consultations.$id'
+import { Route as AppClinicianConsultationsRouteImport } from './routes/_app.clinician.consultations'
+import { Route as AppClinicianConsultationsIdRouteImport } from './routes/_app.clinician.consultations.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -166,6 +168,18 @@ const AppConsultationsIdRoute = AppConsultationsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AppConsultationsRoute,
 } as any)
+const AppClinicianConsultationsRoute =
+  AppClinicianConsultationsRouteImport.update({
+    id: '/clinician/consultations',
+    path: '/clinician/consultations',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppClinicianConsultationsIdRoute =
+  AppClinicianConsultationsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AppClinicianConsultationsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -184,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
+  '/clinician/consultations': typeof AppClinicianConsultationsRouteWithChildren
   '/consultations/$id': typeof AppConsultationsIdRoute
   '/consultations/request': typeof AppConsultationsRequestRoute
   '/dashboard/community': typeof AppDashboardCommunityRoute
@@ -193,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/patients/$patientId': typeof AppPatientsPatientIdRoute
   '/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/patients/': typeof AppPatientsIndexRoute
+  '/clinician/consultations/$id': typeof AppClinicianConsultationsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -211,6 +227,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsRoute
   '/supervisor': typeof AppSupervisorRoute
   '/triage': typeof AppTriageRoute
+  '/clinician/consultations': typeof AppClinicianConsultationsRouteWithChildren
   '/consultations/$id': typeof AppConsultationsIdRoute
   '/consultations/request': typeof AppConsultationsRequestRoute
   '/dashboard/community': typeof AppDashboardCommunityRoute
@@ -220,6 +237,7 @@ export interface FileRoutesByTo {
   '/patients/$patientId': typeof AppPatientsPatientIdRoute
   '/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/patients': typeof AppPatientsIndexRoute
+  '/clinician/consultations/$id': typeof AppClinicianConsultationsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -240,6 +258,7 @@ export interface FileRoutesById {
   '/_app/settings': typeof AppSettingsRoute
   '/_app/supervisor': typeof AppSupervisorRoute
   '/_app/triage': typeof AppTriageRoute
+  '/_app/clinician/consultations': typeof AppClinicianConsultationsRouteWithChildren
   '/_app/consultations/$id': typeof AppConsultationsIdRoute
   '/_app/consultations/request': typeof AppConsultationsRequestRoute
   '/_app/dashboard/community': typeof AppDashboardCommunityRoute
@@ -249,6 +268,7 @@ export interface FileRoutesById {
   '/_app/patients/$patientId': typeof AppPatientsPatientIdRoute
   '/_app/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/_app/patients/': typeof AppPatientsIndexRoute
+  '/_app/clinician/consultations/$id': typeof AppClinicianConsultationsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -269,6 +289,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/supervisor'
     | '/triage'
+    | '/clinician/consultations'
     | '/consultations/$id'
     | '/consultations/request'
     | '/dashboard/community'
@@ -278,6 +299,7 @@ export interface FileRouteTypes {
     | '/patients/$patientId'
     | '/patients/batch-register'
     | '/patients/'
+    | '/clinician/consultations/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -296,6 +318,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/supervisor'
     | '/triage'
+    | '/clinician/consultations'
     | '/consultations/$id'
     | '/consultations/request'
     | '/dashboard/community'
@@ -305,6 +328,7 @@ export interface FileRouteTypes {
     | '/patients/$patientId'
     | '/patients/batch-register'
     | '/patients'
+    | '/clinician/consultations/$id'
   id:
     | '__root__'
     | '/'
@@ -324,6 +348,7 @@ export interface FileRouteTypes {
     | '/_app/settings'
     | '/_app/supervisor'
     | '/_app/triage'
+    | '/_app/clinician/consultations'
     | '/_app/consultations/$id'
     | '/_app/consultations/request'
     | '/_app/dashboard/community'
@@ -333,6 +358,7 @@ export interface FileRouteTypes {
     | '/_app/patients/$patientId'
     | '/_app/patients/batch-register'
     | '/_app/patients/'
+    | '/_app/clinician/consultations/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -525,6 +551,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConsultationsIdRouteImport
       parentRoute: typeof AppConsultationsRoute
     }
+    '/_app/clinician/consultations': {
+      id: '/_app/clinician/consultations'
+      path: '/clinician/consultations'
+      fullPath: '/clinician/consultations'
+      preLoaderRoute: typeof AppClinicianConsultationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/clinician/consultations/$id': {
+      id: '/_app/clinician/consultations/$id'
+      path: '/$id'
+      fullPath: '/clinician/consultations/$id'
+      preLoaderRoute: typeof AppClinicianConsultationsIdRouteImport
+      parentRoute: typeof AppClinicianConsultationsRoute
+    }
   }
 }
 
@@ -569,6 +609,20 @@ const AppPatientRouteWithChildren = AppPatientRoute._addFileChildren(
   AppPatientRouteChildren,
 )
 
+interface AppClinicianConsultationsRouteChildren {
+  AppClinicianConsultationsIdRoute: typeof AppClinicianConsultationsIdRoute
+}
+
+const AppClinicianConsultationsRouteChildren: AppClinicianConsultationsRouteChildren =
+  {
+    AppClinicianConsultationsIdRoute: AppClinicianConsultationsIdRoute,
+  }
+
+const AppClinicianConsultationsRouteWithChildren =
+  AppClinicianConsultationsRoute._addFileChildren(
+    AppClinicianConsultationsRouteChildren,
+  )
+
 interface AppRouteChildren {
   AppAuditRoute: typeof AppAuditRoute
   AppCalculatorRoute: typeof AppCalculatorRoute
@@ -584,6 +638,7 @@ interface AppRouteChildren {
   AppSettingsRoute: typeof AppSettingsRoute
   AppSupervisorRoute: typeof AppSupervisorRoute
   AppTriageRoute: typeof AppTriageRoute
+  AppClinicianConsultationsRoute: typeof AppClinicianConsultationsRouteWithChildren
   AppPatientsPatientIdRoute: typeof AppPatientsPatientIdRoute
   AppPatientsBatchRegisterRoute: typeof AppPatientsBatchRegisterRoute
   AppPatientsIndexRoute: typeof AppPatientsIndexRoute
@@ -604,6 +659,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSettingsRoute: AppSettingsRoute,
   AppSupervisorRoute: AppSupervisorRoute,
   AppTriageRoute: AppTriageRoute,
+  AppClinicianConsultationsRoute: AppClinicianConsultationsRouteWithChildren,
   AppPatientsPatientIdRoute: AppPatientsPatientIdRoute,
   AppPatientsBatchRegisterRoute: AppPatientsBatchRegisterRoute,
   AppPatientsIndexRoute: AppPatientsIndexRoute,

@@ -192,21 +192,6 @@ function DocumentScan() {
               setStep("capture");
             });
           }}
-          onUseDemo={() => {
-            setAiFailureKind(null);
-            const data = pendingImageRef.current;
-            pendingImageRef.current = null;
-            if (!data) return;
-            setStep("analyzing");
-            setProgressText(t("readingDocument"));
-            setProgress(100);
-            analyzeDocument(data, language, "demo", ollamaUrl).then((r) => {
-              setResult(r);
-              setStep("result");
-            }).catch(() => {
-              setStep("capture");
-            });
-          }}
           onDismiss={() => {
             setAiFailureKind(null);
             pendingImageRef.current = null;

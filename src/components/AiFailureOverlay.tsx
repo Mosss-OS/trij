@@ -35,7 +35,6 @@ const MANUAL_CONDITIONS = [
 interface AiFailureOverlayProps {
   kind: AiFailureKind;
   onRetry: () => void;
-  onUseDemo: () => void;
   onManualAssessment?: (result: TriageResult) => void;
   onDismiss: () => void;
 }
@@ -43,7 +42,6 @@ interface AiFailureOverlayProps {
 export function AiFailureOverlay({
   kind,
   onRetry,
-  onUseDemo,
   onManualAssessment,
   onDismiss,
 }: AiFailureOverlayProps) {
@@ -129,10 +127,6 @@ export function AiFailureOverlay({
               <Button onClick={onRetry} className="w-full gap-2">
                 <Loader2 className="h-4 w-4" />
                 {t("aiFailureRetry")}
-              </Button>
-              <Button variant="secondary" onClick={onUseDemo} className="w-full gap-2">
-                <MousePointerClick className="h-4 w-4" />
-                {t("aiFailureUseDemo")}
               </Button>
               {onManualAssessment && (
                 <Button

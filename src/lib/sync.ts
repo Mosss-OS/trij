@@ -1,3 +1,24 @@
+/**
+ * Synchronization Engine
+ * 
+ * This module manages Trij's offline-first synchronization capabilities, ensuring
+ * data persistence and eventual consistency between local IndexedDB storage and
+ * the remote Supabase database. It implements a robust queue-based system with
+ * retry mechanisms, conflict resolution, and background sync capabilities.
+ * 
+ * Key Features:
+ * - Offline-first queueing of all patient records, assessments, and consultations
+ * - Automatic retry with exponential backoff for failed sync operations
+ * - Dead letter queue for permanently failed items after MAX_RETRIES attempts
+ * - Background synchronization via service workers
+ * - Conflict detection and resolution strategies
+ * - Manual retry capabilities for failed items
+ * 
+ * The sync engine ensures that patient data is never lost due to connectivity
+ * issues and provides a seamless experience when moving between online and
+ * offline states.
+ */
+
 import { getDB, type DeadLetterItem } from "./db";
 import { supabase } from "@/integrations/supabase/client";
 import type {

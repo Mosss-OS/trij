@@ -34,3 +34,11 @@ test-results/
 .vercel
 .env
 .env*.local
+
+# Bias audit large data files
+docs/bias-audit/data/
+docs/bias-audit/venv/
+docs/bias-audit/env/
+docs/bias-audit/scripts/__pycache__/
+.env.vercel
+trij-extension-dev-prompt.md

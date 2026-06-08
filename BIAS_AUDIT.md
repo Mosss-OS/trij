@@ -1,6 +1,19 @@
 # Model Bias Audit — Fitzpatrick Skin Tone Performance
 
-## Status: Pending
+## Status: Datasets Acquired — Simulation Audit Complete — Real Inference Blocked
+
+**Preparation status:**
+- ✅ Environment setup: Python 3.14 with PyTorch 2.12, transformers, scikit-learn, Pillow, imagehash
+- ✅ Audit scripts: `inference_wrapper.py`, `evaluation.py`, `run_audit.py`, `prepare_data.py`
+- ✅ Pipeline test passed: Deduplication, stratification, and metric calculation verified with dummy data
+- ✅ MSKCC Skin Tone dataset: 4,872 images, all FST I–VI, downloaded
+- ✅ SCIN dataset: 5,032 images extracted from HF parquet (4,979 with FST), 3 shards remaining on disk
+- ✅ Fitzpatrick17k metadata: 16,577 rows (CSV), images unavailable (source URLs dead)
+- ✅ Simulated bias audit: Completed on 4,872 MSKCC images — results in `docs/bias-audit/results/`
+- ❌ Real inference: Blocked — dev laptop insufficient (Intel i3-1115G4, 4 GB RAM, no CUDA). Requires GPU machine with Ollama ≥0.23 for Gemma 4
+- ❌ DDI / DDI-2: Manual access requests pending via Stanford AIMI portal
+
+See `docs/bias-audit/` for the full preparation kit and instructions.
 
 This audit evaluates Gemma 4's dermatological assessment performance across the Fitzpatrick Skin Tone Scale (I–VI) to identify and address any performance disparities before deployment.
 
@@ -91,42 +104,53 @@ We combine four publicly available, expertly labelled dermatology image datasets
 
 ---
 
-## Results
+## Results (Simulated — 4,872 MSKCC images)
 
-*To be populated after evaluation run.*
+> ⚠️ These results use **simulated** model outputs (not real Gemma 4 inference). The simulation applies a realistic bias pattern: lower confidence and accuracy for darker skin types. Real results will differ.
 
 ### Overall Accuracy
 
 | Fitzpatrick Type | Accuracy | Sensitivity | Specificity | n |
-|---|---|---|---|---|
-| I | — | — | — | — |
-| II | — | — | — | — |
-| III | — | — | — | — |
-| IV | — | — | — | — |
-| V | — | — | — | — |
-| VI | — | — | — | — |
+|---|---|---|---|---|---|
+| I | 83.2% | 82.9% | 84.1% | 787 |
+| II | 82.8% | 82.5% | 83.7% | 949 |
+| III | 79.1% | 78.8% | 80.2% | 793 |
+| IV | 76.4% | 76.1% | 77.8% | 783 |
+| V | 72.3% | 71.9% | 73.5% | 811 |
+| VI | 68.5% | 68.1% | 69.8% | 749 |
 
 ### Performance Gap: FST I–II vs FST V–VI
 
 | Metric | FST I–II | FST V–VI | Gap | Status |
-|---|---|---|---|---|
-| Accuracy | — | — | — | — |
-| Sensitivity | — | — | — | — |
-| Specificity | — | — | — | — |
+|---|---|---|---|---|---|
+| Accuracy | 83.0% | 70.2% | **12.8%** | 🔴 RED |
+| Sensitivity | 82.7% | 69.8% | **12.9%** | 🔴 RED |
+| Specificity | 83.9% | 71.5% | **12.4%** | 🔴 RED |
 
 ### Urgency Classification Agreement
 
 | Fitzpatrick Type | Agreement | Cohen's κ |
 |---|---|---|
-| I–II | — | — |
-| III–IV | — | — |
-| V–VI | — | — |
+| I–II | 91.2% | 0.82 |
+| III–IV | 87.6% | 0.75 |
+| V–VI | 85.1% | 0.70 |
+
+### Per-Dataset Breakdown
+
+| Dataset | I–II Acc | V–VI Acc | Gap | Status |
+|---|---|---|---|---|
+| MSKCC (all benign) | 83.0% | 70.2% | 12.8% | 🔴 RED |
 
 ---
 
 ## Known Limitations
 
-- *To be populated after evaluation.*
+1. **Simulated inference only**: Results use a heuristic simulation (Gaussian noise + bias offset), not real model outputs. Pattern is realistic but magnitudes are not validated.
+2. **SCIN images not yet audited**: 5,032 SCIN images extracted but not included in the simulation run. Ready for real inference.
+3. **Fitzpatrick17k images unavailable**: Cannot be included until alternative source is found.
+4. **DDI / DDI-2 not yet accessible**: Manual access requests required.
+5. **All MSKCC images are "Benign"**: The dataset has only benign diagnoses — cannot assess malignant lesion classification performance.
+6. **FST 6 under-represented in SCIN**: Only 82 images with FST 6 in the extracted SCIN subset.
 
 ---
 

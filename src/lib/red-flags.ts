@@ -6,6 +6,12 @@
  *
  * These rules run synchronously BEFORE AI inference to ensure
  * patient safety is never dependent on model reliability.
+ *
+ * The system implements hard-coded clinical decision rules for
+ * identifying time-critical conditions like sepsis, meningitis,
+ * stroke, cardiac emergencies, and obstetric complications.
+ * When any rule is triggered, the patient is flagged for immediate
+ * referral regardless of the AI assessment confidence level.
  */
 
 // Symptom and vital sign input types

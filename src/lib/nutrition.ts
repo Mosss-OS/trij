@@ -1,3 +1,26 @@
+/**
+ * Nutrition Assessment Module
+ * 
+ * This module evaluates nutritional status using Mid-Upper Arm Circumference (MUAC)
+ * measurements to detect acute malnutrition in children and adults. It implements
+ * WHO-established thresholds for classifying nutritional status and determining
+ * appropriate interventions.
+ * 
+ * The assessment considers:
+ * - MUAC measurement (in cm)
+ * - Age (to determine child vs adult thresholds)
+ * - Presence of bilateral edema
+ * - Visible wasting
+ * - Hair and skin changes
+ * 
+ * Results are classified according to WHO standards:
+ * - SAM: Severe Acute Malnutrition (requires urgent intervention)
+ * - MAM: Moderate Acute Malnutrition (needs supplemental feeding)
+ * - Normal: Adequate nutritional status
+ * - Overweight: Risk of obesity-related conditions
+ * - Obese: High risk of obesity complications
+ */
+
 export type NutritionClassification = "sam" | "mam" | "normal" | "overweight" | "obese";
 
 export interface NutritionAssessmentResult {
@@ -12,18 +35,26 @@ export interface NutritionAssessmentResult {
   urgency: "green" | "yellow" | "red";
 }
 
+/**
+ * MUAC thresholds for children (0-18 years)
+ * Values in cm
+ */
 const CHILD_MUAC_THRESHOLDS = {
-  sam: 11.5,
-  mam: 12.5,
-  normal: 17.0,
-  overweight: 20.0,
+  sam: 11.5,  // Below this: Severe Acute Malnutrition
+  mam: 12.5,  // Below this: Moderate Acute Malnutrition  
+  normal: 17.0, // Below this: Normal
+  overweight: 20.0, // Below this: Overweight
 };
 
+/**
+ * MUAC thresholds for adults (18+ years)
+ * Values in cm
+ */
 const ADULT_MUAC_THRESHOLDS = {
-  sam: 18.5,
-  mam: 20.0,
-  normal: 25.0,
-  overweight: 30.0,
+  sam: 18.5,  // Below this: Severe Acute Malnutrition
+  mam: 20.0,  // Below this: Moderate Acute Malnutrition
+  normal: 25.0, // Below this: Normal
+  overweight: 30.0, // Below this: Overweight
 };
 
 export function classifyMUAC(muacCm: number, isChild: boolean): NutritionClassification {

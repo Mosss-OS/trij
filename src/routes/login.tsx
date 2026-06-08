@@ -725,7 +725,7 @@ function LoginPage() {
             variant="outline"
             onClick={() => {
               const id = crypto.randomUUID();
-              setPendingOfflineUser({ id, email: "demo@trij.app" });
+              setPendingOfflineUser({ id, email: "offline@local" });
               setPendingPinUser(id);
               setShowPinSetup(true);
             }}

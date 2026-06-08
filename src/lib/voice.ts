@@ -90,16 +90,6 @@ export class VoiceAssistant {
   }
 }
 
-export const LANGUAGES = [
-  { code: "en-US", label: "English" },
-  { code: "es-ES", label: "Español" },
-  { code: "fr-FR", label: "Français" },
-  { code: "sw-KE", label: "Kiswahili" },
-  { code: "hi-IN", label: "हिन्दी" },
-  { code: "ar-SA", label: "العربية" },
-  { code: "pt-BR", label: "Português" },
-  { code: "pcm", label: "Pidgin" },
-  { code: "yo", label: "Yorùbá" },
-  { code: "ha", label: "Hausa" },
-  { code: "ig", label: "Igbo" },
-];
+import { LANGUAGE_INFO } from "./i18n";
+
+export const LANGUAGES = LANGUAGE_INFO.map((l) => ({ code: l.code, label: l.nativeLabel }));

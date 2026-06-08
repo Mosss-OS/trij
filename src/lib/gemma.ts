@@ -1,3 +1,20 @@
+/**
+ * Gemini AI Engine Integration
+ * 
+ * This module handles all AI inference for Trij, supporting multiple backends:
+ * - WebLLM (on-device Gemma 4 via WebGPU)
+ * - Ollama (local server)
+ * - Cloud (Google Gemini API)
+ * - Demo mode (for testing and offline use)
+ * 
+ * It provides functions for triage image analysis, medical document analysis,
+ * follow-up question generation, and conversation continuation.
+ * 
+ * The module includes automatic fallback chains for engine loading, but note
+ * that genuine engine failures will result in errors being thrown - fake data
+ * is only served when the user explicitly selects Demo mode.
+ */
+
 import type { MLCEngine, InitProgressReport } from "@mlc-ai/web-llm";
 export type { InitProgressReport };
 import {
@@ -398,7 +415,13 @@ async function ollamaChat(
   return res.json() as Promise<OllamaChatResponse>;
 }
 
-/* ─── Demo / mock engine ──────────────────────────────────── */
+/**
+ * Demo / Mock Engine Constants and Functions
+ * 
+ * Contains hardcoded mock data for testing and development purposes.
+ * This data is ONLY used when the user explicitly selects Demo mode
+ * in settings, never as a fallback for failed AI engines.
+ */
 
 const DEMO_CONDITIONS: Array<{
   condition: string;
@@ -454,35 +477,45 @@ const DEMO_CONDITIONS: Array<{
   },
 ];
 
+/**
+ * Generate a mock triage assessment for demo/testing purposes.
+ * 
+ * This function creates a realistic-looking but fake assessment result
+ * using predefined condition data. It is ONLY used when the user
+ * explicitly selects Demo mode in settings.
+ * 
+ * @returns {TriageResult} A simulated triage result with random condition,
+ *         confidence values, urgency level, and follow-up questions.
+ */
 function demoAssessment(): TriageResult {
-  const c = DEMO_CONDITIONS[Math.floor(Math.random() * DEMO_CONDITIONS.length)];
-  const diffs = DEMO_CONDITIONS.filter((d) => d.condition !== c.condition)
-    .slice(0, 2 + Math.floor(Math.random() * 2))
-    .map((d) => ({ name: d.condition, probability: Math.floor(Math.random() * 50) + 5 }));
-  const point = c.confidence - Math.floor(Math.random() * 10) + 5;
+   const c = DEMO_CONDITIONS[Math.floor(Math.random() * DEMO_CONDITIONS.length)];
+   const diffs = DEMO_CONDITIONS.filter((d) => d.condition !== c.condition)
+     .slice(0, 2 + Math.floor(Math.random() * 2))
+     .map((d) => ({ name: d.condition, probability: Math.floor(Math.random() * 50) + 5 }));
+   const point = c.confidence - Math.floor(Math.random() * 10) + 5;
 
-  return {
-    condition: c.condition,
-    confidence: {
-      confidence_point: Math.max(0, Math.min(100, point)),
-      confidence_interval: [Math.max(0, point - 10), Math.min(100, point + 10)] as [number, number],
-      uncertainty_source: "model_knowledge",
-      uncertainty_reason: "Demo mode simulation",
-    },
-    urgency: c.urgency,
-    possible_conditions: diffs,
-    key_visual_features: c.features,
-    recommendation: c.recommendation,
-    referral_advised: c.urgency === "red" || c.urgency === "yellow",
-    follow_up_questions: [
-      "How long has the rash been present?",
-      "Is there any associated pain or itching?",
-      "Have you had this before?",
-      "Do you have any known allergies?",
-      "Any fever or chills?",
-    ],
-  };
-}
+   return {
+     condition: c.condition,
+     confidence: {
+       confidence_point: Math.max(0, Math.min(100, point)),
+       confidence_interval: [Math.max(0, point - 10), Math.min(100, point + 10)] as [number, number],
+       uncertainty_source: "model_knowledge",
+       uncertainty_reason: "Demo mode simulation",
+     },
+     urgency: c.urgency,
+     possible_conditions: diffs,
+     key_visual_features: c.features,
+     recommendation: c.recommendation,
+     referral_advised: c.urgency === "red" || c.urgency === "yellow",
+     follow_up_questions: [
+       "How long has the rash been present?",
+       "Is there any associated pain or itching?",
+       "Have you had this before?",
+       "Do you have any known allergies?",
+       "Any fever or chills?",
+     ],
+   };
+ }
 
 const DEMO_DOCUMENTS: DocumentResult[] = [
   {
@@ -514,9 +547,19 @@ const DEMO_DOCUMENTS: DocumentResult[] = [
   },
 ];
 
+/**
+ * Generate a mock document analysis result for demo/testing purposes.
+ * 
+ * This function returns a randomly selected fake document analysis result
+ * (either a lab report or prescription). It is ONLY used when the user
+ * explicitly selects Demo mode in settings.
+ * 
+ * @returns {DocumentResult} A simulated document analysis result containing
+ *         key findings, summary, plain language explanation, and recommendations.
+ */
 function demoDocument(): DocumentResult {
-  return DEMO_DOCUMENTS[Math.floor(Math.random() * DEMO_DOCUMENTS.length)];
-}
+   return DEMO_DOCUMENTS[Math.floor(Math.random() * DEMO_DOCUMENTS.length)];
+ }
 
 /* ─── Cloud inference ──────────────────────────────────────── */
 
@@ -877,11 +920,8 @@ export async function triageImage(
       result = attachRagSources(result);
       return result;
     } catch (err) {
-      console.warn("Cloud inference failed, falling back to demo mode:", err);
-      await sleep(2000 + Math.random() * 1500);
-      result = demoAssessment();
-      result = attachRagSources(result);
-      return result;
+      console.warn("Cloud inference failed:", err);
+      throw new Error("Cloud inference failed. Check your internet connection or try again later.");
     }
   }
 
@@ -896,11 +936,8 @@ export async function triageImage(
       result = attachRagSources(result);
       return result;
     } catch (err) {
-      console.warn("Google inference failed, falling back to demo:", err);
-      await sleep(2000 + Math.random() * 1500);
-      result = demoAssessment();
-      result = attachRagSources(result);
-      return result;
+      console.warn("Google inference failed:", err);
+      throw new Error("Google AI Studio inference failed. Check your API key and try again.");
     }
   }
 
@@ -940,21 +977,14 @@ export async function triageImage(
       result = attachRagSources(result);
       return result;
     } catch (err) {
-      console.warn("Ollama failed, falling back to demo:", err);
-      await sleep(2000 + Math.random() * 1500);
-      result = demoAssessment();
-      result = attachRagSources(result);
-      return result;
+      console.warn("Ollama failed:", err);
+      throw new Error("Ollama inference failed. Check that Ollama is running and try again.");
     }
   }
 
   /* Fallback for unknown/unimplemented engine kinds (e.g. "wasm", "cpu") */
   if (kind !== "webllm") {
-    console.warn(`Engine "${kind}" not directly supported, falling back to demo`);
-    await sleep(2000 + Math.random() * 1500);
-    result = demoAssessment();
-    result = attachRagSources(result);
-    return result;
+    throw new Error(`Engine "${kind}" is not implemented yet. Please select a different engine.`);
   }
 
   try {
@@ -1007,11 +1037,8 @@ export async function triageImage(
     result = attachRagSources(result);
     return result;
   } catch (err) {
-    console.warn("WebLLM failed, falling back to demo:", err);
-    await sleep(2000 + Math.random() * 1500);
-    result = demoAssessment();
-    result = attachRagSources(result);
-    return result;
+    console.warn("WebLLM failed:", err);
+    throw new Error("On-device AI model failed. Try a different inference engine or restart.");
   }
 }
 
@@ -1084,9 +1111,8 @@ export async function analyzeDocument(
     try {
       return await cloudDocumentAnalysis(imageDataUrl, language);
     } catch (err) {
-      console.warn("Cloud document analysis failed, falling back to demo:", err);
-      await sleep(1500 + Math.random() * 1000);
-      return demoDocument();
+      console.warn("Cloud document analysis failed:", err);
+      throw new Error("Cloud document analysis failed. Check your internet connection and try again.");
     }
   }
 
@@ -1108,9 +1134,8 @@ export async function analyzeDocument(
       if (result) return result;
       return triesJson<DocumentResult>(response.message.content ?? "", FALLBACK_DOC);
     } catch (err) {
-      console.warn("Ollama failed, falling back to demo:", err);
-      await sleep(1500 + Math.random() * 1000);
-      return demoDocument();
+      console.warn("Ollama document analysis failed:", err);
+      throw new Error("Ollama document analysis failed. Check that Ollama is running and try again.");
     }
   }
 
@@ -1123,9 +1148,8 @@ export async function analyzeDocument(
     try {
       return await googleDocumentAnalysis(imageDataUrl, language, model, apiKey);
     } catch (err) {
-      console.warn("Google document analysis failed, falling back to demo:", err);
-      await sleep(1500 + Math.random() * 1000);
-      return demoDocument();
+      console.warn("Google document analysis failed:", err);
+      throw new Error("Google AI Studio document analysis failed. Check your API key and try again.");
     }
   }
 
@@ -1162,7 +1186,7 @@ export async function analyzeDocument(
     if (result) return result;
     return triesJson<DocumentResult>(message.content ?? "", FALLBACK_DOC);
   } catch (err) {
-    console.warn("Primary engine failed, trying Google Gemini before demo:", err);
+    console.warn("Primary engine failed, trying Google Gemini:", err);
     const apiKey = useSettingsStore.getState().googleApiKey;
     if (apiKey) {
       try {
@@ -1174,8 +1198,7 @@ export async function analyzeDocument(
         console.warn("Google Gemini fallback also failed:", geminiErr);
       }
     }
-    await sleep(1500 + Math.random() * 1000);
-    return demoDocument();
+    throw new Error("All analysis engines failed. Please try again with a different engine or a clearer image.");
   }
 }
 
