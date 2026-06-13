@@ -6,6 +6,7 @@ import {
   getDeadLetterItems,
   retryDeadLetterItem,
   deleteDeadLetterItem,
+  triggerManualSync,
 } from "@/lib/sync";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import {
@@ -18,6 +19,7 @@ import {
   ChevronUp,
   RotateCw,
   Trash2,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
@@ -105,6 +107,27 @@ export function SyncStatus({ className }: { className?: string }) {
     setDeadLetterItems(dl);
   };
 
+  const handleManualSync = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    try {
+      const result = await triggerManualSync();
+      const items: SyncProgressItem[] = [];
+      const s: SyncSummary = {
+        total: result.ok + result.failed + result.deadLetter,
+        ok: result.ok,
+        failed: result.failed,
+        deadLetter: result.deadLetter,
+        items,
+      };
+      setSummary(s);
+    } catch {
+      /* error logged in triggerManualSync */
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <div className={cn("relative", className)}>
       <button
@@ -145,6 +168,16 @@ export function SyncStatus({ className }: { className?: string }) {
           <span className="ml-0.5">
             {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
           </span>
+        )}
+        {pending > 0 && !syncing && (
+          <button
+            onClick={handleManualSync}
+            className="ml-2 p-1.5 rounded hover:bg-secondary transition-colors"
+            title={t("manualSync")}
+            aria-label={t("manualSync")}
+          >
+            <RefreshCw className="h-3.5 w-3.5 text-primary" />
+          </button>
         )}
       </button>
 

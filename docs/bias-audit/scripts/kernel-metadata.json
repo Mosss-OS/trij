@@ -1,0 +1,17 @@
+{
+  "id": "mosesos/trij-bias-audit-v2",
+  "title": "Trij Bias Audit v2",
+  "code_file": "run_on_kaggle.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": false,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": [
+    "mosesos/florence-2-base",
+    "mosesos/trij-scin-data",
+    "mosesos/trij-mskcc-data"
+  ],
+  "competition_sources": [],
+  "kernel_sources": []
+}

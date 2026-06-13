@@ -61,7 +61,10 @@ def run_inference_on_dataset(
             continue
         
         try:
-            result = inference_wrapper.infer(img_path)
+            result = inference_wrapper.infer(
+                img_path,
+                fitzpatrick_type=row.get("fitzpatrick_skin_type", None)
+            )
             results.append({
                 "index": idx,
                 "true_diagnosis": row.get("condition", "Unknown"),

@@ -79,6 +79,7 @@ import { CloudInferenceIndicator } from "@/components/CloudInferenceIndicator";
 import { AiFailureOverlay, classifyAiError } from "@/components/AiFailureOverlay";
 import type { AiFailureKind } from "@/components/AiFailureOverlay";
 import { AiFeedbackWidget } from "@/components/AiFeedbackWidget";
+import { EmergencyMode } from "@/components/EmergencyMode";
 import type { AiFeedback } from "@/types/trij";
 
 interface QAPair {
@@ -1927,6 +1928,15 @@ function TriagePage() {
                   </ul>
                 </div>
               </div>
+            )}
+            {result.urgency === "red" && (
+              <EmergencyMode
+                patientName={patient?.identifier}
+                patientId={patient?.id}
+                condition={result.condition}
+                locationLat={patient?.locationLat}
+                locationLng={patient?.locationLng}
+              />
             )}
             <AssessmentResult
               result={result}

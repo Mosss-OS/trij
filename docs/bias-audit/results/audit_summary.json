@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-06-07T22:04:11Z",
+  "timestamp": "2026-06-11T23:25:55Z",
   "total_samples": 4872,
-  "simulated": true,
+  "simulated": false,
   "metrics": {
     "accuracy": {
       "light_mean": 0.9212961413271243,

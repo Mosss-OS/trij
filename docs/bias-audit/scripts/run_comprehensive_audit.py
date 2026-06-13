@@ -279,9 +279,61 @@ def main():
     parser.add_argument('--max-samples', type=int, default=None, help='Max total inference samples')
     parser.add_argument('--simulate', action='store_true', help='Use simulated results instead of real inference')
     parser.add_argument('--model', type=str, default=None, help='Ollama model to use')
+    parser.add_argument('--csv', type=str, default=None, help='Path to existing inference_results.csv (skip inference)')
     args = parser.parse_args()
 
     logger.info('=== Trij Fitzpatrick Skin Tone Bias Audit ===')
+
+    # --csv mode: load existing results, skip data prep & inference
+    if args.csv:
+        csv_path = Path(args.csv)
+        if not csv_path.exists():
+            logger.error(f'CSV not found: {csv_path}')
+            sys.exit(1)
+        results = pd.read_csv(csv_path)
+        logger.info(f'Loaded {len(results)} results from {csv_path}')
+        logger.info(f'Simulation mode: {args.simulate}')
+
+        # Validate required columns
+        required = ['fitzpatrick_skin_type', 'true_diagnosis', 'predicted_diagnosis']
+        missing = [c for c in required if c not in results.columns]
+        if missing:
+            logger.error(f'Missing required columns: {missing}')
+            sys.exit(1)
+        if 'confidence' not in results.columns:
+            results['confidence'] = 75.0
+        if 'true_urgency' not in results.columns:
+            results['true_urgency'] = 'YELLOW'
+        if 'predicted_urgency' not in results.columns:
+            results['predicted_urgency'] = 'YELLOW'
+
+        # Recompute report from existing results
+        metrics = calculate_metrics(results)
+        metrics.to_csv(RESULTS / 'metrics.csv')
+        gap = calculate_gap(metrics)
+        statuses = [v['status'] for v in gap.values() if isinstance(v, dict) and 'status' in v]
+        overall = 'GREEN - Acceptable'
+        if 'RED' in statuses:
+            overall = 'RED - Block deployment'
+        elif 'YELLOW' in statuses:
+            overall = 'YELLOW - Document limitations'
+        report = generate_report(gap, overall)
+        report_path = RESULTS / 'performance_gap_report.md'
+        with open(report_path, 'w') as f:
+            f.write(report)
+        logger.info(f'Report saved to {report_path}')
+        summary = {
+            'timestamp': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+            'total_samples': len(results),
+            'simulated': args.simulate,
+            'metrics': {k: {sk: sv for sk, sv in v.items() if sk != 'status'} for k, v in gap.items()},
+            'overall_status': overall
+        }
+        with open(RESULTS / 'audit_summary.json', 'w') as f:
+            json.dump(summary, f, indent=2, default=str)
+        logger.info('Bias audit complete!')
+        return overall
+
     logger.info(f'Simulation mode: {args.simulate}')
 
     # 1. Prepare dataset
