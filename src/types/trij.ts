@@ -218,6 +218,7 @@ export interface SyncQueueItem {
   createdAt: string;
   attempts: number;
   lastError?: string;
+  nextRetryAt?: string;
 }
 
 export interface SyncConflict {

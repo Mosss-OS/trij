@@ -68,8 +68,15 @@ function logSyncError(context: string, error: unknown, item?: SyncQueueItem) {
   }
 }
 
-export const MAX_RETRIES = 3;
-export const RETRY_BACKOFF_MS = [5_000, 30_000, 120_000];
+export const MAX_RETRIES = 5;
+export const RETRY_BACKOFF_MS = [5_000, 30_000, 120_000, 300_000, 600_000];
+
+function getBackoffMs(attempt: number): number {
+  const index = Math.min(attempt, RETRY_BACKOFF_MS.length - 1);
+  const base = RETRY_BACKOFF_MS[index];
+  const jitter = Math.random() * 1000;
+  return base + jitter;
+}
 
 async function moveToDeadLetter(item: SyncQueueItem) {
   const db = getDB();
@@ -213,17 +220,24 @@ export async function processSyncQueue(
     return { ok: 0, failed: 0, deadLetter: 0 };
   }
 
-  const {
+  let {
     data: { session },
     error: sessionError,
   } = await supabase.auth.getSession();
+
   if (sessionError || !session) {
-    logSyncError("processSyncQueue", sessionError || new Error("No active session"));
-    return { ok: 0, failed: 0, deadLetter: 0 };
+    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError || !refreshData.session) {
+      logSyncError("processSyncQueue", refreshError || new Error("No active session and refresh failed"));
+      return { ok: 0, failed: 0, deadLetter: 0 };
+    }
+    session = refreshData.session;
   }
 
   const db = getDB();
-  const items = await db.syncQueue.toArray();
+  const allItems = await db.syncQueue.toArray();
+  const now = new Date().toISOString();
+  const items = allItems.filter((item) => !item.nextRetryAt || item.nextRetryAt <= now);
   let ok = 0,
     failed = 0,
     deadLetter = 0;
@@ -420,6 +434,7 @@ export async function processSyncQueue(
 
       const attempts = (item.attempts ?? 0) + 1;
       const errorMessage = err instanceof Error ? err.message : String(err);
+      const nextRetryAt = new Date(Date.now() + getBackoffMs(attempts)).toISOString();
 
       // If we've exceeded max retries, move to dead letter queue
       if (attempts >= MAX_RETRIES) {
@@ -431,6 +446,7 @@ export async function processSyncQueue(
         await db.syncQueue.update(item.id!, {
           attempts,
           lastError: errorMessage,
+          nextRetryAt,
         });
         onProgress?.({ ...progress, status: "failed", error: errorMessage });
       }
@@ -501,12 +517,23 @@ export async function retryFailedSyncItems(): Promise<number> {
   let retried = 0;
 
   for (const item of failed) {
-    await db.syncQueue.update(item.id!, { attempts: 0, lastError: undefined });
+    await db.syncQueue.update(item.id!, { attempts: 0, lastError: undefined, nextRetryAt: undefined });
     retried++;
   }
 
   if (retried > 0) registerBackgroundSync().catch(() => {});
   return retried;
+}
+
+export async function triggerManualSync(): Promise<{ ok: number; failed: number; deadLetter: number }> {
+  const db = getDB();
+  const items = await db.syncQueue.where("nextRetryAt").notEqual("").toArray();
+  for (const item of items) {
+    if (item.nextRetryAt) {
+      await db.syncQueue.update(item.id!, { nextRetryAt: undefined });
+    }
+  }
+  return processSyncQueue();
 }
 
 export async function getDeadLetterItems(): Promise<DeadLetterItem[]> {
