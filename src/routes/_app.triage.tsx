@@ -1618,7 +1618,7 @@ function TriagePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("coughDays" as any) || "Days with cough"}</Label>
+                    <Label>{t("coughDays")}</Label>
                     <Input
                       value={imciCoughDays}
                       onChange={(e) => setImciCoughDays(e.target.value)}
@@ -1629,7 +1629,7 @@ function TriagePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("feverDays" as any) || "Days with fever"}</Label>
+                    <Label>{t("feverDays")}</Label>
                     <Input
                       value={imciFeverDays}
                       onChange={(e) => setImciFeverDays(e.target.value)}
@@ -1732,7 +1732,7 @@ function TriagePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("coughDays" as any) || "Days with cough"}</Label>
+                    <Label>{t("coughDays")}</Label>
                     <Input
                       value={imciCoughDays}
                       onChange={(e) => setImciCoughDays(e.target.value)}
@@ -1743,7 +1743,7 @@ function TriagePage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("feverDays" as any) || "Days with fever"}</Label>
+                    <Label>{t("feverDays")}</Label>
                     <Input
                       value={imciFeverDays}
                       onChange={(e) => setImciFeverDays(e.target.value)}
@@ -1885,7 +1885,7 @@ function TriagePage() {
             {image && (
               <img
                 src={image}
-                alt="Captured wound or skin condition photo being analyzed by AI"
+                alt={t("altWoundAnalyzing")}
                 className="h-40 w-40 rounded-2xl object-cover ring-4 ring-primary/20"
               />
             )}
@@ -1907,7 +1907,7 @@ function TriagePage() {
             {image && (
               <img
                 src={image}
-                alt="Captured wound or skin condition photo assessment result"
+                alt={t("altResultPhoto")}
                 className="aspect-video w-full rounded-2xl object-cover"
               />
             )}

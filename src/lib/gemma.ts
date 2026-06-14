@@ -835,7 +835,7 @@ export async function loadEngine(
     const fallbacks = fallbackChain[kind] || [];
     for (const fallback of fallbacks) {
       try {
-        console.log(`Attempting fallback from ${kind} to ${fallback}`);
+        console.debug(`Attempting fallback from ${kind} to ${fallback}`);
         await loadEngine(fallback, onProgress);
         return fallback; // Success with fallback — return the actual kind loaded
       } catch (fallbackError) {

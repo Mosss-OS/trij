@@ -7,7 +7,7 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ShieldCheck, Loader2, WifiOff, KeyRound, MailCheck } from "lucide-react";
+import { ShieldCheck, Loader2, WifiOff, KeyRound, MailCheck, Fingerprint } from "lucide-react";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { toast } from "sonner";
 import { hasPinForUser, verifyPin, recordFailedAttempt, setupPin } from "@/lib/pin-auth";
@@ -21,6 +21,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
+import { isBiometricAvailable, isBiometricRegistered, getBiometricUserId, authenticateBiometric } from "@/lib/webauthn";
 
 const LS_LAST_USER = "trij_last_user_id";
 
@@ -103,6 +104,11 @@ function LoginPage() {
   const [awaitingVerification, setAwaitingVerification] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [bioRegistered, setBioRegistered] = useState(false);
+  const [bioVerifying, setBioVerifying] = useState(false);
+
   const mountedRef = useRef(true);
 
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -159,6 +165,14 @@ function LoginPage() {
   useEffect(() => {
     if (loading) return;
     if (session || offlineUser) return;
+    (async () => {
+      const avail = await isBiometricAvailable();
+      const registered = avail && (await isBiometricRegistered());
+      if (mountedRef.current) {
+        setBioAvailable(avail);
+        setBioRegistered(!!registered);
+      }
+    })();
     if (online) {
       setPinMode(false);
       setCheckingPin(false);
@@ -215,6 +229,29 @@ function LoginPage() {
     }, 600);
     return () => clearTimeout(timer);
   }, [supervisorCode, mode]);
+
+  const handleBiometricSignIn = async () => {
+    if (bioVerifying) return;
+    setBioVerifying(true);
+    try {
+      const userId = await authenticateBiometric();
+      if (!userId) {
+        toast.error("Biometric authentication failed");
+        return;
+      }
+      const rec = await getDB().pinAuth.get(userId);
+      if (rec) {
+        setOfflineSession({ id: rec.userId, email: rec.email });
+      } else {
+        const storedEmail = getBiometricUserId() || "user@local";
+        setOfflineSession({ id: userId, email: storedEmail });
+      }
+    } catch {
+      toast.error("Biometric authentication failed");
+    } finally {
+      if (mountedRef.current) setBioVerifying(false);
+    }
+  };
 
   if (loading || checkingPin) {
     return (
@@ -383,7 +420,7 @@ function LoginPage() {
             <div className="flex items-center gap-2.5">
               <img
                 src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
-                alt="Trij logo — free offline AI medical triage"
+                alt={t("logoSloganShort")}
                 className="h-10 w-10 rounded-2xl object-contain shadow-lg shadow-primary/30"
               />
               <span className="font-display text-xl font-bold">Trij</span>
@@ -403,9 +440,37 @@ function LoginPage() {
             </p>
           </div>
 
+          {bioRegistered && (
+            <div className="mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBiometricSignIn}
+                disabled={bioVerifying}
+                className="w-full"
+                size="lg"
+              >
+                {bioVerifying ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Fingerprint className="mr-2 h-4 w-4" />
+                )}
+                {t("useBiometricToUnlock")}
+              </Button>
+              <div className="relative mt-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">{t("or")}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <form
             onSubmit={handlePinSubmit}
-            className="mt-10 space-y-4 rounded-3xl border bg-card p-6 shadow-sm"
+            className="mt-6 space-y-4 rounded-3xl border bg-card p-6 shadow-sm"
           >
             <div className="space-y-1.5">
               <Label htmlFor="pin">{t("offlinePin")}</Label>
@@ -530,7 +595,7 @@ function LoginPage() {
             <Link to="/" className="flex items-center gap-2.5">
               <img
                 src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
-                alt="Trij logo"
+                alt={t("logoShort")}
                 className="h-10 w-10 rounded-2xl object-contain shadow-lg shadow-primary/30"
               />
               <span className="font-display text-xl font-bold">Trij</span>
@@ -596,7 +661,7 @@ function LoginPage() {
           <Link to="/" className="flex items-center gap-2.5">
             <img
               src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
-              alt="Trij logo — free offline AI medical triage"
+              alt={t("logoSloganShort")}
               className="h-10 w-10 rounded-2xl object-contain shadow-lg shadow-primary/30"
             />
             <span className="font-display text-xl font-bold">Trij</span>
@@ -734,6 +799,33 @@ function LoginPage() {
           >
             {t("continueWithoutAccount")}
           </Button>
+          {bioRegistered && (
+            <>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">{t("or")}</span>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBiometricSignIn}
+                disabled={bioVerifying}
+                className="w-full"
+                size="lg"
+              >
+                {bioVerifying ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Fingerprint className="mr-2 h-4 w-4" />
+                )}
+                {t("useBiometricToUnlock")}
+              </Button>
+            </>
+          )}
         </form>
 
         <p className="mt-auto pt-10 text-center text-xs text-muted-foreground">

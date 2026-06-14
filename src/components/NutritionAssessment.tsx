@@ -31,7 +31,7 @@ import {
   Activity,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import { WHOGrowthChart } from "./WHO GrowthChart";
+import { WHOGrowthChart } from "./WHOGrowthChart";
 
 interface Props {
   ageYears: number;

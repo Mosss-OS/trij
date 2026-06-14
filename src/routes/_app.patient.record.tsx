@@ -491,7 +491,7 @@ function PatientRecordPage() {
                 {t("close") || "Close"}
               </button>
             </div>
-            <img src={qrDataUrl} alt="Health Card QR" className="mx-auto h-44 w-44" />
+            <img src={qrDataUrl} alt={t("altHealthCardQr")} className="mx-auto h-44 w-44" />
             <p className="mt-2 text-xs text-amber-600">
               {t("healthCardShowDesc") || "Show this to any doctor or clinic to share your records"}
             </p>
