@@ -1,3 +1,11 @@
+/**
+ * Client-side encryption module using AES-256-GCM with PBKDF2 key derivation.
+ *
+ * Provides encrypt/decrypt for patient data at rest. The key is derived from
+ * the user's PIN via PBKDF2 with 600,000 iterations. Salt is generated as a
+ * random hex string and decoded to raw bytes for the Web Crypto API.
+ */
+
 const ALGORITHM = "AES-GCM";
 const KEY_LENGTH = 256;
 const ITERATIONS = 600000;
@@ -6,12 +14,14 @@ const IV_LENGTH = 12;
 
 let cachedKey: CryptoKey | null = null;
 
+/** Convert an ArrayBuffer to a hex string. */
 function bufToHex(buf: ArrayBuffer): string {
   return Array.from(new Uint8Array(buf))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
 
+/** Convert a hex string to an ArrayBuffer (raw bytes). */
 function hexToBuf(hex: string): ArrayBuffer {
   const bytes = new Uint8Array(hex.length / 2);
   for (let i = 0; i < hex.length; i += 2) {
@@ -20,6 +30,12 @@ function hexToBuf(hex: string): ArrayBuffer {
   return bytes.buffer;
 }
 
+/**
+ * Derive an AES-256-GCM key from a PIN and salt using PBKDF2.
+ *
+ * The salt is expected as a hex string (from generateSalt()) and is decoded
+ * to raw bytes before being passed to the Web Crypto API.
+ */
 export async function deriveKey(pin: string, salt: string): Promise<CryptoKey> {
   const enc = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
@@ -32,7 +48,7 @@ export async function deriveKey(pin: string, salt: string): Promise<CryptoKey> {
   return crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: enc.encode(salt),
+      salt: hexToBuf(salt),
       iterations: ITERATIONS,
       hash: "SHA-256",
     },
@@ -43,24 +59,32 @@ export async function deriveKey(pin: string, salt: string): Promise<CryptoKey> {
   );
 }
 
+/** Generate a cryptographically random salt as a hex string. */
 export function generateSalt(): string {
   const salt = new Uint8Array(SALT_LENGTH);
   crypto.getRandomValues(salt);
   return bufToHex(salt.buffer);
 }
 
+/** Cache the derived key in memory for subsequent encrypt/decrypt calls. */
 export function cacheKey(key: CryptoKey) {
   cachedKey = key;
 }
 
+/** Clear the cached key from memory (e.g. on lock or sign-out). */
 export function clearKey() {
   cachedKey = null;
 }
 
+/** Check whether a key is currently cached. */
 export function isKeyCached(): boolean {
   return cachedKey !== null;
 }
 
+/**
+ * Encrypt a plaintext string using AES-256-GCM.
+ * Returns a colon-delimited hex string: iv:ciphertext.
+ */
 export async function encrypt(plaintext: string): Promise<string> {
   const key = cachedKey;
   if (!key) throw new Error("Encryption key not available");
@@ -76,6 +100,10 @@ export async function encrypt(plaintext: string): Promise<string> {
   return bufToHex(iv.buffer) + ":" + bufToHex(ciphertext);
 }
 
+/**
+ * Decrypt a payload created by encrypt().
+ * Expects the format iv:ciphertext as hex strings.
+ */
 export async function decrypt(payload: string): Promise<string> {
   const key = cachedKey;
   if (!key) throw new Error("Encryption key not available");

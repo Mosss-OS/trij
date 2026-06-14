@@ -177,7 +177,7 @@ function DashboardPage() {
           <QuickTile to="/document" icon={FileText} label={t("scanDoc")} />
           <QuickTile to="/patients" icon={Stethoscope} label={t("patients")} />
           <QuickTile to="/referrals" icon={ExternalLink} label={t("referrals")} />
-          <QuickTile to="/calculator" icon={Calculator} label="Dose Calculator" />
+          <QuickTile to="/calculator" icon={Calculator} label={t("doseCalculator")} />
           <QuickTile to="/supervisor" icon={MapIcon} label={t("map")} />
         </section>
 

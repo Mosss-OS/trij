@@ -10,7 +10,7 @@ export function registerSW(): void {
           if (newSW) {
             newSW.addEventListener("statechange", () => {
               if (newSW.state === "installed" && navigator.serviceWorker.controller) {
-                console.log("[SW] New version available - refresh to activate");
+                console.debug("[SW] New version available - refresh to activate");
               }
             });
           }

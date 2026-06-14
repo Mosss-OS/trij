@@ -714,7 +714,7 @@ function SettingsPage() {
                           toast.error(t("biometricNotAvailable"));
                           return;
                         }
-                        registerBiometric(s.chwName || sessionUser?.email || "user").then((ok) => {
+                        registerBiometric(sessionUser?.id || s.chwName || "user").then((ok) => {
                           if (ok) s.setBiometricEnabled(true);
                           else toast.error(t("biometricSetupFailed"));
                         });

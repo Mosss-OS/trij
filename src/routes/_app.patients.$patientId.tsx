@@ -337,7 +337,7 @@ function PatientDetail() {
                 {a.images?.[0] && (
                   <img
                     src={a.images[0]}
-                    alt="Patient assessment photo"
+                    alt={t("altPatientPhoto")}
                     className="mt-3 h-32 w-32 rounded-xl object-cover"
                   />
                 )}

@@ -1,5 +1,6 @@
 const RP_NAME = "Trij";
 const STORAGE_KEY = "trij_webauthn_credential_id";
+const USER_KEY = "trij_webauthn_user_id";
 
 export async function isBiometricAvailable(): Promise<boolean> {
   return typeof window !== "undefined" && !!window.PublicKeyCredential;
@@ -21,6 +22,10 @@ export async function isBiometricRegistered(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+export function getBiometricUserId(): string | null {
+  return localStorage.getItem(USER_KEY);
 }
 
 export async function registerBiometric(userId: string): Promise<boolean> {
@@ -50,16 +55,17 @@ export async function registerBiometric(userId: string): Promise<boolean> {
 
     if (!cred) return false;
     localStorage.setItem(STORAGE_KEY, bytesToBase64(new Uint8Array(cred.rawId)));
+    localStorage.setItem(USER_KEY, userId);
     return true;
   } catch {
     return false;
   }
 }
 
-export async function authenticateBiometric(): Promise<boolean> {
-  if (!(await isBiometricAvailable())) return false;
+export async function authenticateBiometric(): Promise<string | null> {
+  if (!(await isBiometricAvailable())) return null;
   const credentialId = localStorage.getItem(STORAGE_KEY);
-  if (!credentialId) return false;
+  if (!credentialId) return null;
 
   try {
     const challenge = crypto.getRandomValues(new Uint8Array(32));
@@ -71,14 +77,16 @@ export async function authenticateBiometric(): Promise<boolean> {
         timeout: 30000,
       },
     });
-    return !!cred;
+    if (!cred) return null;
+    return localStorage.getItem(USER_KEY);
   } catch {
-    return false;
+    return null;
   }
 }
 
 export async function unregisterBiometric(): Promise<void> {
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(USER_KEY);
 }
 
 function bytesToBase64(bytes: Uint8Array): string {
