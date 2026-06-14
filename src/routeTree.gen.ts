@@ -37,10 +37,22 @@ import { Route as AppConsultationsRequestRouteImport } from './routes/_app.consu
 import { Route as AppConsultationsIdRouteImport } from './routes/_app.consultations.$id'
 import { Route as AppClinicianConsultationsRouteImport } from './routes/_app.clinician.consultations'
 import { Route as AppClinicianConsultationsIdRouteImport } from './routes/_app.clinician.consultations.$id'
+import { Route as ApiFhirResourceRouteImport } from './routes/api.fhir.$resource'
+import { Route as ApiFhirResourceIdRouteImport } from './routes/api.fhir.$resource.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFhirResourceRoute = ApiFhirResourceRouteImport.update({
+  id: '/api/fhir/$resource',
+  path: '/api/fhir/$resource',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFhirResourceIdRoute = ApiFhirResourceIdRouteImport.update({
+  id: '/api/fhir/$resource/$id',
+  path: '/api/fhir/$resource/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -209,6 +221,8 @@ export interface FileRoutesByFullPath {
   '/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/patients/': typeof AppPatientsIndexRoute
   '/clinician/consultations/$id': typeof AppClinicianConsultationsIdRoute
+  '/api/fhir/$resource': typeof ApiFhirResourceRoute
+  '/api/fhir/$resource/$id': typeof ApiFhirResourceIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -238,6 +252,8 @@ export interface FileRoutesByTo {
   '/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/patients': typeof AppPatientsIndexRoute
   '/clinician/consultations/$id': typeof AppClinicianConsultationsIdRoute
+  '/api/fhir/$resource': typeof ApiFhirResourceRoute
+  '/api/fhir/$resource/$id': typeof ApiFhirResourceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -269,6 +285,8 @@ export interface FileRoutesById {
   '/_app/patients/batch-register': typeof AppPatientsBatchRegisterRoute
   '/_app/patients/': typeof AppPatientsIndexRoute
   '/_app/clinician/consultations/$id': typeof AppClinicianConsultationsIdRoute
+  '/api/fhir/$resource': typeof ApiFhirResourceRoute
+  '/api/fhir/$resource/$id': typeof ApiFhirResourceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -300,6 +318,8 @@ export interface FileRouteTypes {
     | '/patients/batch-register'
     | '/patients/'
     | '/clinician/consultations/$id'
+    | '/api/fhir/$resource'
+    | '/api/fhir/$resource/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -329,6 +349,8 @@ export interface FileRouteTypes {
     | '/patients/batch-register'
     | '/patients'
     | '/clinician/consultations/$id'
+    | '/api/fhir/$resource'
+    | '/api/fhir/$resource/$id'
   id:
     | '__root__'
     | '/'
@@ -359,12 +381,16 @@ export interface FileRouteTypes {
     | '/_app/patients/batch-register'
     | '/_app/patients/'
     | '/_app/clinician/consultations/$id'
+    | '/api/fhir/$resource'
+    | '/api/fhir/$resource/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ApiFhirResourceRoute: typeof ApiFhirResourceRoute
+  ApiFhirResourceIdRoute: typeof ApiFhirResourceIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -565,6 +591,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppClinicianConsultationsIdRouteImport
       parentRoute: typeof AppClinicianConsultationsRoute
     }
+    '/api/fhir/$resource': {
+      id: '/api/fhir/$resource'
+      path: '/api/fhir/$resource'
+      fullPath: '/api/fhir/$resource'
+      preLoaderRoute: typeof ApiFhirResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/fhir/$resource/$id': {
+      id: '/api/fhir/$resource/$id'
+      path: '/api/fhir/$resource/$id'
+      fullPath: '/api/fhir/$resource/$id'
+      preLoaderRoute: typeof ApiFhirResourceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -671,6 +711,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiFhirResourceRoute: ApiFhirResourceRoute,
+  ApiFhirResourceIdRoute: ApiFhirResourceIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
