@@ -33,6 +33,11 @@ interface SettingsState {
   encryptionSalt: string;
   localAntibioticProtocol: string;
   theme: "light" | "dark" | "system";
+  dhis2BaseUrl: string;
+  dhis2Username: string;
+  dhis2Password: string;
+  dhis2OrgUnit: string;
+  dhis2DataSet: string;
   completeTutorial: () => void;
   skipTutorial: () => void;
   resetTutorial: () => void;
@@ -61,6 +66,7 @@ interface SettingsState {
   setEncryptionEnabled: (enabled: boolean) => void;
   setLocalAntibioticProtocol: (protocol: string) => void;
   setTheme: (theme: "light" | "dark" | "system") => void;
+  setDhis2Config: (config: { dhis2BaseUrl: string; dhis2Username: string; dhis2Password: string; dhis2OrgUnit: string; dhis2DataSet: string }) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -95,6 +101,11 @@ export const useSettingsStore = create<SettingsState>()(
       encryptionSalt: "",
       localAntibioticProtocol: "",
       theme: "system",
+      dhis2BaseUrl: "",
+      dhis2Username: "",
+      dhis2Password: "",
+      dhis2OrgUnit: "",
+      dhis2DataSet: "",
       completeTutorial: () => set({ tutorialCompleted: true }),
       skipTutorial: () => set({ tutorialSkipped: true }),
       resetTutorial: () => set({ tutorialCompleted: false, tutorialSkipped: false }),
@@ -134,6 +145,14 @@ export const useSettingsStore = create<SettingsState>()(
         })),
       setLocalAntibioticProtocol: (localAntibioticProtocol) => set({ localAntibioticProtocol }),
       setTheme: (theme) => set({ theme }),
+      setDhis2Config: (config) =>
+        set({
+          dhis2BaseUrl: config.dhis2BaseUrl,
+          dhis2Username: config.dhis2Username,
+          dhis2Password: config.dhis2Password,
+          dhis2OrgUnit: config.dhis2OrgUnit,
+          dhis2DataSet: config.dhis2DataSet,
+        }),
     }),
     {
       name: "trij-settings",
