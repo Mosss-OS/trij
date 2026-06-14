@@ -13,6 +13,7 @@ import {
   Download,
   MapPin,
 } from "lucide-react";
+import { getDB } from "@/lib/db";
 
 export const Route = createFileRoute("/_app/dashboard/community")({
   component: CommunityDashboardPage,
@@ -23,66 +24,13 @@ export const Route = createFileRoute("/_app/dashboard/community")({
 
 interface Report {
   id: string;
+  patientId: string;
   lat: number;
   lng: number;
   urgency: "red" | "yellow" | "green";
-  symptom: string;
-  ageRange: string;
+  condition: string;
+  ageYears?: number;
   date: string;
-  city: string;
-}
-
-const NIGERIAN_CITIES = [
-  { name: "Lagos", lat: 6.5244, lng: 3.3792 },
-  { name: "Abuja", lat: 9.0765, lng: 7.3986 },
-  { name: "Kano", lat: 12.0022, lng: 8.5920 },
-  { name: "Ibadan", lat: 7.3775, lng: 3.9470 },
-  { name: "Port Harcourt", lat: 4.8156, lng: 7.0498 },
-  { name: "Benin City", lat: 6.3350, lng: 5.6037 },
-  { name: "Maiduguri", lat: 11.8311, lng: 13.1510 },
-  { name: "Zaria", lat: 11.0664, lng: 7.6891 },
-  { name: "Enugu", lat: 6.4483, lng: 7.5132 },
-  { name: "Jos", lat: 9.8965, lng: 8.8583 },
-  { name: "Warri", lat: 5.5173, lng: 5.7506 },
-  { name: "Kaduna", lat: 10.5264, lng: 7.4388 },
-  { name: "Abeokuta", lat: 7.1501, lng: 3.3453 },
-  { name: "Sokoto", lat: 13.0603, lng: 5.2409 },
-  { name: "Ilorin", lat: 8.4966, lng: 4.5421 },
-];
-
-const SYMPTOMS = [
-  "Malaria", "Respiratory infection", "Diarrhoea", "Skin infection",
-  "Fever (unknown cause)", "Hypertension", "Diabetes", "Malnutrition",
-  "Eye infection", "Typhoid", "Pneumonia", "Urinary tract infection",
-];
-
-function generateMockData(): Report[] {
-  const reports: Report[] = [];
-  const now = Date.now();
-  for (let i = 0; i < 200; i++) {
-    const city = NIGERIAN_CITIES[Math.floor(Math.random() * NIGERIAN_CITIES.length)];
-    const urgencies: ("red" | "yellow" | "green")[] = ["red", "yellow", "green"];
-    const weights = [0.15, 0.35, 0.5];
-    const r = Math.random();
-    let urgency: "red" | "yellow" | "green" = "green";
-    let cum = 0;
-    for (let j = 0; j < urgencies.length; j++) {
-      cum += weights[j];
-      if (r < cum) { urgency = urgencies[j]; break; }
-    }
-    const daysAgo = Math.floor(Math.random() * 90);
-    reports.push({
-      id: `r-${i}`,
-      lat: city.lat + (Math.random() - 0.5) * 0.2,
-      lng: city.lng + (Math.random() - 0.5) * 0.2,
-      urgency,
-      symptom: SYMPTOMS[Math.floor(Math.random() * SYMPTOMS.length)],
-      ageRange: ["0-2", "3-12", "13-17", "18-60", "60+"][Math.floor(Math.random() * 5)],
-      date: new Date(now - daysAgo * 86400000).toISOString(),
-      city: city.name,
-    });
-  }
-  return reports;
 }
 
 function getUrgencyColor(u: string): string {
@@ -137,15 +85,15 @@ function MarkerCluster({ reports }: { reports: Report[] }) {
       const m = L.marker([r.lat, r.lng], { icon });
       m.bindPopup(`
         <div style="min-width:150px;">
-          <strong>${r.symptom}</strong>
+          <strong>${r.condition}</strong>
           <div style="color:#666;font-size:11px;margin-top:4px;">
-            ${r.city} &middot; ${new Date(r.date).toLocaleDateString()}
+            ${new Date(r.date).toLocaleDateString()}
           </div>
           <div style="margin-top:4px;">
             <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${getUrgencyColor(r.urgency)};margin-right:4px;"></span>
             Urgency: <strong>${r.urgency.toUpperCase()}</strong>
           </div>
-          <div style="color:#888;font-size:11px;margin-top:2px;">Age: ${r.ageRange}</div>
+          <div style="color:#888;font-size:11px;margin-top:2px;">Age: ${r.ageYears ?? "?"}</div>
         </div>
       `);
       mcg.addLayer(m);
@@ -160,47 +108,87 @@ function CommunityDashboardPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filterUrgency, setFilterUrgency] = useState<string>("all");
   const [filterSymptom, setFilterSymptom] = useState<string>("all");
   const [filterDays, setFilterDays] = useState<number>(90);
 
   useEffect(() => { setMounted(true); }, []);
 
-  const allReports = useMemo(() => generateMockData(), []);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const db = getDB();
+        const [assessments, patients] = await Promise.all([
+          db.assessments.toArray(),
+          db.patients.toArray(),
+        ]);
+        const patientMap = new Map(patients.map(p => [p.id, p]));
+        const mapped = assessments
+          .filter(a => {
+            const p = patientMap.get(a.patientId);
+            return p && p.locationLat != null && p.locationLng != null;
+          })
+          .map(a => {
+            const p = patientMap.get(a.patientId)!;
+            return {
+              id: a.id,
+              patientId: a.patientId,
+              lat: p.locationLat!,
+              lng: p.locationLng!,
+              urgency: a.urgency ?? "green",
+              condition: a.condition ?? "Unknown",
+              ageYears: p.ageYears,
+              date: a.createdAt,
+            };
+          });
+        if (alive) setReports(mapped);
+      } catch {
+        console.debug("Community dashboard: DB not ready yet");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const allConditions = useMemo(() => {
+    const set = new Set<string>();
+    reports.forEach(r => set.add(r.condition));
+    return Array.from(set).sort();
+  }, [reports]);
 
   const filtered = useMemo(() => {
     const cutoff = Date.now() - filterDays * 86400000;
-    return allReports.filter((r) => {
+    return reports.filter((r) => {
       if (filterUrgency !== "all" && r.urgency !== filterUrgency) return false;
-      if (filterSymptom !== "all" && r.symptom !== filterSymptom) return false;
+      if (filterSymptom !== "all" && r.condition !== filterSymptom) return false;
       if (new Date(r.date).getTime() < cutoff) return false;
       return true;
     });
-  }, [allReports, filterUrgency, filterSymptom, filterDays]);
+  }, [reports, filterUrgency, filterSymptom, filterDays]);
 
   const stats = useMemo(() => {
     const total = filtered.length;
     const red = filtered.filter((r) => r.urgency === "red").length;
     const yellow = filtered.filter((r) => r.urgency === "yellow").length;
     const green = filtered.filter((r) => r.urgency === "green").length;
-    const symptomCounts: Record<string, number> = {};
+    const patients = new Set(filtered.map(r => r.patientId)).size;
+    const conditionCounts: Record<string, number> = {};
     filtered.forEach((r) => {
-      symptomCounts[r.symptom] = (symptomCounts[r.symptom] || 0) + 1;
+      conditionCounts[r.condition] = (conditionCounts[r.condition] || 0) + 1;
     });
-    const topSymptom = Object.entries(symptomCounts).sort((a, b) => b[1] - a[1])[0];
-    const cityCounts: Record<string, number> = {};
-    filtered.forEach((r) => {
-      cityCounts[r.city] = (cityCounts[r.city] || 0) + 1;
-    });
-    const topCity = Object.entries(cityCounts).sort((a, b) => b[1] - a[1])[0];
-    return { total, red, yellow, green, topSymptom: topSymptom?.[0] || "-", topCity: topCity?.[0] || "-" };
+    const topCondition = Object.entries(conditionCounts).sort((a, b) => b[1] - a[1])[0];
+    return { total, red, yellow, green, patients, topCondition: topCondition?.[0] || "-" };
   }, [filtered]);
 
   const handleExport = () => {
     const csv = [
-      "ID,City,Lat,Lng,Urgency,Symptom,AgeRange,Date",
+      "ID,Lat,Lng,Urgency,Condition,AgeYears,Date",
       ...filtered.map((r) =>
-        `${r.id},${r.city},${r.lat},${r.lng},${r.urgency},${r.symptom},${r.ageRange},${r.date}`,
+        `${r.id},${r.lat},${r.lng},${r.urgency},${r.condition},${r.ageYears ?? ""},${r.date}`,
       ),
     ].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -219,107 +207,118 @@ function CommunityDashboardPage() {
       <AppHeader title="Community Health" subtitle="Anonymized public health data" />
 
       <div className="mx-auto max-w-4xl px-4 py-4">
-        <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm">
-            <Activity className="mb-1 h-5 w-5 text-emerald-500" />
-            <p className="text-2xl font-bold text-emerald-900">{stats.total}</p>
-            <p className="text-xs text-emerald-600">{t("totalReports") || "Total reports"}</p>
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <p className="text-emerald-600">{t("loading") || "Loading..."}</p>
           </div>
-          <div className="rounded-2xl border border-red-200 bg-white p-4 shadow-sm">
-            <AlertTriangle className="mb-1 h-5 w-5 text-red-500" />
-            <p className="text-2xl font-bold text-red-900">{stats.red}</p>
-            <p className="text-xs text-red-600">{t("emergency")}</p>
-          </div>
-          <div className="rounded-2xl border border-amber-200 bg-white p-4 shadow-sm">
-            <TrendingUp className="mb-1 h-5 w-5 text-amber-500" />
-            <p className="text-2xl font-bold text-amber-900">{stats.yellow}</p>
-            <p className="text-xs text-amber-600">{t("routine")}</p>
-          </div>
-          <div className="rounded-2xl border border-green-200 bg-white p-4 shadow-sm">
-            <MapPin className="mb-1 h-5 w-5 text-green-500" />
-            <p className="text-2xl font-bold text-green-900">{stats.green}</p>
-            <p className="text-xs text-green-600">{t("routine") || "Minor"}</p>
-          </div>
-        </div>
+        ) : (
+          <>
+            <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm">
+                <Activity className="mb-1 h-5 w-5 text-emerald-500" />
+                <p className="text-2xl font-bold text-emerald-900">{stats.total}</p>
+                <p className="text-xs text-emerald-600">{t("totalReports") || "Total reports"}</p>
+              </div>
+              <div className="rounded-2xl border border-red-200 bg-white p-4 shadow-sm">
+                <AlertTriangle className="mb-1 h-5 w-5 text-red-500" />
+                <p className="text-2xl font-bold text-red-900">{stats.red}</p>
+                <p className="text-xs text-red-600">{t("emergency")}</p>
+              </div>
+              <div className="rounded-2xl border border-amber-200 bg-white p-4 shadow-sm">
+                <TrendingUp className="mb-1 h-5 w-5 text-amber-500" />
+                <p className="text-2xl font-bold text-amber-900">{stats.yellow}</p>
+                <p className="text-xs text-amber-600">{t("routine")}</p>
+              </div>
+              <div className="rounded-2xl border border-green-200 bg-white p-4 shadow-sm">
+                <MapPin className="mb-1 h-5 w-5 text-green-500" />
+                <p className="text-2xl font-bold text-green-900">{stats.green}</p>
+                <p className="text-xs text-green-600">{t("routine") || "Minor"}</p>
+              </div>
+            </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-xl border border-emerald-200 bg-white/70 p-3 text-center">
-            <p className="text-xs text-emerald-600">{t("common") || "Most common"}</p>
-            <p className="text-sm font-bold text-emerald-900">{stats.topSymptom}</p>
-          </div>
-          <div className="rounded-xl border border-emerald-200 bg-white/70 p-3 text-center">
-            <p className="text-xs text-emerald-600">{t("hotspot") || "Hotspot"}</p>
-            <p className="text-sm font-bold text-emerald-900">{stats.topCity}</p>
-          </div>
-          <div className="rounded-xl border border-emerald-200 bg-white/70 p-3 text-center">
-            <p className="text-xs text-emerald-600">{t("weeksTracked") || "Period"}</p>
-            <p className="text-sm font-bold text-emerald-900">{filterDays} {t("days")}</p>
-          </div>
-          <Button
-            onClick={handleExport}
-            variant="outline"
-            className="flex items-center justify-center gap-1 rounded-xl border-emerald-300 text-emerald-700"
-          >
-            <Download className="h-4 w-4" />
-            CSV
-          </Button>
-        </div>
+            <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="rounded-xl border border-emerald-200 bg-white/70 p-3 text-center">
+                <p className="text-xs text-emerald-600">{t("common") || "Most common"}</p>
+                <p className="text-sm font-bold text-emerald-900">{stats.topCondition}</p>
+              </div>
+              <div className="rounded-xl border border-emerald-200 bg-white/70 p-3 text-center">
+                <p className="text-xs text-emerald-600">{t("patients") || "Patients"}</p>
+                <p className="text-sm font-bold text-emerald-900">{stats.patients}</p>
+              </div>
+              <div className="rounded-xl border border-emerald-200 bg-white/70 p-3 text-center">
+                <p className="text-xs text-emerald-600">{t("weeksTracked") || "Period"}</p>
+                <p className="text-sm font-bold text-emerald-900">{filterDays} {t("days")}</p>
+              </div>
+              <Button
+                onClick={handleExport}
+                variant="outline"
+                className="flex items-center justify-center gap-1 rounded-xl border-emerald-300 text-emerald-700"
+              >
+                <Download className="h-4 w-4" />
+                CSV
+              </Button>
+            </div>
 
-        <div className="mb-4 flex flex-wrap gap-2">
-          <select
-            value={filterUrgency}
-            onChange={(e) => setFilterUrgency(e.target.value)}
-            className="rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs text-emerald-800"
-          >
-            <option value="all">{t("all") || "All urgency"}</option>
-            <option value="red">{t("triageResultEmergency")}</option>
-            <option value="yellow">{t("triageResultClinic")}</option>
-            <option value="green">{t("triageResultWait")}</option>
-          </select>
-          <select
-            value={filterSymptom}
-            onChange={(e) => setFilterSymptom(e.target.value)}
-            className="rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs text-emerald-800"
-          >
-            <option value="all">{t("all") || "All symptoms"}</option>
-            {SYMPTOMS.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-          <select
-            value={filterDays}
-            onChange={(e) => setFilterDays(parseInt(e.target.value, 10))}
-            className="rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs text-emerald-800"
-          >
-            <option value={7}>7 {t("days")}</option>
-            <option value={30}>30 {t("days")}</option>
-            <option value={90}>90 {t("days")}</option>
-          </select>
-        </div>
+            <div className="mb-4 flex flex-wrap gap-2">
+              <select
+                value={filterUrgency}
+                onChange={(e) => setFilterUrgency(e.target.value)}
+                className="rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs text-emerald-800"
+              >
+                <option value="all">{t("all") || "All urgency"}</option>
+                <option value="red">{t("triageResultEmergency")}</option>
+                <option value="yellow">{t("triageResultClinic")}</option>
+                <option value="green">{t("triageResultWait")}</option>
+              </select>
+              <select
+                value={filterSymptom}
+                onChange={(e) => setFilterSymptom(e.target.value)}
+                className="rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs text-emerald-800"
+              >
+                <option value="all">{t("all") || "All conditions"}</option>
+                {allConditions.length > 0
+                  ? allConditions.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))
+                  : <option disabled>No data</option>
+                }
+              </select>
+              <select
+                value={filterDays}
+                onChange={(e) => setFilterDays(parseInt(e.target.value, 10))}
+                className="rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs text-emerald-800"
+              >
+                <option value={7}>7 {t("days")}</option>
+                <option value={30}>30 {t("days")}</option>
+                <option value={90}>90 {t("days")}</option>
+              </select>
+            </div>
 
-        <div className="overflow-hidden rounded-2xl border border-emerald-200 shadow-sm">
-          <MapContainer
-            center={[9.0820, 8.6753]}
-            zoom={6}
-            className="h-[400px] w-full sm:h-[500px]"
-            scrollWheelZoom
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <MarkerCluster reports={filtered} />
-          </MapContainer>
-        </div>
+            <div className="overflow-hidden rounded-2xl border border-emerald-200 shadow-sm">
+              <MapContainer
+                center={[9.0820, 8.6753]}
+                zoom={6}
+                className="h-[400px] w-full sm:h-[500px]"
+                scrollWheelZoom
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <MarkerCluster reports={filtered} />
+              </MapContainer>
+            </div>
 
-        <div className="mt-4 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm">
-          <h3 className="mb-2 font-semibold text-emerald-800">
-            {t("report") || "About this data"}
-          </h3>
-          <p className="text-sm text-emerald-600">
-            {t("anonymized") || "Data shown is anonymized and aggregated from opt-in triage reports. No personally identifiable information is stored. The heatmap helps identify disease hotspots and emerging public health trends across Nigeria."}
-          </p>
-        </div>
+            <div className="mt-4 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm">
+              <h3 className="mb-2 font-semibold text-emerald-800">
+                {t("report") || "About this data"}
+              </h3>
+              <p className="text-sm text-emerald-600">
+                {t("anonymized") || "Data shown is anonymized and aggregated from opt-in triage reports. No personally identifiable information is stored. The heatmap helps identify disease hotspots and emerging public health trends across Nigeria."}
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
