@@ -34,6 +34,7 @@ import {
   Play,
   ChevronRight,
   Beaker,
+  Database,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -729,6 +730,121 @@ function SettingsPage() {
                 }}
               />
             </div>
+          </div>
+        </Section>
+
+        <Section title="DHIS2 Integration">
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Server URL</Label>
+              <Input
+                value={s.dhis2BaseUrl}
+                onChange={(e) =>
+                  s.setDhis2Config({
+                    dhis2BaseUrl: e.target.value,
+                    dhis2Username: s.dhis2Username,
+                    dhis2Password: s.dhis2Password,
+                    dhis2OrgUnit: s.dhis2OrgUnit,
+                    dhis2DataSet: s.dhis2DataSet,
+                  })
+                }
+                placeholder="https://your-dhis2-instance.org"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Username</Label>
+                <Input
+                  value={s.dhis2Username}
+                  onChange={(e) =>
+                    s.setDhis2Config({
+                      dhis2BaseUrl: s.dhis2BaseUrl,
+                      dhis2Username: e.target.value,
+                      dhis2Password: s.dhis2Password,
+                      dhis2OrgUnit: s.dhis2OrgUnit,
+                      dhis2DataSet: s.dhis2DataSet,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Password</Label>
+                <Input
+                  type="password"
+                  value={s.dhis2Password}
+                  onChange={(e) =>
+                    s.setDhis2Config({
+                      dhis2BaseUrl: s.dhis2BaseUrl,
+                      dhis2Username: s.dhis2Username,
+                      dhis2Password: e.target.value,
+                      dhis2OrgUnit: s.dhis2OrgUnit,
+                      dhis2DataSet: s.dhis2DataSet,
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Org Unit ID</Label>
+                <Input
+                  value={s.dhis2OrgUnit}
+                  onChange={(e) =>
+                    s.setDhis2Config({
+                      dhis2BaseUrl: s.dhis2BaseUrl,
+                      dhis2Username: s.dhis2Username,
+                      dhis2Password: s.dhis2Password,
+                      dhis2OrgUnit: e.target.value,
+                      dhis2DataSet: s.dhis2DataSet,
+                    })
+                  }
+                  placeholder="e.g. abc123"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Data Set ID</Label>
+                <Input
+                  value={s.dhis2DataSet}
+                  onChange={(e) =>
+                    s.setDhis2Config({
+                      dhis2BaseUrl: s.dhis2BaseUrl,
+                      dhis2Username: s.dhis2Username,
+                      dhis2Password: s.dhis2Password,
+                      dhis2OrgUnit: s.dhis2OrgUnit,
+                      dhis2DataSet: e.target.value,
+                    })
+                  }
+                  placeholder="e.g. xyz789"
+                />
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  const { pushToDhis2, buildDhis2Payload } = await import("@/lib/dhis2-export");
+                  const config = {
+                    baseUrl: s.dhis2BaseUrl,
+                    username: s.dhis2Username,
+                    password: s.dhis2Password,
+                    orgUnit: s.dhis2OrgUnit,
+                    dataSet: s.dhis2DataSet,
+                    period: "202601",
+                  };
+                  const payload = buildDhis2Payload(config, {});
+                  const result = await pushToDhis2(config, payload);
+                  if (result.ok) toast.success("Connection successful");
+                  else toast.error(`Connection failed: HTTP ${result.httpStatus}`);
+                } catch (err) {
+                  toast.error(`Connection error: ${(err as Error).message}`);
+                }
+              }}
+              disabled={!s.dhis2BaseUrl || !s.dhis2Username || !s.dhis2Password}
+            >
+              <Database className="mr-2 h-3.5 w-3.5" />
+              Test Connection
+            </Button>
           </div>
         </Section>
 
