@@ -42,8 +42,8 @@ export function LockScreen() {
     if (verifying) return;
     setVerifying(true);
     try {
-      const ok = await authenticateBiometric();
-      if (ok && mountedRef.current) setScreenLocked(false);
+      const userId = await authenticateBiometric();
+      if (userId && mountedRef.current) setScreenLocked(false);
       else if (mountedRef.current) setBioAttempts((a) => a + 1);
     } finally {
       if (mountedRef.current) setVerifying(false);

@@ -14,11 +14,12 @@ import { useInactivityLock } from "@/hooks/useInactivityLock";
 import { useTheme } from "@/hooks/useTheme";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { Loader2, ShieldAlert, X, Beaker } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
   errorComponent: ({ error, reset }) => {
-    console.error("[Trij App Error]", error);
+    console.error(error);
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[oklch(0.98_0.008_85)] to-[oklch(0.95_0.015_200)] px-4">
         <div className="max-w-md text-center">
@@ -66,6 +67,7 @@ export const Route = createFileRoute("/_app")({
   },
 });
 
+/** Banner reminding users that AI assessments are preliminary. */
 function DisclaimerBanner() {
   const [dismissed, setDismissed] = useState(false);
   if (dismissed) return null;
@@ -88,6 +90,7 @@ function DisclaimerBanner() {
 }
 
 function AppLayout() {
+  const { t } = useI18n();
   useAuthSession();
   useTheme();
   useKeyboardShortcuts();
@@ -112,6 +115,7 @@ function AppLayout() {
     document.documentElement.classList.toggle("sunlight-mode", sunlightMode);
   }, [sunlightMode]);
 
+  /** Auto-enable sunlight mode when ambient light exceeds 10 000 lux. */
   useEffect(() => {
     if (!("AmbientLightSensor" in window)) return;
     try {
@@ -120,7 +124,9 @@ function AppLayout() {
         if (sensor.illuminance > 10000) setSunlightMode(true);
       });
       sensor.start();
-    } catch {}
+    } catch (err) {
+      console.warn(t("ambientLightError"), err);
+    }
   }, [setSunlightMode]);
 
   if (loading) {
@@ -150,7 +156,7 @@ function AppLayout() {
       {engineKind === "demo" && (
         <div className="flex items-center gap-2 bg-urgency-red/15 px-4 py-2 text-xs font-medium text-urgency-red">
           <Beaker className="h-3.5 w-3.5 flex-shrink-0" />
-          <span>🔴 DEMO MODE — Results are simulated, not for patient care</span>
+          <span>{t("demoModeBanner")}</span>
         </div>
       )}
       <main id="main-content" role="main" className="pb-20 pt-16 md:pb-24 md:pt-20 lg:pb-32 lg:pt-24">

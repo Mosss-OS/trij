@@ -125,7 +125,7 @@ function DocumentScan() {
             {image && (
               <img
                 src={image}
-                alt="Captured medical document being analyzed by AI"
+                alt={t("altDocAnalyzing")}
                 className="aspect-video w-full rounded-2xl object-cover"
               />
             )}
