@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useI18n } from "@/lib/i18n";
 import { useSessionStore } from "@/stores/sessionStore";
 import { supabase } from "@/integrations/supabase/client";
+import { getDB } from "@/lib/db";
+import type { ConsultationRequest } from "@/types/trij";
 import { toast } from "sonner";
 import {
   ChevronLeft,
@@ -85,6 +87,18 @@ function ClinicianConsultationDetailPage() {
         setAdditionalTests((r.additionalTests as string) || "");
         setPrescription((r.prescription as string) || "");
       }
+    } else {
+      const local = await getDB().consultations.get(id);
+      if (local) {
+        setConsultation(local as unknown as SupabaseConsultation);
+        const r = local.response;
+        if (r) {
+          setAdvice(r.advice || "");
+          setDiagnosis(r.diagnosis || "");
+          setAdditionalTests(r.additionalTests || "");
+          setPrescription(r.prescription || "");
+        }
+      }
     }
     setLoading(false);
   };
@@ -93,16 +107,39 @@ function ClinicianConsultationDetailPage() {
     loadConsultation();
   }, [id]);
 
+  const toConsultationRequest = (c: SupabaseConsultation): ConsultationRequest => ({
+    id: c.id,
+    patientId: c.patient_id,
+    chwUserId: c.chw_user_id,
+    chwName: c.chw_name,
+    status: c.status as ConsultationRequest["status"],
+    priority: c.priority as ConsultationRequest["priority"],
+    images: c.images ?? [],
+    voiceTranscript: c.voice_transcript ?? undefined,
+    chwNotes: c.chw_notes,
+    clinicalContext: (c.clinical_context ?? {}) as ConsultationRequest["clinicalContext"],
+    response: c.response as ConsultationRequest["response"],
+    createdAt: c.created_at,
+    respondedAt: c.responded_at ?? undefined,
+    version: c.version,
+  });
+
   const updateStatus = async (status: string) => {
     if (!consultation) return;
     setSaving(true);
+    const newVersion = consultation.version + 1;
     const { error } = await supabase
       .from("consultations")
-      .update({ status, version: consultation.version + 1 })
+      .update({ status, version: newVersion })
       .eq("id", id);
     if (error) {
       toast.error("Failed to update status");
     } else {
+      await getDB().consultations.put({
+        ...toConsultationRequest(consultation),
+        status: status as ConsultationRequest["status"],
+        version: newVersion,
+      });
       toast.success(t("clinicianStatusUpdated") || "Status updated");
       loadConsultation();
     }
@@ -123,18 +160,26 @@ function ClinicianConsultationDetailPage() {
       clinicianId: user.id,
       respondedAt: now,
     };
+    const newVersion = consultation.version + 1;
     const { error } = await supabase
       .from("consultations")
       .update({
         status: "completed",
         response: responseData as never,
         responded_at: now,
-        version: consultation.version + 1,
+        version: newVersion,
       })
       .eq("id", id);
     if (error) {
       toast.error("Failed to submit response");
     } else {
+      await getDB().consultations.put({
+        ...toConsultationRequest(consultation),
+        status: "completed",
+        response: responseData,
+        respondedAt: now,
+        version: newVersion,
+      });
       toast.success(t("clinicianResponseSaved") || "Response saved");
       loadConsultation();
     }
