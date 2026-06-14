@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useReferralAlerts } from "@/hooks/useReferralAlerts";
 import { useRole } from "@/hooks/useRBAC";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ import { checkForNotifiableConditions } from "@/lib/outbreak-flags";
 import {
   aggregateAssessments,
   buildDhis2Payload,
+  pushToDhis2,
   validateCounts,
   getCurrentDhis2Period,
   type Dhis2Config,
@@ -392,16 +394,21 @@ function Supervisor() {
       return;
     }
 
+    const settings = useSettingsStore.getState();
+    if (!settings.dhis2BaseUrl || !settings.dhis2Username || !settings.dhis2Password) {
+      toast.error("Configure DHIS2 credentials in Settings first");
+      return;
+    }
+
     const config: Dhis2Config = {
-      baseUrl: "",
-      username: "",
-      password: "",
-      orgUnit: "",
-      dataSet: "",
+      baseUrl: settings.dhis2BaseUrl,
+      username: settings.dhis2Username,
+      password: settings.dhis2Password,
+      orgUnit: settings.dhis2OrgUnit,
+      dataSet: settings.dhis2DataSet,
       period: getCurrentDhis2Period(),
     };
 
-    // Map remote assessments to the format aggregateAssessments expects
     const mapped: Array<{
       urgency: "green" | "yellow" | "red";
       referralAdvised?: boolean;
@@ -423,32 +430,10 @@ function Supervisor() {
       if (!proceed) return;
     }
 
-    // Prompt for DHIS2 configuration
-    const baseUrl = window.prompt("DHIS2 API URL:", config.baseUrl);
-    if (!baseUrl) return;
-    const username = window.prompt("DHIS2 Username:", config.username);
-    if (!username) return;
-    const password = window.prompt("DHIS2 Password:");
-    if (!password) return;
-    const orgUnit = window.prompt("DHIS2 Organisation Unit ID:", config.orgUnit);
-    if (!orgUnit) return;
-    const dataSet = window.prompt("DHIS2 Data Set ID:", config.dataSet);
-    if (!dataSet) return;
-
-    const fullConfig: Dhis2Config = {
-      baseUrl,
-      username,
-      password,
-      orgUnit,
-      dataSet,
-      period: config.period,
-    };
-
-    const payload = buildDhis2Payload(fullConfig, counts);
+    const payload = buildDhis2Payload(config, counts);
 
     try {
-      const { pushToDhis2 } = await import("@/lib/dhis2-export");
-      const result = await pushToDhis2(fullConfig, payload);
+      const result = await pushToDhis2(config, payload);
       if (result.ok) {
         toast.success(
           `DHIS2 export successful (${validation.totalAssessments} assessments, ${validation.dataElementCount} elements)`,
