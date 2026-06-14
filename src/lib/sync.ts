@@ -667,17 +667,24 @@ export async function pollConsultationResponses(): Promise<number> {
   for (const c of pending) {
     const { data, error } = await supabase
       .from("consultations")
-      .select("status, response, responded_at, version")
+      .select("*")
       .eq("id", c.id)
       .single();
     if (error || !data) continue;
-    if (data.status === "completed" && data.response && (data.version ?? 0) > c.version) {
-      await db.consultations.update(c.id, {
-        status: "completed",
-        response: data.response as ConsultationRequest["response"],
-        respondedAt: data.responded_at ?? undefined,
-        version: data.version ?? c.version + 1,
-      });
+    const serverVersion = (data as { version?: number }).version ?? 0;
+    if (serverVersion > c.version) {
+      const server = data as Record<string, unknown>;
+      const update: Partial<ConsultationRequest> & { version: number } = {
+        status: (server.status as ConsultationRequest["status"]) ?? c.status,
+        version: serverVersion,
+      };
+      if (server.response) {
+        update.response = server.response as ConsultationRequest["response"];
+      }
+      if (server.responded_at) {
+        update.respondedAt = server.responded_at as string;
+      }
+      await db.consultations.update(c.id, update);
       updates++;
     }
   }
