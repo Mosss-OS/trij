@@ -4,7 +4,7 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { hasPinForUser, verifyPin } from "@/lib/pin-auth";
 import { authenticateBiometric } from "@/lib/webauthn";
-import { deriveKey, cacheKey, clearKey } from "@/lib/crypto";
+import { deriveKey, cacheKey } from "@/lib/crypto";
 import { Lock, Fingerprint, AlertTriangle, Loader2, LogOut } from "lucide-react";
 
 export function LockScreen() {
@@ -25,18 +25,21 @@ export function LockScreen() {
   const mountedRef = useRef(true);
 
   useEffect(() => {
-    clearKey();
     if (user?.id) {
-      hasPinForUser(user.id).then((exists) => {
-        if (mountedRef.current) {
-          setNoPinConfigured(!exists);
-          setCheckingPin(false);
-        }
-      });
+      hasPinForUser(user.id)
+        .then((exists) => {
+          if (mountedRef.current) {
+            setNoPinConfigured(!exists);
+            setCheckingPin(false);
+          }
+        })
+        .catch(() => {
+          if (mountedRef.current) setCheckingPin(false);
+        });
     } else {
       setCheckingPin(false);
     }
-  }, [biometricEnabled]);
+  }, [biometricEnabled, user?.id]);
 
   const retryBiometric = async () => {
     if (verifying) return;
