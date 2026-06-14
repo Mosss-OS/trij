@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useI18n } from "@/lib/i18n";
 import {
   ShieldCheck,
   WifiOff,
@@ -87,6 +88,7 @@ function BackgroundOrbs() {
 
 /* ---------- nav ---------- */
 function Nav({ authed }: { authed: boolean }) {
+  const { t } = useI18n();
   const [showNav, setShowNav] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -119,7 +121,7 @@ function Nav({ authed }: { authed: boolean }) {
         <Link to="/" className="flex items-center gap-2">
           <img
             src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
-            alt="Trij logo — free offline AI medical triage app"
+            alt={t("logoSlogan")}
             className="h-8 w-8 rounded-lg object-contain"
           />
 

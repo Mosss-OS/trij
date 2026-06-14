@@ -551,7 +551,7 @@ function MaternalPage() {
               <div className="flex items-center gap-3">
                 <UrgencyPill urgency={result.urgency} />
                 <div>
-                  <h2 className="font-display text-lg font-bold">{t("assessmentResult" as any)}</h2>
+                  <h2 className="font-display text-lg font-bold">{t("assessmentResult")}</h2>
                   <p className="text-xs text-muted-foreground">
                     {t("phase")}: {t(`phase_${result.phase}`)}
                   </p>
@@ -580,7 +580,7 @@ function MaternalPage() {
             )}
 
             <div className="rounded-3xl border bg-card p-6">
-              <h3 className="font-display text-sm font-semibold">{t("recommendation" as any)}</h3>
+              <h3 className="font-display text-sm font-semibold">{t("recommendation")}</h3>
               <p className="mt-1 text-sm">{result.recommendation}</p>
             </div>
 

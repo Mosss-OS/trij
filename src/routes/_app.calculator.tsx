@@ -4,6 +4,7 @@ import { I18nErrorBoundary } from "@/components/ErrorBoundary";
 import { PediatricDoseCalculator } from "@/components/PediatricDoseCalculator";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_app/calculator")({
   head: () => ({
@@ -49,14 +50,15 @@ export const Route = createFileRoute("/_app/calculator")({
 });
 
 function CalculatorPage() {
+  const { t } = useI18n();
   return (
     <>
-      <AppHeader title="Pediatric Dose Calculator" subtitle="WHO-recommended dosing guidelines" />
+      <AppHeader title={t("pediatricDoseCalculator")} subtitle={t("whoDosingGuidelines")} />
       <div className="mx-auto max-w-4xl px-5 py-6">
         <div className="mb-4">
           <Link to="/dashboard">
             <Button variant="ghost" size="sm" className="gap-2">
-              <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+              <ArrowLeft className="h-4 w-4" /> {t("backToDashboard")}
             </Button>
           </Link>
         </div>
