@@ -79,25 +79,29 @@ export const Route = createFileRoute("/_app/patients/$patientId")({
   component: PatientDetail,
 });
 
-const REFERRAL_STATUS_LABELS: Record<string, string> = {
-  pending: "Pending",
-  active: "In transit",
-  resolved: "Resolved",
-};
-
 const REFERRAL_STATUS_COLORS: Record<string, string> = {
   pending: "bg-urgency-yellow-bg text-urgency-yellow border-urgency-yellow/30",
   active: "bg-blue-50 text-blue-700 border-blue-200",
+  awaiting_feedback: "bg-amber-50 text-amber-700 border-amber-200",
+  feedback_received: "bg-purple-50 text-purple-700 border-purple-200",
   resolved: "bg-green-50 text-green-700 border-green-200",
 };
 
 function ReferralStatusBadge({ status }: { status: string }) {
+  const { t } = useI18n();
   if (status === "none") return null;
+  const labelMap: Record<string, string> = {
+    pending: t("pending_status"),
+    active: t("inTransit"),
+    awaiting_feedback: t("awaitingFeedback"),
+    feedback_received: t("feedbackReceived"),
+    resolved: t("resolved"),
+  };
   return (
     <span
       className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${REFERRAL_STATUS_COLORS[status] || ""}`}
     >
-      {REFERRAL_STATUS_LABELS[status] || status}
+      {labelMap[status] || status}
     </span>
   );
 }
@@ -187,7 +191,7 @@ function PatientDetail() {
         f.id === id ? { ...f, status: "completed", completedAt: new Date().toISOString() } : f,
       ),
     );
-    toast.success(t("followUp") + " completed");
+    toast.success(t("followUp") + " " + t("followUpCompletedSuffix"));
   };
 
   const handleCancel = async (id: string) => {
@@ -212,16 +216,16 @@ function PatientDetail() {
     setFeedbackFacility("");
     setFeedbackOutcome("unknown");
     setFeedbackNotes("");
-    toast.success("Feedback saved");
+    toast.success(t("feedbackSaved"));
     loadData();
   };
 
   if (!patient) {
     return (
       <>
-        <AppHeader title="Patient" />
+        <AppHeader title={t("patient")} />
         <div className="mx-auto max-w-4xl px-5 py-10 text-center text-sm text-muted-foreground">
-          Patient not found locally.
+          {t("patientNotFound")}
         </div>
       </>
     );
@@ -242,27 +246,27 @@ function PatientDetail() {
             <div>
               <h1 className="font-display text-xl font-semibold">{patient.identifier}</h1>
               <p className="text-xs text-muted-foreground">
-                {assessments.length} assessment{assessments.length === 1 ? "" : "s"}
+                {t("assessmentsCount").replace("{count}", String(assessments.length))}
               </p>
             </div>
           </div>
           <Link to="/triage" className="mt-4 block">
             <Button className="w-full gap-2">
-              <Camera className="h-4 w-4" /> New assessment
+              <Camera className="h-4 w-4" /> {t("newAssessment")}
             </Button>
           </Link>
         </div>
 
-        <h2 className="mt-7 mb-3 font-display text-lg font-semibold">Timeline</h2>
+        <h2 className="mt-7 mb-3 font-display text-lg font-semibold">{t("timeline")}</h2>
         {assessments.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No assessments yet.</p>
+          <p className="text-sm text-muted-foreground">{t("noAssessmentsYet")}</p>
         ) : (
           <ul className="space-y-3">
             {assessments.map((a) => (
               <li key={a.id} className="rounded-2xl border bg-card p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-medium">{a.condition ?? "Assessment"}</p>
+                    <p className="font-medium">{a.condition ?? t("assessmentFallback")}</p>
                     {a.icd10Code && (
                       <p className="mt-0.5 font-mono text-xs text-muted-foreground">
                         ICD-10: {a.icd10Code}
@@ -355,38 +359,38 @@ function PatientDetail() {
                           | "feedback_received"
                           | "resolved";
                         updateReferralStatus(a.id, s);
-                        toast.success(`Referral marked as ${s}`);
+                        toast.success(t("referralMarkedAs").replace("{status}", s));
                       }}
                     >
                       <SelectTrigger className="h-7 w-28 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="active">In transit</SelectItem>
-                        <SelectItem value="awaiting_feedback">Awaiting feedback</SelectItem>
-                        <SelectItem value="feedback_received">Feedback received</SelectItem>
-                        <SelectItem value="resolved">Resolved</SelectItem>
+                        <SelectItem value="pending">{t("pending_status")}</SelectItem>
+                        <SelectItem value="active">{t("inTransit")}</SelectItem>
+                        <SelectItem value="awaiting_feedback">{t("awaitingFeedback")}</SelectItem>
+                        <SelectItem value="feedback_received">{t("feedbackReceived")}</SelectItem>
+                        <SelectItem value="resolved">{t("resolved")}</SelectItem>
                       </SelectContent>
                     </Select>
                     {a.referralFeedback &&
                       (a.referralStatus === "feedback_received" ||
                         a.referralStatus === "resolved") && (
                         <div className="mt-2 w-full rounded-xl border bg-muted/20 p-3 text-xs">
-                          <p className="font-medium text-foreground">Referral feedback</p>
+                          <p className="font-medium text-foreground">{t("referralFeedback")}</p>
                           {a.referralFeedback.facilityName && (
                             <p className="mt-1 text-muted-foreground">
-                              Facility: {a.referralFeedback.facilityName}
+                              {t("facilityLabel")}: {a.referralFeedback.facilityName}
                             </p>
                           )}
                           {a.referralFeedback.diagnosis && (
                             <p className="text-muted-foreground">
-                              Diagnosis: {a.referralFeedback.diagnosis}
+                              {t("diagnosisLabel")}: {a.referralFeedback.diagnosis}
                             </p>
                           )}
                           {a.referralFeedback.treatment && (
                             <p className="text-muted-foreground">
-                              Treatment: {a.referralFeedback.treatment}
+                              {t("treatmentLabel")}: {a.referralFeedback.treatment}
                             </p>
                           )}
                           {a.referralFeedback.notes && (
@@ -410,7 +414,7 @@ function PatientDetail() {
                         setFeedbackDialogOpen(true);
                       }}
                     >
-                      <FileDown className="h-3.5 w-3.5" /> Feedback
+                      <FileDown className="h-3.5 w-3.5" /> {t("feedbackButton")}
                     </Button>
                     <Button
                       variant="outline"
@@ -418,7 +422,7 @@ function PatientDetail() {
                       className="h-7 gap-1 text-xs"
                       onClick={() => downloadReferralPdf(patient, a)}
                     >
-                      <FileDown className="h-3.5 w-3.5" /> PDF
+                      <FileDown className="h-3.5 w-3.5" /> {t("pdfButton")}
                     </Button>
                     <Button
                       variant="outline"
@@ -426,7 +430,7 @@ function PatientDetail() {
                       className="h-7 gap-1 text-xs"
                       onClick={() => shareReferralPdf(patient, a)}
                     >
-                      <Share2 className="h-3.5 w-3.5" /> Share
+                      <Share2 className="h-3.5 w-3.5" /> {t("share")}
                     </Button>
                   </div>
                 )}
@@ -497,12 +501,12 @@ function PatientDetail() {
                         <span className="font-medium">{format(dueDate, "PPp")}</span>
                         {f.status === "completed" && (
                           <span className="inline-flex items-center gap-1 text-xs text-green-600">
-                            <CheckCircle2 className="h-3 w-3" /> Done
+                            <CheckCircle2 className="h-3 w-3" /> {t("done")}
                           </span>
                         )}
                         {f.status === "cancelled" && (
                           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                            <XCircle className="h-3 w-3" /> Cancelled
+                            <XCircle className="h-3 w-3" /> {t("cancelled")}
                           </span>
                         )}
                         {past && f.status === "pending" && (
@@ -549,35 +553,35 @@ function PatientDetail() {
         <Dialog open={feedbackDialogOpen} onOpenChange={setFeedbackDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Record referral feedback</DialogTitle>
+              <DialogTitle>{t("recordReferralFeedback")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <Label>Facility name</Label>
+                <Label>{t("facilityNameLabel")}</Label>
                 <Input
                   value={feedbackFacility}
                   onChange={(e) => setFeedbackFacility(e.target.value)}
-                  placeholder="e.g. Bondo Health Centre"
+                  placeholder={t("facilityNamePlaceholder")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Clinic diagnosis</Label>
+                <Label>{t("clinicDiagnosis")}</Label>
                 <Input
                   value={feedbackDiagnosis}
                   onChange={(e) => setFeedbackDiagnosis(e.target.value)}
-                  placeholder="e.g. Cellulitis"
+                  placeholder={t("clinicDiagnosisPlaceholder")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Treatment given</Label>
+                <Label>{t("treatmentGiven")}</Label>
                 <Input
                   value={feedbackTreatment}
                   onChange={(e) => setFeedbackTreatment(e.target.value)}
-                  placeholder="e.g. Antibiotics prescribed"
+                  placeholder={t("treatmentPlaceholder")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Outcome</Label>
+                <Label>{t("outcome")}</Label>
                 <Select
                   value={feedbackOutcome}
                   onValueChange={(v) => setFeedbackOutcome(v as typeof feedbackOutcome)}
@@ -586,26 +590,26 @@ function PatientDetail() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="treated">Treated and discharged</SelectItem>
-                    <SelectItem value="referred_elsewhere">Referred elsewhere</SelectItem>
-                    <SelectItem value="admitted">Admitted</SelectItem>
-                    <SelectItem value="discharged">Discharged</SelectItem>
-                    <SelectItem value="unknown">Unknown</SelectItem>
+                    <SelectItem value="treated">{t("treatedDischarged")}</SelectItem>
+                    <SelectItem value="referred_elsewhere">{t("referredElsewhere")}</SelectItem>
+                    <SelectItem value="admitted">{t("admitted")}</SelectItem>
+                    <SelectItem value="discharged">{t("discharged")}</SelectItem>
+                    <SelectItem value="unknown">{t("unknown")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Additional notes</Label>
+                <Label>{t("additionalNotes")}</Label>
                 <textarea
                   value={feedbackNotes}
                   onChange={(e) => setFeedbackNotes(e.target.value)}
                   className="w-full rounded-lg border border-input bg-background p-2 text-sm"
                   rows={3}
-                  placeholder="Any other details from the clinic..."
+                  placeholder={t("additionalNotesPlaceholder")}
                 />
               </div>
               <Button onClick={handleSaveFeedback} className="w-full gap-2">
-                Save feedback
+                {t("saveFeedback")}
               </Button>
             </div>
           </DialogContent>

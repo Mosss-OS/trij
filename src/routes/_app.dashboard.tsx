@@ -60,7 +60,7 @@ function DashboardPage() {
   const { t, language } = useI18n();
   const user = useSessionStore((s) => s.user);
   const { log } = useAuditLog();
-  const name = (user?.user_metadata?.name as string) || user?.email?.split("@")[0] || "CHW";
+  const name = (user?.user_metadata?.name as string) || user?.email?.split("@")[0] || t("chwFallback");
   const [recent, setRecent] = useState<(Assessment & { patient?: Patient })[]>([]);
   const [upcomingFollowUps, setUpcomingFollowUps] = useState<FollowUp[]>([]);
   const { unseen, count: alertCount, markAllAsSeen } = useReferralAlerts();
@@ -156,9 +156,9 @@ function DashboardPage() {
               <BellRing className="h-5 w-5 flex-shrink-0 text-blue-600" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-blue-800">
-                  {alertCount} unacknowledged referral{alertCount > 1 ? "s" : ""}
+                  {t("unacknowledgedReferrals").replace("{count}", String(alertCount))}
                 </p>
-                <p className="text-xs text-blue-600/70">Tap to view in Referrals</p>
+                <p className="text-xs text-blue-600/70">{t("tapToViewReferrals")}</p>
               </div>
               <button
                 onClick={(e) => {
@@ -167,7 +167,7 @@ function DashboardPage() {
                 }}
                 className="rounded-lg bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
               >
-                Dismiss
+                {t("dismiss")}
               </button>
             </Link>
           </section>
