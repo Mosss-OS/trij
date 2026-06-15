@@ -240,27 +240,19 @@ function SettingsPage() {
   };
 
   const engineOptions: { value: EngineKind | "auto"; label: string; desc: string }[] = [
-    {
-      value: "auto",
-      label: "Auto-detect",
-      desc: "Cloud (mobile) / WebGPU → Ollama → Demo (desktop)",
-    },
-    { value: "webllm", label: "WebLLM (WebGPU)", desc: "In-browser Gemma via WebGPU" },
-    { value: "ollama", label: "Ollama (local)", desc: "Local Ollama server" },
-    {
-      value: "google",
-      label: "Google AI Studio",
-      desc: "Gemini API via Google AI Studio (free tier)",
-    },
-    { value: "cloud", label: "Cloud inference", desc: "Remote Gemma 4 26B via Supabase" },
-    { value: "demo", label: "Demo mode", desc: "Mock data, no real model needed" },
+    { value: "auto", label: t("engineAuto"), desc: t("engineAutoDesc") },
+    { value: "webllm", label: t("engineWebllm"), desc: t("engineWebllmDesc") },
+    { value: "ollama", label: t("engineOllama"), desc: t("engineOllamaDesc") },
+    { value: "google", label: t("engineGoogle"), desc: t("engineGoogleDesc") },
+    { value: "cloud", label: t("engineCloud"), desc: t("engineCloudDesc") },
+    { value: "demo", label: t("engineDemo"), desc: t("engineDemoDesc") },
   ];
 
   return (
     <>
       <AppHeader title={t("settings")} />
       <div className="mx-auto max-w-4xl space-y-6 px-5 py-6">
-        <Section title="Accessibility">
+        <Section title={t("accessibilitySection")}>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -395,24 +387,24 @@ function SettingsPage() {
 
           {s.engineKind === "webllm" && (
             <div className="space-y-1.5">
-              <Label>WebLLM model</Label>
+              <Label>{t("webllmModel")}</Label>
               <Select value={s.modelId} onValueChange={s.setModelId}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={PHI_VISION_MODEL_ID}>
-                    Phi-3.5 Vision (4 GB) — Images + Text
+                    {t("modelOptionPhi")}
                   </SelectItem>
                   <SelectItem value={GEMMA4_E2B_MODEL_ID}>
-                    Gemma 4 E2B (1.5 GB) — Text Only
+                    {t("modelOptionGemma")}
                   </SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
                 {s.modelId === GEMMA4_E2B_MODEL_ID
-                  ? "Faster to load, best for follow-up questions and voice. Phi-3.5 Vision is loaded automatically when you triage an image or analyze a document."
-                  : "Vision-capable. Supports image triage, document analysis, follow-up questions, and voice."}
+                  ? t("modelDescriptionPhi")
+                  : t("modelDescriptionGemma")}
               </p>
             </div>
           )}
@@ -420,16 +412,16 @@ function SettingsPage() {
           {s.engineKind === "google" && (
             <div className="space-y-3 rounded-2xl border bg-card p-4">
               <div className="space-y-1.5">
-                <Label>Google AI Studio API Key</Label>
+                <Label>{t("googleAiStudioApiKey")}</Label>
                 <Input
                   type="password"
                   value={s.googleApiKey}
                   onChange={(e) => s.setGoogleApiKey(e.target.value)}
-                  placeholder="AIzaSy..."
+                  placeholder={t("apiKeyPlaceholder")}
                   className="font-mono text-sm"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Get your free API key from{" "}
+                  {t("getFreeApiKey")}{" "}
                   <a
                     href="https://aistudio.google.com/apikey"
                     target="_blank"
@@ -441,7 +433,7 @@ function SettingsPage() {
                 </p>
               </div>
               <div className="space-y-1.5">
-                <Label>Model</Label>
+                <Label>{t("modelLabel")}</Label>
                 <Select
                   value={
                     s.modelId.startsWith("gemini") || s.modelId.startsWith("gemma")
@@ -454,18 +446,18 @@ function SettingsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash (fast, free)</SelectItem>
+                    <SelectItem value="gemini-2.0-flash">{t("geminiFlash")}</SelectItem>
                     <SelectItem value="gemini-2.0-flash-lite">
-                      Gemini 2.0 Flash-Lite (cheapest, free)
+                      {t("geminiFlashLite")}
                     </SelectItem>
                     <SelectItem value="gemini-2.5-flash">
-                      Gemini 2.5 Flash (balanced, free)
+                      {t("geminiFlashBalanced")}
                     </SelectItem>
-                    <SelectItem value="gemini-2.5-pro">Gemini 2.5 Pro (best quality)</SelectItem>
+                    <SelectItem value="gemini-2.5-pro">{t("geminiPro")}</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Gemini 2.0 Flash is recommended. It's free and supports image analysis.
+                  {t("geminiRecommendation")}
                 </p>
               </div>
             </div>
@@ -484,16 +476,16 @@ function SettingsPage() {
           <div className="flex flex-wrap gap-4 rounded-2xl border bg-secondary/40 p-4 text-xs">
             <div className="flex items-center gap-2">
               <Rabbit className="h-3.5 w-3.5 text-primary" />
-              <span>Ollama: {ollamaOk === null ? "..." : ollamaOk ? "Detected" : "Not found"}</span>
+              <span>Ollama: {ollamaOk === null ? "..." : ollamaOk ? t("ollamaStatusDetected") : t("ollamaNotFound")}</span>
             </div>
             <div className="flex items-center gap-2">
               <FlaskConical className="h-3.5 w-3.5 text-primary" />
-              <span>Active: {gemma.kind}</span>
+              <span>{t("activeLabel")} {gemma.kind}</span>
             </div>
           </div>
         </Section>
 
-        <Section title="Ollama configuration">
+        <Section title={t("ollamaConfiguration")}>
           <OllamaSetup />
         </Section>
 
@@ -530,9 +522,9 @@ function SettingsPage() {
         </Section>
 
         {isSupervisor && (
-          <Section title="Supervisor Codes">
+          <Section title={t("supervisorCodes")}>
             <p className="text-xs text-muted-foreground">
-              Generate invitation codes that CHWs can enter during signup to link themselves to you.
+              {t("supervisorCodesDesc")}
             </p>
             <Button onClick={generateCode} disabled={genBusy} className="gap-2">
               {genBusy ? (
@@ -540,7 +532,7 @@ function SettingsPage() {
               ) : (
                 <UserPlus className="h-4 w-4" />
               )}
-              Generate new code
+              {t("generateNewCode")}
             </Button>
             {codes.length > 0 && (
               <ul className="space-y-2">
@@ -554,9 +546,9 @@ function SettingsPage() {
                         {c.code}
                       </code>
                       {c.used_by_user_id ? (
-                        <p className="mt-0.5 text-xs text-muted-foreground">Used</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{t("codeUsed")}</p>
                       ) : (
-                        <p className="mt-0.5 text-xs text-emerald-600">Available</p>
+                        <p className="mt-0.5 text-xs text-emerald-600">{t("codeAvailable")}</p>
                       )}
                     </div>
                     <Button
@@ -574,7 +566,7 @@ function SettingsPage() {
                       ) : (
                         <Copy className="h-3.5 w-3.5" />
                       )}
-                      {copiedIdx === i ? "Copied" : "Copy"}
+                      {copiedIdx === i ? t("copied") : t("copy")}
                     </Button>
                   </li>
                 ))}
@@ -733,10 +725,10 @@ function SettingsPage() {
           </div>
         </Section>
 
-        <Section title="DHIS2 Integration">
+        <Section title={t("dhis2Integration")}>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Server URL</Label>
+              <Label>{t("serverUrl")}</Label>
               <Input
                 value={s.dhis2BaseUrl}
                 onChange={(e) =>
@@ -748,12 +740,12 @@ function SettingsPage() {
                     dhis2DataSet: s.dhis2DataSet,
                   })
                 }
-                placeholder="https://your-dhis2-instance.org"
+                placeholder={t("serverUrlPlaceholder")}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Username</Label>
+                <Label>{t("username")}</Label>
                 <Input
                   value={s.dhis2Username}
                   onChange={(e) =>
@@ -768,7 +760,7 @@ function SettingsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Password</Label>
+                <Label>{t("password")}</Label>
                 <Input
                   type="password"
                   value={s.dhis2Password}
@@ -786,7 +778,7 @@ function SettingsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Org Unit ID</Label>
+                <Label>{t("orgUnitId")}</Label>
                 <Input
                   value={s.dhis2OrgUnit}
                   onChange={(e) =>
@@ -798,11 +790,11 @@ function SettingsPage() {
                       dhis2DataSet: s.dhis2DataSet,
                     })
                   }
-                  placeholder="e.g. abc123"
+                  placeholder={t("orgUnitIdPlaceholder")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Data Set ID</Label>
+                <Label>{t("dataSetId")}</Label>
                 <Input
                   value={s.dhis2DataSet}
                   onChange={(e) =>
@@ -814,7 +806,7 @@ function SettingsPage() {
                       dhis2DataSet: e.target.value,
                     })
                   }
-                  placeholder="e.g. xyz789"
+                  placeholder={t("dataSetIdPlaceholder")}
                 />
               </div>
             </div>
@@ -834,16 +826,16 @@ function SettingsPage() {
                   };
                   const payload = buildDhis2Payload(config, {});
                   const result = await pushToDhis2(config, payload);
-                  if (result.ok) toast.success("Connection successful");
-                  else toast.error(`Connection failed: HTTP ${result.httpStatus}`);
+                  if (result.ok) toast.success(t("connectionSuccessful"));
+                  else toast.error(t("connectionFailed").replace("{status}", String(result.httpStatus)));
                 } catch (err) {
-                  toast.error(`Connection error: ${(err as Error).message}`);
+                  toast.error(t("connectionError").replace("{message}", (err as Error).message));
                 }
               }}
               disabled={!s.dhis2BaseUrl || !s.dhis2Username || !s.dhis2Password}
             >
               <Database className="mr-2 h-3.5 w-3.5" />
-              Test Connection
+              {t("testConnectionButton")}
             </Button>
           </div>
         </Section>
@@ -883,7 +875,7 @@ function SettingsPage() {
               to="/faq"
               className="flex flex-1 items-center justify-center gap-2 rounded-xl border bg-card p-3 text-sm font-medium hover:bg-muted/50"
             >
-              FAQ
+              {t("faq")}
             </Link>
             <Link
               to="/help"
@@ -953,14 +945,14 @@ function SettingsPage() {
       <Dialog open={showPinSetup} onOpenChange={setShowPinSetup}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{hasPin ? "Change offline PIN" : "Set up offline PIN"}</DialogTitle>
+            <DialogTitle>{hasPin ? t("changePinTitle") : t("setupPinTitle")}</DialogTitle>
             <DialogDescription>
-              Choose a 4-6 digit PIN to sign in when you don't have internet access.
+              {t("pinSetupDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="settings-pin">New PIN</Label>
+              <Label htmlFor="settings-pin">{t("newPin")}</Label>
               <Input
                 id="settings-pin"
                 type="password"
@@ -970,13 +962,13 @@ function SettingsPage() {
                   setPinValue(e.target.value.replace(/\D/g, "").slice(0, 6));
                   setPinError("");
                 }}
-                placeholder="4-6 digits"
+                placeholder={t("pinPlaceholder")}
                 className="text-center text-2xl tracking-[0.5em]"
                 maxLength={6}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="settings-pin-confirm">Confirm PIN</Label>
+              <Label htmlFor="settings-pin-confirm">{t("confirmPin")}</Label>
               <Input
                 id="settings-pin-confirm"
                 type="password"
@@ -986,7 +978,7 @@ function SettingsPage() {
                   setPinConfirm(e.target.value.replace(/\D/g, "").slice(0, 6));
                   setPinError("");
                 }}
-                placeholder="Re-enter PIN"
+                placeholder={t("reEnterPin")}
                 className="text-center text-2xl tracking-[0.5em]"
                 maxLength={6}
               />
@@ -996,11 +988,11 @@ function SettingsPage() {
               onClick={async () => {
                 if (!offlineUser) return;
                 if (pinValue.length < 4) {
-                  setPinError("PIN must be 4-6 digits");
+                  setPinError(t("pinValidationLength"));
                   return;
                 }
                 if (pinValue !== pinConfirm) {
-                  setPinError("PINs do not match");
+                  setPinError(t("pinMismatch"));
                   return;
                 }
                 setPinBusy(true);
@@ -1010,7 +1002,7 @@ function SettingsPage() {
                   setShowPinSetup(false);
                   setPinValue("");
                   setPinConfirm("");
-                  toast.success("Offline PIN configured successfully");
+                  toast.success(t("pinConfiguredSuccessfully"));
                 } catch (err) {
                   setPinError((err as Error).message);
                 } finally {
@@ -1021,7 +1013,7 @@ function SettingsPage() {
               className="w-full"
               size="lg"
             >
-              {pinBusy ? "Saving..." : "Save PIN"}
+              {pinBusy ? t("saving") : t("savePin")}
             </Button>
           </div>
         </DialogContent>
@@ -1032,27 +1024,26 @@ function SettingsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-urgency-red">
               <AlertTriangle className="h-5 w-5" />
-              Demo Mode — Not for Medical Use
+              {t("demoModeDialogTitle")}
             </DialogTitle>
             <DialogDescription className="pt-2">
-              Demo mode returns <strong>simulated results</strong> for testing only. Do{" "}
-              <strong>not</strong> use for actual patient assessment.
+              {t("demoModeDialogDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-xl border bg-amber-50 p-4 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">
-            <p className="font-medium">If you select demo mode:</p>
+            <p className="font-medium">{t("demoModeWarningList")}</p>
             <ul className="mt-2 list-disc space-y-1 pl-5">
-              <li>All assessments will contain fake, plausible-sounding results</li>
-              <li>A persistent red banner will appear on every screen</li>
-              <li>Switch to WebLLM, Ollama, or Cloud to return to real assessments</li>
+              <li>{t("demoModeWarning1")}</li>
+              <li>{t("demoModeWarning2")}</li>
+              <li>{t("demoModeWarning3")}</li>
             </ul>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setDemoWarningOpen(false)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button variant="destructive" onClick={confirmDemo}>
-              Enter Demo Mode
+              {t("enterDemoMode")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -101,7 +101,7 @@ function PatientsList() {
       const autoMerged = await runDedup();
       const mergedCount = autoMerged.filter((m) => m.score >= 0.9).length;
       if (mergedCount > 0) {
-        toast.success(`${t("autoMerged")} ${mergedCount} duplicate pair(s)`);
+        toast.success(`${t("autoMerged")} ${mergedCount} ${t("duplicatePairs")}`);
       }
       reload();
     } catch {
@@ -234,19 +234,19 @@ function PatientsList() {
             variant="outline"
             className="w-full gap-2"
             onClick={async () => {
-              const code = window.prompt("Enter supervisor PIN to exit field mode:");
+              const code = window.prompt(t("enterSupervisorPin"));
               if (!code) return;
               try {
                 const { verifyPin } = await import("@/lib/pin-auth");
                 const ok = await verifyPin("supervisor", code);
                 if (ok) {
                   useSettingsStore.getState().setFieldMode(false);
-                  toast.success("Field mode disabled");
+                  toast.success(t("fieldModeDisabled"));
                 } else {
-                  toast.error("Incorrect supervisor PIN");
+                  toast.error(t("incorrectSupervisorPin"));
                 }
               } catch {
-                toast.error("Failed to verify PIN");
+                toast.error(t("pinVerificationFailed"));
               }
             }}
           >

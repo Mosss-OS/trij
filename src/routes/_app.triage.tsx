@@ -477,7 +477,7 @@ function TriagePage() {
     setConsent(draft.consent as any);
     convoRef.current = draft.messages;
     setStep("voice");
-    toast.success("Resumed voice interview");
+    toast.success(t("voiceResumed"));
   };
 
   const startPatient = async () => {
@@ -1194,7 +1194,7 @@ function TriagePage() {
   const recordVoiceAnswer = async () => {
     const v = voiceRef.current;
     if (!v) {
-      toast.error("Voice recognition not available. Type your answer instead.");
+      toast.error(t("voiceNotAvailable"));
       return;
     }
     setVoiceBusy(true);
@@ -1206,7 +1206,7 @@ function TriagePage() {
       }
     } catch {
       setVoiceBusy(false);
-      toast.error("Could not recognize speech. Type your answer instead.");
+      toast.error(t("speechNotRecognized"));
     }
   };
 
@@ -1282,10 +1282,9 @@ function TriagePage() {
           <div className="mt-7 space-y-5">
             {resumableDrafts.length > 0 && (
               <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
-                <p className="text-sm font-medium">Resume voice interview</p>
+                <p className="text-sm font-medium">{t("resumeVoiceInterview")}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  You have {resumableDrafts.length} unfinished interview
-                  {resumableDrafts.length > 1 ? "s" : ""}.
+                  {t("unfinishedInterviews").replace("{count}", String(resumableDrafts.length))}
                 </p>
                 <div className="mt-3 space-y-2">
                   {resumableDrafts.slice(0, 3).map((d) => (
@@ -1296,13 +1295,13 @@ function TriagePage() {
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{d.patient.identifier}</p>
                         <p className="text-[11px] text-muted-foreground">
-                          {d.qaHistory.length} answered · {new Date(d.updatedAt).toLocaleString()}
+                          {d.qaHistory.length} {t("answered")} · {new Date(d.updatedAt).toLocaleString()}
                         </p>
                       </div>
                       <div className="flex gap-1">
-                        <Button size="sm" onClick={() => resumeDraft(d.patientId)}>
-                          Resume
-                        </Button>
+                          <Button size="sm" onClick={() => resumeDraft(d.patientId)}>
+                            {t("resume")}
+                          </Button>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -1312,8 +1311,8 @@ function TriagePage() {
                               arr.filter((x) => x.patientId !== d.patientId),
                             );
                           }}
-                        >
-                          Discard
+                          >
+                            {t("discard")}
                         </Button>
                       </div>
                     </div>
@@ -1332,7 +1331,7 @@ function TriagePage() {
                   id="patient-id"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="e.g. AP-0142"
+                  placeholder={t("patientIdPlaceholder")}
                   className="flex-1"
                 />
                 {voice.active && (
@@ -1486,14 +1485,14 @@ function TriagePage() {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {(
                 [
-                  ["dermatology", t("dermatologyIcon") || "Skin"],
-                  ["respiratory", t("respiratoryIcon") || "Lungs"],
-                  ["fever", t("feverIcon") || "Fever"],
-                  ["gastrointestinal", t("giIcon") || "Stomach"],
-                  ["neurological", t("neuroIcon") || "Brain"],
-                  ["malnutrition", t("malnutritionIcon") || "Nutrition"],
-                  ["eye_ear", t("eyeEarIcon") || "Eye/Ear"],
-                  ["musculoskeletal", t("mskIcon") || "Joint"],
+                  ["dermatology", t("dermatologyIcon")],
+                  ["respiratory", t("respiratoryIcon")],
+                  ["fever", t("feverIcon")],
+                  ["gastrointestinal", t("giIcon")],
+                  ["neurological", t("neuroIcon")],
+                  ["malnutrition", t("malnutritionIcon")],
+                  ["eye_ear", t("eyeEarIcon")],
+                  ["musculoskeletal", t("mskIcon")],
                 ] as const
               ).map(([value, label]) => (
                 <button
@@ -1551,7 +1550,7 @@ function TriagePage() {
                   size="lg"
                   className="flex-1 gap-2"
                 >
-                  {t("start")} IMCI
+                  {t("start")} {t("imciShort")}
                 </Button>
                 <Button
                   onClick={() => setStep("presentation")}
@@ -1614,7 +1613,7 @@ function TriagePage() {
                       type="number"
                       min={0}
                       max={200}
-                      placeholder="e.g. 45"
+                      placeholder={t("rrPlaceholderText")}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -1625,7 +1624,7 @@ function TriagePage() {
                       type="number"
                       min={0}
                       max={90}
-                      placeholder="0"
+                      placeholder={t("digitPlaceholder")}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -1636,7 +1635,7 @@ function TriagePage() {
                       type="number"
                       min={0}
                       max={90}
-                      placeholder="0"
+                      placeholder={t("digitPlaceholder")}
                     />
                   </div>
                 </div>
@@ -1665,7 +1664,7 @@ function TriagePage() {
                   size="lg"
                   className="flex-1 gap-2"
                 >
-                  {t("start")} IMCI
+                  {t("start")} {t("imciShort")}
                 </Button>
                 <Button
                   onClick={() => setStep("presentation")}
@@ -1728,7 +1727,7 @@ function TriagePage() {
                       type="number"
                       min={0}
                       max={200}
-                      placeholder="e.g. 45"
+                      placeholder={t("rrPlaceholderText")}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -1739,7 +1738,7 @@ function TriagePage() {
                       type="number"
                       min={0}
                       max={90}
-                      placeholder="0"
+                      placeholder={t("digitPlaceholder")}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -1750,7 +1749,7 @@ function TriagePage() {
                       type="number"
                       min={0}
                       max={90}
-                      placeholder="0"
+                      placeholder={t("digitPlaceholder")}
                     />
                   </div>
                 </div>
@@ -1775,7 +1774,7 @@ function TriagePage() {
                           type="number"
                           min={0}
                           max={90}
-                          placeholder="0"
+                          placeholder={t("digitPlaceholder")}
                         />
                       </div>
                       {imciDiarrhoeaCheckboxes.map((item) => (
@@ -1801,7 +1800,7 @@ function TriagePage() {
                       onChange={(e) => setImciOedema(e.target.checked)}
                       className="h-4 w-4 rounded border-gray-300"
                     />
-                    {t("imciOedema") || "Bilateral pitting oedema"}
+                    {t("imciOedema")}
                   </label>
                   <label className="flex items-center gap-2 text-sm">
                     <input
@@ -1810,7 +1809,7 @@ function TriagePage() {
                       onChange={(e) => setImciPallor(e.target.checked)}
                       className="h-4 w-4 rounded border-gray-300"
                     />
-                    {t("imciPallor") || "Pallor"}
+                    {t("imciPallor")}
                   </label>
                 </div>
 
@@ -2025,7 +2024,7 @@ function TriagePage() {
                 <Input
                   value={typedAnswer}
                   onChange={(e) => setTypedAnswer(e.target.value)}
-                  placeholder="Type your answer..."
+                  placeholder={t("typeYourAnswer")}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && typedAnswer.trim()) {
                       handleVoiceAnswer(typedAnswer);
@@ -2038,7 +2037,7 @@ function TriagePage() {
                   size="icon"
                   onClick={recordVoiceAnswer}
                   disabled={voiceBusy}
-                  title="Speak your answer"
+                  title={t("speakYourAnswer")}
                 >
                   {voiceBusy ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </Button>
@@ -2105,7 +2104,7 @@ function TriagePage() {
                   if (txt) voice.narrate(txt);
                 }
               }}
-              title={voice.speaking ? "Stop" : "Guide me"}
+              title={voice.speaking ? t("voiceStop") : t("guideMe")}
             >
               {voice.speaking ? <MicOff className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
             </Button>
