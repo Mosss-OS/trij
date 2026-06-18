@@ -80,6 +80,7 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [signupRole, setSignupRole] = useState<"chw" | "supervisor">("chw");
   const [supervisorCode, setSupervisorCode] = useState("");
   const [supervisorName, setSupervisorName] = useState("");
   const [codeValidating, setCodeValidating] = useState(false);
@@ -234,9 +235,9 @@ function LoginPage() {
     if (bioVerifying) return;
     setBioVerifying(true);
     try {
-      const userId = await authenticateBiometric();
+      const { userId, error } = await authenticateBiometric();
       if (!userId) {
-        toast.error("Biometric authentication failed");
+        toast.error(error || "Biometric authentication failed", { duration: 5000 });
         return;
       }
       const rec = await getDB().pinAuth.get(userId);
@@ -247,7 +248,7 @@ function LoginPage() {
         setOfflineSession({ id: userId, email: storedEmail });
       }
     } catch {
-      toast.error("Biometric authentication failed");
+      toast.error("Biometric authentication failed unexpectedly");
     } finally {
       if (mountedRef.current) setBioVerifying(false);
     }
@@ -275,7 +276,7 @@ function LoginPage() {
     }, AUTH_TIMEOUT);
     try {
       if (mode === "signup") {
-        const meta: Record<string, string> = { name };
+        const meta: Record<string, string> = { name, role: signupRole };
         if (supervisorCode.trim()) meta.supervisor_code = supervisorCode.trim();
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -694,9 +695,40 @@ function LoginPage() {
                   required
                 />
               </div>
+              <div className="space-y-2 rounded-xl border bg-secondary/20 p-3">
+                <Label>{t("roleLabel")}</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSignupRole("chw")}
+                    className={`rounded-lg border p-2.5 text-left text-xs transition-all ${
+                      signupRole === "chw"
+                        ? "border-primary bg-primary/10 font-medium text-primary"
+                        : "border-transparent bg-card hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className="font-medium">{t("roleChw")}</div>
+                    <div className="mt-0.5 text-muted-foreground">{t("roleChwDesc")}</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSignupRole("supervisor")}
+                    className={`rounded-lg border p-2.5 text-left text-xs transition-all ${
+                      signupRole === "supervisor"
+                        ? "border-primary bg-primary/10 font-medium text-primary"
+                        : "border-transparent bg-card hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className="font-medium">{t("roleSupervisor")}</div>
+                    <div className="mt-0.5 text-muted-foreground">{t("roleSupervisorDesc")}</div>
+                  </button>
+                </div>
+              </div>
+
+              {signupRole === "chw" && (
               <div className="space-y-1.5">
                 <Label htmlFor="supervisor-code">
-                  Supervisor code <span className="text-xs text-muted-foreground">(optional)</span>
+                  {t("supervisorCode")} <span className="text-xs text-muted-foreground">(optional)</span>
                 </Label>
                 <div className="relative">
                   <Input
@@ -738,9 +770,10 @@ function LoginPage() {
                   <p className="text-xs text-destructive">Code not found or already used</p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  Enter the 8-character code from your supervisor (if you have one).
+                  {t("supervisorCodeDesc")}
                 </p>
               </div>
+            )}
             </>
           )}
           <div className="space-y-1.5">

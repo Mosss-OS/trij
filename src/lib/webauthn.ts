@@ -62,10 +62,10 @@ export async function registerBiometric(userId: string): Promise<boolean> {
   }
 }
 
-export async function authenticateBiometric(): Promise<string | null> {
-  if (!(await isBiometricAvailable())) return null;
+export async function authenticateBiometric(): Promise<{ userId: string | null; error: string | null }> {
+  if (!(await isBiometricAvailable())) return { userId: null, error: "Biometric authentication not available on this device" };
   const credentialId = localStorage.getItem(STORAGE_KEY);
-  if (!credentialId) return null;
+  if (!credentialId) return { userId: null, error: "No biometric credential registered" };
 
   try {
     const challenge = crypto.getRandomValues(new Uint8Array(32));
@@ -77,10 +77,17 @@ export async function authenticateBiometric(): Promise<string | null> {
         timeout: 30000,
       },
     });
-    if (!cred) return null;
-    return localStorage.getItem(USER_KEY);
-  } catch {
-    return null;
+    if (!cred) return { userId: null, error: "Biometric authentication was cancelled" };
+    return { userId: localStorage.getItem(USER_KEY), error: null };
+  } catch (err) {
+    const msg = err instanceof DOMException
+      ? err.name === "NotAllowedError"
+        ? "Biometric match failed or was cancelled. Try again or sign in with your email."
+        : err.name === "SecurityError"
+          ? "Biometric authentication blocked by security policy"
+          : `Biometric error: ${err.message}`
+      : "Biometric authentication failed unexpectedly";
+    return { userId: null, error: msg };
   }
 }
 
