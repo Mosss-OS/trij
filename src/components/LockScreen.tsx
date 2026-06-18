@@ -19,6 +19,7 @@ export function LockScreen() {
   const [verifying, setVerifying] = useState(false);
   const [usePin, setUsePin] = useState(false);
   const [bioAttempts, setBioAttempts] = useState(0);
+  const [bioError, setBioError] = useState("");
   const [noPinConfigured, setNoPinConfigured] = useState(false);
   const [checkingPin, setCheckingPin] = useState(true);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -44,10 +45,14 @@ export function LockScreen() {
   const retryBiometric = async () => {
     if (verifying) return;
     setVerifying(true);
+    setBioError("");
     try {
-      const userId = await authenticateBiometric();
+      const { userId, error } = await authenticateBiometric();
       if (userId && mountedRef.current) setScreenLocked(false);
-      else if (mountedRef.current) setBioAttempts((a) => a + 1);
+      else if (mountedRef.current) {
+        setBioError(error || "Biometric authentication failed");
+        setBioAttempts((a) => a + 1);
+      }
     } finally {
       if (mountedRef.current) setVerifying(false);
     }
@@ -134,9 +139,17 @@ export function LockScreen() {
           <p className="text-sm text-muted-foreground">{t("useBiometricToUnlock")}</p>
         </div>
         {verifying && <Loader2 className="mt-6 h-5 w-5 animate-spin text-primary" />}
+        {bioError && (
+          <p className="mt-4 max-w-xs text-center text-xs text-destructive">{bioError}</p>
+        )}
+        {bioAttempts >= 3 && (
+          <p className="mt-2 max-w-xs text-center text-xs text-muted-foreground">
+            {t("biometricLocked")}
+          </p>
+        )}
         <button
           onClick={() => setUsePin(true)}
-          className="mt-8 text-xs text-muted-foreground underline hover:text-foreground"
+          className="mt-6 text-xs text-muted-foreground underline hover:text-foreground"
         >
           {noPinConfigured ? t("signOut") : t("usePinInstead")}
         </button>
