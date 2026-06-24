@@ -69,6 +69,9 @@ export const translations = {
     languageAndVoice: "Language & voice",
     interfaceAndSpeech: "Interface & speech language",
     voiceAssistant: "Voice assistant",
+    statusCertified: "Certified",
+    statusConditional: "Conditional",
+    statusDraft: "Draft",
     readAssessments: "Read assessments aloud, listen for follow-ups.",
     voiceGuidedMode: "Voice-guided mode",
     voiceGuidedModeDesc:

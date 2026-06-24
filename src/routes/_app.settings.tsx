@@ -306,21 +306,21 @@ function SettingsPage() {
                     <SelectItem key={l.code} value={l.code}>
                       <span className="flex items-center gap-2">
                         {l.label}
-                        {info?.status === "certified" && (
-                          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
-                            Certified
-                          </span>
-                        )}
-                        {info?.status === "conditional" && (
-                          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
-                            Conditional
-                          </span>
-                        )}
-                        {info?.status === "draft" && (
-                          <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">
-                            Draft
-                          </span>
-                        )}
+                          {info?.status === "certified" && (
+                            <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+                              {t("statusCertified")}
+                            </span>
+                          )}
+                          {info?.status === "conditional" && (
+                            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                              {t("statusConditional")}
+                            </span>
+                          )}
+                          {info?.status === "draft" && (
+                            <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">
+                              {t("statusDraft")}
+                            </span>
+                          )}
                       </span>
                     </SelectItem>
                   );
