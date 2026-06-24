@@ -482,6 +482,9 @@ export async function processSyncQueue(
     }
   }
 
+  // Pull consultation responses from clinician (sync from server to local)
+  await pollConsultationResponses();
+
   return { ok, failed, deadLetter };
 }
 
