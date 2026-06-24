@@ -288,7 +288,7 @@ function PatientDetail() {
                   <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl border bg-muted/20 p-3 text-xs sm:grid-cols-3">
                     {a.vitalSigns.systolicBP && (
                       <div>
-                        <span className="text-muted-foreground">BP</span>
+                        <span className="text-muted-foreground">{t("bp")}</span>
                         <p className="font-medium">
                           {a.vitalSigns.systolicBP}/{a.vitalSigns.diastolicBP}
                         </p>
@@ -296,43 +296,43 @@ function PatientDetail() {
                     )}
                     {a.vitalSigns.heartRate && (
                       <div>
-                        <span className="text-muted-foreground">HR</span>
+                        <span className="text-muted-foreground">{t("heartRate")}</span>
                         <p className="font-medium">{a.vitalSigns.heartRate} bpm</p>
                       </div>
                     )}
                     {a.vitalSigns.temperature && (
                       <div>
-                        <span className="text-muted-foreground">Temp</span>
+                        <span className="text-muted-foreground">{t("temperature")}</span>
                         <p className="font-medium">{a.vitalSigns.temperature}°C</p>
                       </div>
                     )}
                     {a.vitalSigns.respiratoryRate && (
                       <div>
-                        <span className="text-muted-foreground">RR</span>
+                        <span className="text-muted-foreground">{t("respiratoryRate")}</span>
                         <p className="font-medium">{a.vitalSigns.respiratoryRate} /min</p>
                       </div>
                     )}
                     {a.vitalSigns.oxygenSaturation && (
                       <div>
-                        <span className="text-muted-foreground">SpO₂</span>
+                        <span className="text-muted-foreground">{t("oxygenSaturation")}</span>
                         <p className="font-medium">{a.vitalSigns.oxygenSaturation}%</p>
                       </div>
                     )}
                     {a.vitalSigns.muac && (
                       <div>
-                        <span className="text-muted-foreground">MUAC</span>
+                        <span className="text-muted-foreground">{t("muac")}</span>
                         <p className="font-medium">{a.vitalSigns.muac} cm</p>
                       </div>
                     )}
                     {a.vitalSigns.weight && (
                       <div>
-                        <span className="text-muted-foreground">Wt</span>
+                        <span className="text-muted-foreground">{t("weight")}</span>
                         <p className="font-medium">{a.vitalSigns.weight} kg</p>
                       </div>
                     )}
                     {a.vitalSigns.painScale !== undefined && (
                       <div>
-                        <span className="text-muted-foreground">Pain</span>
+                        <span className="text-muted-foreground">{t("painScale")}</span>
                         <p className="font-medium">{a.vitalSigns.painScale}/10</p>
                       </div>
                     )}
