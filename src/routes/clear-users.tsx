@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useEffect, useState } from "react";
 
-export const Route = createFileRoute("/clear-users" as never)({
+export const Route = createFileRoute("/clear-users")({
   component: ClearUsers,
 });
 
