@@ -6,7 +6,7 @@ import {
   mapAssessmentToFhirCondition,
   mapAssessmentToFhirClinicalImpression,
 } from "@/lib/fhir";
-import { dbRowToAssessment, dbRowToPatient, operationOutcome, searchBundle } from "./fhir-helpers";
+import { dbRowToAssessment, dbRowToPatient, operationOutcome, searchBundle } from "./-fhir-helpers";
 
 export const Route = createFileRoute("/api/fhir/$resource")({
   server: {
