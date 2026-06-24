@@ -84,7 +84,7 @@ function ConsultationsPage() {
           {sorted.map((c) => (
             <button
               key={c.id}
-              onClick={() => navigate({ to: `/consultations/${c.id}` })}
+              onClick={() => navigate({ to: `/consultations/${c.id}` } as any)}
               className="w-full rounded-2xl border bg-card p-4 text-left shadow-sm transition-colors hover:bg-accent/50"
             >
               <div className="mb-2 flex items-center justify-between">

@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Thermometer, ChevronRight } from "lucide-react";
+import { Mic, Thermometer, ChevronRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useSettingsStore } from "@/stores/settingsStore";
 import {
@@ -36,6 +36,11 @@ interface VitalSignsInputProps {
   onContinue: () => void;
   onSkip: () => void;
   disabled?: boolean;
+  voice?: {
+    active: boolean;
+    listening: boolean;
+    ask: (prompt: string, timeoutMs?: number) => Promise<string | null>;
+  };
 }
 
 function fahrenheitToCelsius(f: number): number {
@@ -53,6 +58,7 @@ export function VitalSignsInput({
   onContinue,
   onSkip,
   disabled,
+  voice,
 }: VitalSignsInputProps) {
   const { t } = useI18n();
   const pictogramMode = useSettingsStore((s) => s.pictogramMode);
@@ -163,6 +169,23 @@ export function VitalSignsInput({
               className={`w-full ${getFieldClass("diastolicBP")}`}
               disabled={disabled}
             />
+            {voice?.active && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={async () => {
+                  const val = await voice.ask("Say the blood pressure, for example 120 over 80");
+                  if (val) {
+                    const nums = val.match(/\d+/g);
+                    if (nums && nums[0]) handleChange("systolicBP", nums[0]);
+                    if (nums && nums[1]) handleChange("diastolicBP", nums[1]);
+                  }
+                }}
+                disabled={voice.listening}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            )}
           </div>
           {getFieldAlert("systolicBP") && (
             <p className="text-[11px] leading-tight text-red-600">
@@ -174,16 +197,31 @@ export function VitalSignsInput({
         <div className="space-y-1.5">
           <Label>{t("heartRate")}</Label>
           <span className="ml-1 text-[10px] text-muted-foreground">{ranges.heartRate}</span>
-          <Input
-            value={values.heartRate}
-            onChange={(e) => handleChange("heartRate", e.target.value)}
-            placeholder={t("hrPlaceholder")}
-            type="number"
-            min={0}
-            max={300}
-            className={getFieldClass("heartRate")}
-            disabled={disabled}
-          />
+          <div className="flex gap-2">
+            <Input
+              value={values.heartRate}
+              onChange={(e) => handleChange("heartRate", e.target.value)}
+              placeholder={t("hrPlaceholder")}
+              type="number"
+              min={0}
+              max={300}
+              className={getFieldClass("heartRate")}
+              disabled={disabled}
+            />
+            {voice?.active && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={async () => {
+                  const val = await voice.ask("Say the heart rate");
+                  if (val) { const num = val.replace(/\D/g, ""); if (num) handleChange("heartRate", num); }
+                }}
+                disabled={voice.listening}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
           {getFieldAlert("heartRate") && (
             <p className="text-[11px] leading-tight text-red-600">
               {getFieldAlert("heartRate")!.interpretation}
@@ -197,16 +235,31 @@ export function VitalSignsInput({
             {pictogramMode && <ChestMeasurement className="h-5 w-5 text-muted-foreground" />}
           </div>
           <span className="ml-1 text-[10px] text-muted-foreground">{ranges.respiratoryRate}</span>
-          <Input
-            value={values.respiratoryRate}
-            onChange={(e) => handleChange("respiratoryRate", e.target.value)}
-            placeholder={t("rrPlaceholder")}
-            type="number"
-            min={0}
-            max={100}
-            className={getFieldClass("respiratoryRate")}
-            disabled={disabled}
-          />
+          <div className="flex gap-2">
+            <Input
+              value={values.respiratoryRate}
+              onChange={(e) => handleChange("respiratoryRate", e.target.value)}
+              placeholder={t("rrPlaceholder")}
+              type="number"
+              min={0}
+              max={100}
+              className={getFieldClass("respiratoryRate")}
+              disabled={disabled}
+            />
+            {voice?.active && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={async () => {
+                  const val = await voice.ask("Say the respiratory rate");
+                  if (val) { const num = val.replace(/\D/g, ""); if (num) handleChange("respiratoryRate", num); }
+                }}
+                disabled={voice.listening}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
           {getFieldAlert("respiratoryRate") && (
             <p className="text-[11px] leading-tight text-red-600">
               {getFieldAlert("respiratoryRate")!.interpretation}
@@ -252,6 +305,19 @@ export function VitalSignsInput({
               <Thermometer className="h-3 w-3" />
               {tempUnit === "celsius" ? "°C" : "°F"}
             </button>
+            {voice?.active && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={async () => {
+                  const val = await voice.ask("Say the temperature");
+                  if (val) { const num = val.replace(/[^\d.]/g, ""); if (num) handleChange("temperature", num); }
+                }}
+                disabled={voice.listening}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            )}
           </div>
           {getFieldAlert("temperature") && (
             <p className="text-[11px] leading-tight text-red-600">
@@ -263,16 +329,31 @@ export function VitalSignsInput({
         <div className="space-y-1.5">
           <Label>{t("oxygenSaturation")}</Label>
           <span className="ml-1 text-[10px] text-muted-foreground">{ranges.oxygenSaturation}</span>
-          <Input
-            value={values.oxygenSaturation}
-            onChange={(e) => handleChange("oxygenSaturation", e.target.value)}
-            placeholder={t("spo2Placeholder")}
-            type="number"
-            min={0}
-            max={100}
-            className={getFieldClass("oxygenSaturation")}
-            disabled={disabled}
-          />
+          <div className="flex gap-2">
+            <Input
+              value={values.oxygenSaturation}
+              onChange={(e) => handleChange("oxygenSaturation", e.target.value)}
+              placeholder={t("spo2Placeholder")}
+              type="number"
+              min={0}
+              max={100}
+              className={getFieldClass("oxygenSaturation")}
+              disabled={disabled}
+            />
+            {voice?.active && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={async () => {
+                  const val = await voice.ask("Say the oxygen saturation");
+                  if (val) { const num = val.replace(/\D/g, ""); if (num) handleChange("oxygenSaturation", num); }
+                }}
+                disabled={voice.listening}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
           {getFieldAlert("oxygenSaturation") && (
             <p className="text-[11px] leading-tight text-red-600">
               {getFieldAlert("oxygenSaturation")!.interpretation}
@@ -282,43 +363,88 @@ export function VitalSignsInput({
 
         <div className="space-y-1.5">
           <Label>{t("muac")}</Label>
-          <Input
-            value={values.muac}
-            onChange={(e) => handleChange("muac", e.target.value)}
-            placeholder={t("muacPlaceholder")}
-            type="number"
-            min={0}
-            max={60}
-            step={0.1}
-            disabled={disabled}
-          />
+          <div className="flex gap-2">
+            <Input
+              value={values.muac}
+              onChange={(e) => handleChange("muac", e.target.value)}
+              placeholder={t("muacPlaceholder")}
+              type="number"
+              min={0}
+              max={60}
+              step={0.1}
+              disabled={disabled}
+            />
+            {voice?.active && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={async () => {
+                  const val = await voice.ask("Say the MUAC measurement");
+                  if (val) { const num = val.replace(/[^\d.]/g, ""); if (num) handleChange("muac", num); }
+                }}
+                disabled={voice.listening}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-1.5">
           <Label>{t("weight")}</Label>
-          <Input
-            value={values.weight}
-            onChange={(e) => handleChange("weight", e.target.value)}
-            placeholder={t("weightPlaceholder")}
-            type="number"
-            min={0}
-            max={300}
-            step={0.1}
-            disabled={disabled}
-          />
+          <div className="flex gap-2">
+            <Input
+              value={values.weight}
+              onChange={(e) => handleChange("weight", e.target.value)}
+              placeholder={t("weightPlaceholder")}
+              type="number"
+              min={0}
+              max={300}
+              step={0.1}
+              disabled={disabled}
+            />
+            {voice?.active && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={async () => {
+                  const val = await voice.ask("Say the weight");
+                  if (val) { const num = val.replace(/[^\d.]/g, ""); if (num) handleChange("weight", num); }
+                }}
+                disabled={voice.listening}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-1.5">
           <Label>{t("painScale")}</Label>
-          <Input
-            value={values.painScale}
-            onChange={(e) => handleChange("painScale", e.target.value)}
-            placeholder="0-10"
-            type="number"
-            min={0}
-            max={10}
-            disabled={disabled}
-          />
+          <div className="flex gap-2">
+            <Input
+              value={values.painScale}
+              onChange={(e) => handleChange("painScale", e.target.value)}
+              placeholder="0-10"
+              type="number"
+              min={0}
+              max={10}
+              disabled={disabled}
+            />
+            {voice?.active && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={async () => {
+                  const val = await voice.ask("Say the pain level from 0 to 10");
+                  if (val) { const num = val.replace(/\D/g, ""); if (num) handleChange("painScale", num); }
+                }}
+                disabled={voice.listening}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

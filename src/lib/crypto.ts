@@ -76,6 +76,59 @@ export function clearKey() {
   cachedKey = null;
 }
 
+const BIOMETRIC_SALT_KEY = "trij_bio_wrap_salt";
+const BIOMETRIC_WRAPPED_KEY = "trij_bio_wrapped_key";
+
+export async function createBiometricKeyWrap(credentialId: string): Promise<void> {
+  const key = cachedKey;
+  if (!key) return;
+  const salt = generateSalt();
+  const wrappingKey = await deriveWrappingKey(credentialId, salt);
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+  const wrappedKey = await crypto.subtle.wrapKey("raw", key, wrappingKey, { name: ALGORITHM, iv });
+  localStorage.setItem(BIOMETRIC_SALT_KEY, salt);
+  localStorage.setItem(BIOMETRIC_WRAPPED_KEY, bufToHex(iv.buffer) + ":" + bufToHex(wrappedKey));
+}
+
+export async function unwrapBiometricKey(credentialId: string): Promise<CryptoKey> {
+  const salt = localStorage.getItem(BIOMETRIC_SALT_KEY);
+  const stored = localStorage.getItem(BIOMETRIC_WRAPPED_KEY);
+  if (!salt || !stored) throw new Error("No biometric key wrap found");
+  const wrappingKey = await deriveWrappingKey(credentialId, salt);
+  const [ivHex, dataHex] = stored.split(":");
+  if (!ivHex || !dataHex) throw new Error("Invalid biometric wrapped key");
+  const iv = new Uint8Array(hexToBuf(ivHex));
+  const data = hexToBuf(dataHex);
+  return crypto.subtle.unwrapKey(
+    "raw", data, wrappingKey, { name: ALGORITHM, iv },
+    { name: ALGORITHM, length: KEY_LENGTH },
+    true, ["encrypt", "decrypt"],
+  );
+}
+
+async function deriveWrappingKey(credentialId: string, salt: string): Promise<CryptoKey> {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw", enc.encode(credentialId), "PBKDF2", false, ["deriveKey"],
+  );
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: hexToBuf(salt), iterations: 100000, hash: "SHA-256" },
+    keyMaterial,
+    { name: ALGORITHM, length: KEY_LENGTH },
+    false,
+    ["wrapKey", "unwrapKey"],
+  );
+}
+
+export function hasBiometricKeyWrap(): boolean {
+  return !!localStorage.getItem(BIOMETRIC_WRAPPED_KEY);
+}
+
+export function clearBiometricKeyWrap(): void {
+  localStorage.removeItem(BIOMETRIC_SALT_KEY);
+  localStorage.removeItem(BIOMETRIC_WRAPPED_KEY);
+}
+
 /** Check whether a key is currently cached. */
 export function isKeyCached(): boolean {
   return cachedKey !== null;

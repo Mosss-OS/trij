@@ -14,6 +14,7 @@ import { mergePatients, type MatchScore } from "@/lib/dedup";
 import type { Patient } from "@/types/trij";
 import { GitMerge, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   match: MatchScore;
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export function MergeDialog({ match, open, onOpenChange, onMerged }: Props) {
+  const { t } = useI18n();
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<"a" | "b">("a");
 
@@ -35,11 +37,11 @@ export function MergeDialog({ match, open, onOpenChange, onMerged }: Props) {
     setBusy(true);
     try {
       await mergePatients(primary, secondary);
-      toast.success("Patients merged successfully");
+      toast.success(t("patientsMerged"));
       onMerged();
       onOpenChange(false);
     } catch (err) {
-      toast.error("Merge failed: " + (err as Error).message);
+      toast.error(t("mergeFailed") + (err as Error).message);
     } finally {
       setBusy(false);
     }
@@ -51,16 +53,16 @@ export function MergeDialog({ match, open, onOpenChange, onMerged }: Props) {
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <GitMerge className="h-5 w-5 text-primary" />
-            Merge duplicate patients
+            {t("mergeTitle")}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            These patients appear to be duplicates (confidence: {Math.round(match.score * 100)}%).
-            Merging will combine their assessment history.
+            {t("mergeDesc")} ({Math.round(match.score * 100)}%).
+            {t("mergeHistory")}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="space-y-2 text-sm">
-          <p className="font-medium text-muted-foreground">Matching reasons:</p>
+          <p className="font-medium text-muted-foreground">{t("matchingReasons")}:</p>
           <ul className="space-y-1">
             {match.reasons.map((r, i) => (
               <li key={i} className="flex items-center gap-1.5 text-xs">

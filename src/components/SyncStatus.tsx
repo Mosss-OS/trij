@@ -89,6 +89,8 @@ export function SyncStatus({ className }: { className?: string }) {
       setSummary(s);
       if (summaryTimeout.current) clearTimeout(summaryTimeout.current);
       summaryTimeout.current = setTimeout(() => setSummary(null), 8000);
+      // Refresh pending count after sync attempt
+      pendingCount().then((c) => setPending(c));
     });
   }, [online, pending, syncing]);
 

@@ -47,6 +47,7 @@ import { WebGPUCheck } from "@/components/WebGPUCheck";
 import { OllamaSetup } from "@/components/OllamaSetup";
 import { StorageMonitor } from "@/components/StorageMonitor";
 import { useGemma } from "@/hooks/useGemma";
+import { useVoiceGuidance } from "@/hooks/useVoiceGuidance";
 import { useSessionStore } from "@/stores/sessionStore";
 import { hasPinForUser, setupPin } from "@/lib/pin-auth";
 import { toast } from "sonner";
@@ -107,6 +108,7 @@ function SettingsPage() {
   const { t } = useI18n();
   const s = useSettingsStore();
   const navigate = useNavigate();
+  const voice = useVoiceGuidance();
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
   const gemma = useGemma();
   const sessionUser = useSessionStore((s) => s.user);
@@ -486,7 +488,7 @@ function SettingsPage() {
         </Section>
 
         <Section title={t("ollamaConfiguration")}>
-          <OllamaSetup />
+          <OllamaSetup voice={voice} />
         </Section>
 
         <Section title={t("privacy")}>
@@ -697,7 +699,7 @@ function SettingsPage() {
                 <Label>{t("biometricAuth")}</Label>
                 <p className="text-xs text-muted-foreground">{t("biometricAuthDesc")}</p>
               </div>
-              <Switch
+               <Switch
                 checked={s.biometricEnabled}
                 onCheckedChange={(enabled) => {
                   if (enabled) {
@@ -707,9 +709,15 @@ function SettingsPage() {
                           toast.error(t("biometricNotAvailable"));
                           return;
                         }
-                        registerBiometric(sessionUser?.id || s.chwName || "user").then((ok) => {
-                          if (ok) s.setBiometricEnabled(true);
-                          else toast.error(t("biometricSetupFailed"));
+                        registerBiometric(sessionUser?.id || s.chwName || "user").then(({ ok, credentialId }) => {
+                          if (ok) {
+                            s.setBiometricEnabled(true);
+                            if (credentialId) {
+                              import("@/lib/crypto").then(({ createBiometricKeyWrap }) => {
+                                createBiometricKeyWrap(credentialId).catch(() => {});
+                              });
+                            }
+                          } else toast.error(t("biometricSetupFailed"));
                         });
                       });
                     });
@@ -717,6 +725,9 @@ function SettingsPage() {
                     import("@/lib/webauthn").then(({ unregisterBiometric }) => {
                       unregisterBiometric();
                       s.setBiometricEnabled(false);
+                    });
+                    import("@/lib/crypto").then(({ clearBiometricKeyWrap }) => {
+                      clearBiometricKeyWrap();
                     });
                   }
                 }}

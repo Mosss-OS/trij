@@ -3,6 +3,7 @@ export class VoiceAssistant {
   private recognition: any = null;
   private synthesis: SpeechSynthesis | null = null;
   language: string;
+  rate: number = 1.0;
 
   constructor(language = "en-US") {
     this.language = language;
@@ -20,6 +21,10 @@ export class VoiceAssistant {
   setLanguage(lang: string) {
     this.language = lang;
     if (this.recognition) this.recognition.lang = lang;
+  }
+
+  setRate(rate: number) {
+    this.rate = rate;
   }
 
   available() {
@@ -43,6 +48,7 @@ export class VoiceAssistant {
     if (!this.synthesis) return;
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang ?? this.language;
+    u.rate = this.rate;
     this.synthesis.cancel();
     this.synthesis.speak(u);
   }
@@ -52,6 +58,7 @@ export class VoiceAssistant {
       if (!this.synthesis) return resolve();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = lang ?? this.language;
+      u.rate = this.rate;
       u.onend = () => resolve();
       u.onerror = () => resolve();
       this.synthesis.cancel();

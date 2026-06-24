@@ -21,6 +21,7 @@
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import type { Patient, Assessment } from "@/types/trij";
+import { useSessionStore } from "@/stores/sessionStore";
 
 interface ReferralData {
   patientId: string;
@@ -31,11 +32,13 @@ interface ReferralData {
 }
 
 function getQRData(patient: Patient, a: Assessment): ReferralData {
+  const state = useSessionStore.getState();
+  const userEmail = state.user?.email ?? state.offlineUser?.email ?? "";
   return {
     patientId: patient.identifier,
     assessmentId: a.id,
     urgency: a.urgency ?? "unknown",
-    chwContact: "",
+    chwContact: userEmail,
     timestamp: a.createdAt,
   };
 }
@@ -81,13 +84,24 @@ export async function generateReferralPdfBlob(patient: Patient, a: Assessment): 
   doc.text(new Date(a.createdAt).toLocaleString(), 110, y);
   y += 24;
 
+  if (a.images?.[0]) {
+    try {
+      doc.addImage(a.images[0], "JPEG", 40, y, 80, 60);
+    } catch {
+      try {
+        doc.addImage(a.images[0], "PNG", 40, y, 80, 60);
+      } catch {
+        // image could not be embedded — skip
+      }
+    }
+    y += 68;
+  }
+
   doc.setFont("helvetica", "bold");
   doc.text("Assessment", 40, y);
   y += 14;
   doc.setFont("helvetica", "normal");
-  const confValue = typeof a.confidence === 'number' 
-    ? Math.round(a.confidence) 
-    : Math.round(a.confidence?.confidence_point ?? 0);
+  const confValue = Math.round(a.confidence?.confidence_point ?? 0);
   const cond = `${a.condition ?? "—"}  (${confValue}%)`;
   doc.text(cond, 40, y);
   y += 14;

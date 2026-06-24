@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { ClinicalScaleResult } from "@/lib/clinical-scales";
 import { applyBradenScale, applyLundBrowderChart, type BradenInputs, type BurnInputs } from "@/lib/clinical-scales";
-import { AlertTriangle, CheckCircle2, Activity, Thermometer } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Activity, Thermometer, Mic } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
@@ -58,67 +59,72 @@ export function ClinicalScaleDisplay({ scale, scaleId }: Props) {
   );
 }
 
-const BRADEN_LABELS: Record<keyof BradenInputs, { label: string; options: { value: number; text: string }[] }> = {
+const BRADEN_LABELS: Record<keyof BradenInputs, { labelKey: string; optionKeys: { value: number; key: string }[] }> = {
   sensoryPerception: {
-    label: "Sensory perception",
-    options: [
-      { value: 1, text: "Completely limited" },
-      { value: 2, text: "Very limited" },
-      { value: 3, text: "Slightly limited" },
-      { value: 4, text: "No impairment" },
+    labelKey: "bradenSensoryPerception",
+    optionKeys: [
+      { value: 1, key: "bradenSensory1" },
+      { value: 2, key: "bradenSensory2" },
+      { value: 3, key: "bradenSensory3" },
+      { value: 4, key: "bradenSensory4" },
     ],
   },
   moisture: {
-    label: "Moisture exposure",
-    options: [
-      { value: 1, text: "Constantly moist" },
-      { value: 2, text: "Very moist" },
-      { value: 3, text: "Occasionally moist" },
-      { value: 4, text: "Rarely moist" },
+    labelKey: "bradenMoisture",
+    optionKeys: [
+      { value: 1, key: "bradenMoisture1" },
+      { value: 2, key: "bradenMoisture2" },
+      { value: 3, key: "bradenMoisture3" },
+      { value: 4, key: "bradenMoisture4" },
     ],
   },
   activity: {
-    label: "Activity level",
-    options: [
-      { value: 1, text: "Bedfast" },
-      { value: 2, text: "Chairfast" },
-      { value: 3, text: "Walks occasionally" },
-      { value: 4, text: "Walks frequently" },
+    labelKey: "bradenActivity",
+    optionKeys: [
+      { value: 1, key: "bradenActivity1" },
+      { value: 2, key: "bradenActivity2" },
+      { value: 3, key: "bradenActivity3" },
+      { value: 4, key: "bradenActivity4" },
     ],
   },
   mobility: {
-    label: "Mobility",
-    options: [
-      { value: 1, text: "Completely immobile" },
-      { value: 2, text: "Very limited" },
-      { value: 3, text: "Slightly limited" },
-      { value: 4, text: "No limitation" },
+    labelKey: "bradenMobility",
+    optionKeys: [
+      { value: 1, key: "bradenMobility1" },
+      { value: 2, key: "bradenMobility2" },
+      { value: 3, key: "bradenMobility3" },
+      { value: 4, key: "bradenMobility4" },
     ],
   },
   nutrition: {
-    label: "Nutrition",
-    options: [
-      { value: 1, text: "Very poor" },
-      { value: 2, text: "Probably inadequate" },
-      { value: 3, text: "Adequate" },
-      { value: 4, text: "Excellent" },
+    labelKey: "bradenNutrition",
+    optionKeys: [
+      { value: 1, key: "bradenNutrition1" },
+      { value: 2, key: "bradenNutrition2" },
+      { value: 3, key: "bradenNutrition3" },
+      { value: 4, key: "bradenNutrition4" },
     ],
   },
   frictionShear: {
-    label: "Friction & shear",
-    options: [
-      { value: 1, text: "Significant problem" },
-      { value: 2, text: "Potential problem" },
-      { value: 3, text: "No apparent problem" },
+    labelKey: "bradenFrictionShear",
+    optionKeys: [
+      { value: 1, key: "bradenFriction1" },
+      { value: 2, key: "bradenFriction2" },
+      { value: 3, key: "bradenFriction3" },
     ],
   },
 };
 
 interface BradenFormProps {
   onResult: (result: ClinicalScaleResult) => void;
+  voice?: {
+    active: boolean;
+    listening: boolean;
+    confirm: (prompt: string) => Promise<boolean>;
+  };
 }
 
-export function BradenInputForm({ onResult }: BradenFormProps) {
+export function BradenInputForm({ onResult, voice }: BradenFormProps) {
   const { t } = useI18n();
   const [inputs, setInputs] = useState<BradenInputs>({
     sensoryPerception: 4,
@@ -142,9 +148,24 @@ export function BradenInputForm({ onResult }: BradenFormProps) {
         const config = BRADEN_LABELS[field];
         return (
           <div key={field}>
-            <p className="mb-1 text-xs text-foreground">{config.label}</p>
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-xs text-foreground">{t(config.labelKey as any)}</p>
+              {voice?.active && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={async () => {
+                    const ok = await voice.confirm("Select a rating for this field? Say the number 1 to 4");
+                    if (ok) setField(field, 1);
+                  }}
+                  disabled={voice.listening}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
             <div className="flex flex-wrap gap-1">
-              {config.options.map((opt) => (
+              {config.optionKeys.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setField(field, opt.value)}
@@ -154,7 +175,7 @@ export function BradenInputForm({ onResult }: BradenFormProps) {
                       : "border-border text-muted-foreground hover:bg-accent"
                   }`}
                 >
-                  {opt.text}
+                  {t(opt.key as any)}
                 </button>
               ))}
             </div>
@@ -167,19 +188,24 @@ export function BradenInputForm({ onResult }: BradenFormProps) {
 
 interface BurnFormProps {
   onResult: (result: ClinicalScaleResult) => void;
+  voice?: {
+    active: boolean;
+    listening: boolean;
+    ask: (prompt: string, timeoutMs?: number) => Promise<string | null>;
+  };
 }
 
-const BURN_FIELDS: { key: keyof Omit<BurnInputs, "depth">; label: string }[] = [
-  { key: "percentHead", label: "Head" },
-  { key: "percentTrunk", label: "Trunk (front + back)" },
-  { key: "percentArmLeft", label: "Left arm" },
-  { key: "percentArmRight", label: "Right arm" },
-  { key: "percentLegLeft", label: "Left leg" },
-  { key: "percentLegRight", label: "Right leg" },
-  { key: "percentPerineum", label: "Perineum" },
+const BURN_FIELDS: { key: keyof Omit<BurnInputs, "depth">; labelKey: string }[] = [
+  { key: "percentHead", labelKey: "burnHead" },
+  { key: "percentTrunk", labelKey: "burnTrunk" },
+  { key: "percentArmLeft", labelKey: "burnArmLeft" },
+  { key: "percentArmRight", labelKey: "burnArmRight" },
+  { key: "percentLegLeft", labelKey: "burnLegLeft" },
+  { key: "percentLegRight", labelKey: "burnLegRight" },
+  { key: "percentPerineum", labelKey: "burnPerineum" },
 ];
 
-export function BurnInputForm({ onResult }: BurnFormProps) {
+export function BurnInputForm({ onResult, voice }: BurnFormProps) {
   const { t } = useI18n();
   const [inputs, setInputs] = useState<BurnInputs>({
     percentHead: 0, percentTrunk: 0, percentArmLeft: 0, percentArmRight: 0,
@@ -199,7 +225,22 @@ export function BurnInputForm({ onResult }: BurnFormProps) {
       <div className="grid grid-cols-2 gap-2">
         {BURN_FIELDS.map((f) => (
           <div key={f.key}>
-            <p className="mb-0.5 text-xs text-foreground">{f.label} (%)</p>
+            <div className="flex items-center gap-2 mb-0.5">
+              <p className="text-xs text-foreground">{t(f.labelKey as any)} (%)</p>
+              {voice?.active && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={async () => {
+                    const val = await voice.ask("Say the percentage for this body area");
+                    if (val) { const num = val.replace(/\D/g, ""); if (num) update({ [f.key]: Math.max(0, Math.min(100, Number(num))) }); }
+                  }}
+                  disabled={voice.listening}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
             <input
               type="number"
               min={0}

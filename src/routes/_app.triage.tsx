@@ -22,6 +22,7 @@ import {
   Check,
   AlertTriangle,
   UserRound,
+  Share2,
 } from "lucide-react";
 import {
   triageImage,
@@ -164,6 +165,7 @@ function TriagePage() {
   const minConfidenceForLocalCare = useSettingsStore((s) => s.minConfidenceForLocalCare);
   const voiceEnabled = useSettingsStore((s) => s.voiceEnabled);
   const voiceTestMode = useSettingsStore((s) => s.voiceTestMode);
+  const voiceSpeed = useSettingsStore((s) => s.voiceSpeed);
   const malariaEndemic = useSettingsStore((s) => s.malariaEndemic);
   const navigate = useNavigate();
   const voice = useVoiceGuidance();
@@ -372,7 +374,8 @@ function TriagePage() {
       voiceRef.current = new VoiceAssistant(language);
     }
     voiceRef.current.setLanguage(language);
-  }, [language]);
+    voiceRef.current.setRate(voiceSpeed);
+  }, [language, voiceSpeed]);
 
   useEffect(() => {
     if (!voice.active) return;
@@ -1137,6 +1140,7 @@ function TriagePage() {
         null,
         kindRef.current,
         ollamaUrl,
+        voiceTestMode,
       );
       convoRef.current = messages;
       if (decision.done || !decision.question) {
@@ -1173,6 +1177,7 @@ function TriagePage() {
         answer.trim(),
         kindRef.current,
         ollamaUrl,
+        voiceTestMode,
       );
       convoRef.current = messages;
       if (decision.done || !decision.question) {
@@ -1447,7 +1452,15 @@ function TriagePage() {
                 onClick={async () => {
                   const ok = await voice.confirm(t("voiceGuideConsent"));
                   if (ok) {
-                    setConsent(true as any);
+                    const record: ConsentRecord = {
+                      version: 1,
+                      method: "voice",
+                      capturedAt: new Date().toISOString(),
+                      capturedBy: user?.id || "",
+                      items: [{ id: "ai-assisted-triage", agreed: true }],
+                      policyVersion: 1,
+                    };
+                    setConsent(record);
                     voice.narrate(t("voiceGuideConsentConfirmed"));
                   }
                 }}
@@ -1511,13 +1524,29 @@ function TriagePage() {
             {presentationType !== "dermatology" && (
               <div className="space-y-2">
                 <Label>{t("symptomDescription")}</Label>
-                <textarea
-                  value={symptomDescription}
-                  onChange={(e) => setSymptomDescription(e.target.value)}
-                  placeholder={t("symptomDescriptionPlaceholder")}
-                  className="w-full rounded-xl border bg-card p-3 text-sm outline-none focus:border-primary"
-                  rows={4}
-                />
+                <div className="flex gap-2">
+                  <textarea
+                    value={symptomDescription}
+                    onChange={(e) => setSymptomDescription(e.target.value)}
+                    placeholder={t("symptomDescriptionPlaceholder")}
+                    className="w-full rounded-xl border bg-card p-3 text-sm outline-none focus:border-primary"
+                    rows={4}
+                  />
+                  {voice.active && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="mt-1 shrink-0"
+                      onClick={async () => {
+                        const text = await voice.ask(t("voiceGuideSymptoms"));
+                        if (text) setSymptomDescription(text);
+                      }}
+                      disabled={voice.listening}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">{t("symptomDescriptionHint")}</p>
               </div>
             )}
@@ -1566,14 +1595,33 @@ function TriagePage() {
                 {Number(age) < 2 && (
                   <div className="space-y-1.5">
                     <Label>{t("imciAgeMonthsLabel")}</Label>
-                    <Input
-                      value={imciAgeMonths}
-                      onChange={(e) => setImciAgeMonths(e.target.value)}
-                      type="number"
-                      min={0}
-                      max={24}
-                      placeholder={t("imciAgeMonths")}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={imciAgeMonths}
+                        onChange={(e) => setImciAgeMonths(e.target.value)}
+                        type="number"
+                        min={0}
+                        max={24}
+                        placeholder={t("imciAgeMonths")}
+                        className="flex-1"
+                      />
+                      {voice.active && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={async () => {
+                            const a = await voice.ask("Say the age in months");
+                            if (a) {
+                              const num = a.replace(/\D/g, "");
+                              if (num) setImciAgeMonths(num);
+                            }
+                          }}
+                          disabled={voice.listening}
+                        >
+                          <Mic className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -1607,36 +1655,93 @@ function TriagePage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>{t("imciRespiratoryRate")}</Label>
-                    <Input
-                      value={imciRR}
-                      onChange={(e) => setImciRR(e.target.value)}
-                      type="number"
-                      min={0}
-                      max={200}
-                      placeholder={t("rrPlaceholderText")}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={imciRR}
+                        onChange={(e) => setImciRR(e.target.value)}
+                        type="number"
+                        min={0}
+                        max={200}
+                        placeholder={t("rrPlaceholderText")}
+                        className="flex-1"
+                      />
+                      {voice.active && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={async () => {
+                            const a = await voice.ask("Say the respiratory rate");
+                            if (a) {
+                              const num = a.replace(/\D/g, "");
+                              if (num) setImciRR(num);
+                            }
+                          }}
+                          disabled={voice.listening}
+                        >
+                          <Mic className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label>{t("coughDays")}</Label>
-                    <Input
-                      value={imciCoughDays}
-                      onChange={(e) => setImciCoughDays(e.target.value)}
-                      type="number"
-                      min={0}
-                      max={90}
-                      placeholder={t("digitPlaceholder")}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={imciCoughDays}
+                        onChange={(e) => setImciCoughDays(e.target.value)}
+                        type="number"
+                        min={0}
+                        max={90}
+                        placeholder={t("digitPlaceholder")}
+                        className="flex-1"
+                      />
+                      {voice.active && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={async () => {
+                            const a = await voice.ask("How many days of cough");
+                            if (a) {
+                              const num = a.replace(/\D/g, "");
+                              if (num) setImciCoughDays(num);
+                            }
+                          }}
+                          disabled={voice.listening}
+                        >
+                          <Mic className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label>{t("feverDays")}</Label>
-                    <Input
-                      value={imciFeverDays}
-                      onChange={(e) => setImciFeverDays(e.target.value)}
-                      type="number"
-                      min={0}
-                      max={90}
-                      placeholder={t("digitPlaceholder")}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={imciFeverDays}
+                        onChange={(e) => setImciFeverDays(e.target.value)}
+                        type="number"
+                        min={0}
+                        max={90}
+                        placeholder={t("digitPlaceholder")}
+                        className="flex-1"
+                      />
+                      {voice.active && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={async () => {
+                            const a = await voice.ask("How many days of fever");
+                            if (a) {
+                              const num = a.replace(/\D/g, "");
+                              if (num) setImciFeverDays(num);
+                            }
+                          }}
+                          disabled={voice.listening}
+                        >
+                          <Mic className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -1680,14 +1785,33 @@ function TriagePage() {
                 {Number(age) < 2 && (
                   <div className="space-y-1.5">
                     <Label>{t("imciAgeMonthsLabel")}</Label>
-                    <Input
-                      value={imciAgeMonths}
-                      onChange={(e) => setImciAgeMonths(e.target.value)}
-                      type="number"
-                      min={0}
-                      max={24}
-                      placeholder={t("imciAgeMonths")}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={imciAgeMonths}
+                        onChange={(e) => setImciAgeMonths(e.target.value)}
+                        type="number"
+                        min={0}
+                        max={24}
+                        placeholder={t("imciAgeMonths")}
+                        className="flex-1"
+                      />
+                      {voice.active && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={async () => {
+                            const a = await voice.ask("Say the age in months");
+                            if (a) {
+                              const num = a.replace(/\D/g, "");
+                              if (num) setImciAgeMonths(num);
+                            }
+                          }}
+                          disabled={voice.listening}
+                        >
+                          <Mic className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -1721,36 +1845,93 @@ function TriagePage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>{t("imciRespiratoryRate")}</Label>
-                    <Input
-                      value={imciRR}
-                      onChange={(e) => setImciRR(e.target.value)}
-                      type="number"
-                      min={0}
-                      max={200}
-                      placeholder={t("rrPlaceholderText")}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={imciRR}
+                        onChange={(e) => setImciRR(e.target.value)}
+                        type="number"
+                        min={0}
+                        max={200}
+                        placeholder={t("rrPlaceholderText")}
+                        className="flex-1"
+                      />
+                      {voice.active && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={async () => {
+                            const a = await voice.ask("Say the respiratory rate");
+                            if (a) {
+                              const num = a.replace(/\D/g, "");
+                              if (num) setImciRR(num);
+                            }
+                          }}
+                          disabled={voice.listening}
+                        >
+                          <Mic className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label>{t("coughDays")}</Label>
-                    <Input
-                      value={imciCoughDays}
-                      onChange={(e) => setImciCoughDays(e.target.value)}
-                      type="number"
-                      min={0}
-                      max={90}
-                      placeholder={t("digitPlaceholder")}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={imciCoughDays}
+                        onChange={(e) => setImciCoughDays(e.target.value)}
+                        type="number"
+                        min={0}
+                        max={90}
+                        placeholder={t("digitPlaceholder")}
+                        className="flex-1"
+                      />
+                      {voice.active && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={async () => {
+                            const a = await voice.ask("How many days of cough");
+                            if (a) {
+                              const num = a.replace(/\D/g, "");
+                              if (num) setImciCoughDays(num);
+                            }
+                          }}
+                          disabled={voice.listening}
+                        >
+                          <Mic className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label>{t("feverDays")}</Label>
-                    <Input
-                      value={imciFeverDays}
-                      onChange={(e) => setImciFeverDays(e.target.value)}
-                      type="number"
-                      min={0}
-                      max={90}
-                      placeholder={t("digitPlaceholder")}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        value={imciFeverDays}
+                        onChange={(e) => setImciFeverDays(e.target.value)}
+                        type="number"
+                        min={0}
+                        max={90}
+                        placeholder={t("digitPlaceholder")}
+                        className="flex-1"
+                      />
+                      {voice.active && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={async () => {
+                            const a = await voice.ask("How many days of fever");
+                            if (a) {
+                              const num = a.replace(/\D/g, "");
+                              if (num) setImciFeverDays(num);
+                            }
+                          }}
+                          disabled={voice.listening}
+                        >
+                          <Mic className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -1968,6 +2149,28 @@ function TriagePage() {
               </Button>
               <Button variant="outline" className="flex-1 gap-2" onClick={startVoiceAssessment}>
                 <MessageSquare className="h-4 w-4" /> {t("voiceFollowUp")}
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1 gap-2"
+                onClick={() => {
+                  const text = [
+                    `*Trij Triage Result*`,
+                    `Patient: ${patient?.identifier || "Unknown"}`,
+                    `Condition: ${result.condition}`,
+                    `Urgency: ${result.urgency.toUpperCase()}`,
+                    result.recommendation ? `Recommendation: ${result.recommendation}` : "",
+                  ]
+                    .filter(Boolean)
+                    .join("\n");
+                  window.open(
+                    `https://wa.me/?text=${encodeURIComponent(text)}`,
+                    "_blank",
+                    "noopener,noreferrer",
+                  );
+                }}
+              >
+                <Share2 className="h-4 w-4" /> {t("share")}
               </Button>
               <Button
                 variant="outline"

@@ -4,7 +4,7 @@ import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { hasPinForUser, verifyPin } from "@/lib/pin-auth";
 import { authenticateBiometric } from "@/lib/webauthn";
-import { deriveKey, cacheKey } from "@/lib/crypto";
+import { deriveKey, cacheKey, unwrapBiometricKey, hasBiometricKeyWrap } from "@/lib/crypto";
 import { Lock, Fingerprint, AlertTriangle, Loader2, LogOut } from "lucide-react";
 
 export function LockScreen() {
@@ -47,10 +47,19 @@ export function LockScreen() {
     setVerifying(true);
     setBioError("");
     try {
-      const { userId, error } = await authenticateBiometric();
-      if (userId && mountedRef.current) setScreenLocked(false);
-      else if (mountedRef.current) {
-        setBioError(error || "Biometric authentication failed");
+      const { userId, error, credentialId } = await authenticateBiometric();
+      if (userId && mountedRef.current) {
+        if (credentialId && hasBiometricKeyWrap()) {
+          try {
+            const key = await unwrapBiometricKey(credentialId);
+            cacheKey(key);
+          } catch {
+            // encryption key wrap not available or invalid — proceed without it
+          }
+        }
+        setScreenLocked(false);
+      }       else if (mountedRef.current) {
+        setBioError(error || t("biometricLocked"));
         setBioAttempts((a) => a + 1);
       }
     } finally {
@@ -165,13 +174,8 @@ export function LockScreen() {
             <Lock className="h-7 w-7 text-destructive" />
           </div>
           <h1 className="mt-2 font-display text-xl font-semibold">{t("trij")}</h1>
-          <p className="text-sm text-muted-foreground text-center max-w-xs">
-            No PIN has been configured for this account. The app locked due to inactivity, but there
-            is no PIN to unlock it.
-          </p>
-          <p className="text-xs text-muted-foreground text-center max-w-xs mt-2">
-            Sign out and start fresh, or contact your supervisor for assistance.
-          </p>
+          <p className="text-sm text-muted-foreground text-center max-w-xs">{t("lockNoPinDesc")}</p>
+          <p className="text-xs text-muted-foreground text-center max-w-xs mt-2">{t("lockNoPinHelp")}</p>
         </div>
         <button
           onClick={() => {
@@ -181,7 +185,7 @@ export function LockScreen() {
           className="mt-8 flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
           <LogOut className="h-4 w-4" />
-          Sign out
+          {t("signOut")}
         </button>
       </div>
     );

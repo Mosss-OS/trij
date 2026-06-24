@@ -9,6 +9,7 @@ import {
   Calculator,
   AlertTriangle,
   CheckCircle2,
+  Mic,
   Pill,
   Droplets,
   Activity,
@@ -59,7 +60,7 @@ interface DoseResult {
   warnings: string[];
 }
 
-export function PediatricDoseCalculator() {
+export function PediatricDoseCalculator({ voice }: { voice?: { active: boolean; listening: boolean; ask: (prompt: string, timeoutMs?: number) => Promise<string | null> } }) {
   const { t } = useI18n();
   const medications = pediatricDosingData.medications as Medication[];
 
@@ -166,28 +167,43 @@ export function PediatricDoseCalculator() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
-            Pediatric Dose Calculator
+            {t("pediatricDoseCalculator")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Weight Input */}
           <div className="space-y-2">
-            <Label htmlFor="weight">Child's Weight (kg)</Label>
-            <Input
-              id="weight"
-              type="number"
-              step="0.1"
-              min="0.1"
-              max="100"
-              placeholder="e.g. 12.5"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-            />
+            <Label htmlFor="weight">{t("childWeight")}</Label>
+            <div className="flex gap-2">
+              <Input
+                id="weight"
+                type="number"
+                step="0.1"
+                min="0.1"
+                max="100"
+                placeholder="e.g. 12.5"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+              />
+              {voice?.active && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={async () => {
+                    const val = await voice.ask("Say the child's weight in kilograms");
+                    if (val) { const num = val.replace(/[^\d.]/g, ""); if (num) setWeight(num); }
+                  }}
+                  disabled={voice.listening}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Medication Selection */}
           <div className="space-y-2">
-            <Label htmlFor="medication">Medication</Label>
+            <Label htmlFor="medication">{t("selectMedication")}</Label>
             <select
               id="medication"
               className="w-full rounded-md border bg-background px-3 py-2"
@@ -198,7 +214,7 @@ export function PediatricDoseCalculator() {
                 setResult(null);
               }}
             >
-              <option value="">Select medication...</option>
+              <option value="">{t("selectMedicationPlaceholder")}</option>
               {medications.map((med) => (
                 <option key={med.id} value={med.id}>
                   {med.name}
@@ -210,7 +226,7 @@ export function PediatricDoseCalculator() {
           {/* Formulation Selection */}
           {selectedMed && (
             <div className="space-y-2">
-              <Label htmlFor="formulation">Formulation</Label>
+              <Label htmlFor="formulation">{t("selectFormulation")}</Label>
               <select
                 id="formulation"
                 className="w-full rounded-md border bg-background px-3 py-2"
@@ -223,7 +239,7 @@ export function PediatricDoseCalculator() {
                   setResult(null);
                 }}
               >
-                <option value="">Select formulation...</option>
+                <option value="">{t("selectFormulationPlaceholder")}</option>
                 {selectedMed.formulations.map((form, index) => (
                   <option key={index} value={`${form.form} - ${form.concentration}`}>
                     {form.form} - {form.concentration}
@@ -240,7 +256,7 @@ export function PediatricDoseCalculator() {
             className="w-full"
           >
             <Calculator className="mr-2 h-4 w-4" />
-            Calculate Dose
+            {t("calculateDose")}
           </Button>
         </CardContent>
       </Card>
@@ -255,14 +271,14 @@ export function PediatricDoseCalculator() {
               ) : (
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
               )}
-              Dose Result
+              {t("doseResult")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Primary Dose */}
             <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
               <div>
-                <div className="text-sm text-muted-foreground">Calculated Dose</div>
+                <div className="text-sm text-muted-foreground">{t("calculatedDose")}</div>
                 <div className="text-2xl font-bold">
                   {result.calculatedDose > 0 &&
                     `${result.calculatedDose.toFixed(1)} ${result.doseUnit}`}
@@ -295,7 +311,7 @@ export function PediatricDoseCalculator() {
             {/* Max Daily Dose */}
             {result.maxDailyDose > 0 && (
               <div className="text-sm">
-                <span className="text-muted-foreground">Maximum Daily Dose: </span>
+                <span className="text-muted-foreground">{t("maxDailyDose")}: </span>
                 <span className="font-medium">
                   {result.maxDailyDose.toFixed(1)} {result.maxDailyUnit}
                 </span>
@@ -319,7 +335,7 @@ export function PediatricDoseCalculator() {
             {/* Medication Notes */}
             {selectedFormulation && (
               <div className="text-sm bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                <div className="font-medium mb-1">Notes:</div>
+                <div className="font-medium mb-1">{t("notesLabel")}</div>
                 <div>{selectedFormulation.notes}</div>
               </div>
             )}
@@ -332,14 +348,14 @@ export function PediatricDoseCalculator() {
               className="w-full"
             >
               <FileText className="mr-2 h-4 w-4" />
-              {showDetails ? "Hide" : "Show"} Safety Information
+              {showDetails ? t("hideSafetyInfo") : t("showSafetyInfo")}
             </Button>
 
             {/* Safety Details */}
             {showDetails && selectedMed && (
               <div className="space-y-3 pt-3 border-t">
                 <div>
-                  <div className="font-medium text-sm mb-2">Contraindications:</div>
+                  <div className="font-medium text-sm mb-2">{t("contraindications")}:</div>
                   <div className="flex flex-wrap gap-2">
                     {selectedMed.contraindications.map((contra, index) => (
                       <Badge key={index} variant="destructive" className="text-xs">
@@ -349,7 +365,7 @@ export function PediatricDoseCalculator() {
                   </div>
                 </div>
                 <div>
-                  <div className="font-medium text-sm mb-2">Warnings:</div>
+                  <div className="font-medium text-sm mb-2">{t("warnings")}:</div>
                   <div className="flex flex-wrap gap-2">
                     {selectedMed.warnings.map((warning, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
@@ -368,9 +384,7 @@ export function PediatricDoseCalculator() {
       <Alert variant="default" className="bg-yellow-50 border-yellow-200">
         <AlertTriangle className="h-4 w-4 text-yellow-600" />
         <AlertDescription className="text-yellow-800">
-          <strong>Medical Disclaimer:</strong> This calculator is a tool to assist with dosing
-          calculations. Always verify calculations and consult current drug references. Clinical
-          judgment and patient-specific factors should always guide final dosing decisions.
+          <strong>{t("medicalDisclaimer")}:</strong> {t("medicalDisclaimerText")}
         </AlertDescription>
       </Alert>
     </div>

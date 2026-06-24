@@ -24,6 +24,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   ChevronRight,
+  Mic,
   Ruler,
   Droplets,
   Eye,
@@ -38,9 +39,15 @@ interface Props {
   sex?: "male" | "female";
   onComplete: (result: NutritionAssessmentResult) => void;
   onSkip: () => void;
+  voice?: {
+    active: boolean;
+    listening: boolean;
+    ask: (prompt: string, timeoutMs?: number) => Promise<string | null>;
+    confirm: (prompt: string) => Promise<boolean>;
+  };
 }
 
-export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props) {
+export function NutritionAssessment({ ageYears, sex, onComplete, onSkip, voice }: Props) {
   const { t } = useI18n();
   const [muacCm, setMuacCm] = useState("");
   const [weightKg, setWeightKg] = useState("");
@@ -134,6 +141,19 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
                     className="w-32"
                   />
                   <span className="text-xs text-muted-foreground">kg</span>
+                  {voice?.active && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={async () => {
+                        const val = await voice.ask("Say the weight in kilograms");
+                        if (val) { const num = val.replace(/[^\d.]/g, ""); if (num) setWeightKg(num); }
+                      }}
+                      disabled={voice.listening}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -155,6 +175,19 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
                     className="w-32"
                   />
                   <span className="text-xs text-muted-foreground">cm</span>
+                  {voice?.active && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={async () => {
+                        const val = await voice.ask("Say the height in centimeters");
+                        if (val) { const num = val.replace(/[^\d.]/g, ""); if (num) setHeightCm(num); }
+                      }}
+                      disabled={voice.listening}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </>
@@ -178,6 +211,19 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
                 className="w-32"
               />
               <span className="text-xs text-muted-foreground">cm</span>
+              {voice?.active && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={async () => {
+                    const val = await voice.ask("Say the MUAC in centimeters");
+                    if (val) { const num = val.replace(/[^\d.]/g, ""); if (num) setMuacCm(num); }
+                  }}
+                  disabled={voice.listening}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
 
@@ -202,6 +248,25 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
                     {getOedemaLabel(o)}
                   </button>
                 ),
+              )}
+              {voice?.active && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={async () => {
+                    const val = await voice.ask("Say the oedema level: none, mild, moderate, or severe");
+                    if (val) {
+                      const lower = val.toLowerCase();
+                      if (lower.includes("mild")) setOedema("bilateral_mild");
+                      else if (lower.includes("moderate")) setOedema("bilateral_moderate");
+                      else if (lower.includes("severe")) setOedema("bilateral_severe");
+                      else setOedema("none");
+                    }
+                  }}
+                  disabled={voice.listening}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
               )}
             </div>
           </div>
@@ -240,6 +305,27 @@ export function NutritionAssessment({ ageYears, sex, onComplete, onSkip }: Props
                 />
                 {t("skinChanges")}
               </label>
+              {voice?.active && (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1 text-xs"
+                    onClick={async () => {
+                      const wasting = await voice.confirm("Is there visible wasting? Say yes or no");
+                      if (wasting) setVisibleWasting(true);
+                      const hair = await voice.confirm("Are there hair changes? Say yes or no");
+                      if (hair) setHairChanges(true);
+                      const skin = await voice.confirm("Are there skin changes? Say yes or no");
+                      if (skin) setSkinChanges(true);
+                    }}
+                    disabled={voice.listening}
+                  >
+                    <Mic className="h-4 w-4" />
+                    {"Ask"}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

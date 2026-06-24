@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ClearUsersRouteImport } from './routes/clear-users'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppTriageRouteImport } from './routes/_app.triage'
@@ -26,6 +27,7 @@ import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppConsultationsRouteImport } from './routes/_app.consultations'
 import { Route as AppCalculatorRouteImport } from './routes/_app.calculator'
 import { Route as AppAuditRouteImport } from './routes/_app.audit'
+import { Route as AppAdminRouteImport } from './routes/_app.admin'
 import { Route as AppPatientsIndexRouteImport } from './routes/_app.patients.index'
 import { Route as ApiFhirResourceRouteImport } from './routes/api.fhir.$resource'
 import { Route as AppPatientsBatchRegisterRouteImport } from './routes/_app.patients.batch-register'
@@ -43,6 +45,11 @@ import { Route as AppClinicianConsultationsIdRouteImport } from './routes/_app.c
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClearUsersRoute = ClearUsersRouteImport.update({
+  id: '/clear-users',
+  path: '/clear-users',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -124,6 +131,11 @@ const AppAuditRoute = AppAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPatientsIndexRoute = AppPatientsIndexRouteImport.update({
   id: '/patients/',
   path: '/patients/',
@@ -195,7 +207,9 @@ const AppClinicianConsultationsIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/clear-users': typeof ClearUsersRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AppAdminRoute
   '/audit': typeof AppAuditRoute
   '/calculator': typeof AppCalculatorRoute
   '/consultations': typeof AppConsultationsRouteWithChildren
@@ -226,7 +240,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/clear-users': typeof ClearUsersRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AppAdminRoute
   '/audit': typeof AppAuditRoute
   '/calculator': typeof AppCalculatorRoute
   '/consultations': typeof AppConsultationsRouteWithChildren
@@ -259,7 +275,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/clear-users': typeof ClearUsersRoute
   '/login': typeof LoginRoute
+  '/_app/admin': typeof AppAdminRoute
   '/_app/audit': typeof AppAuditRoute
   '/_app/calculator': typeof AppCalculatorRoute
   '/_app/consultations': typeof AppConsultationsRouteWithChildren
@@ -292,7 +310,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/clear-users'
     | '/login'
+    | '/admin'
     | '/audit'
     | '/calculator'
     | '/consultations'
@@ -323,7 +343,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/clear-users'
     | '/login'
+    | '/admin'
     | '/audit'
     | '/calculator'
     | '/consultations'
@@ -355,7 +377,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
+    | '/clear-users'
     | '/login'
+    | '/_app/admin'
     | '/_app/audit'
     | '/_app/calculator'
     | '/_app/consultations'
@@ -388,6 +412,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  ClearUsersRoute: typeof ClearUsersRoute
   LoginRoute: typeof LoginRoute
   ApiFhirResourceRoute: typeof ApiFhirResourceRouteWithChildren
 }
@@ -399,6 +424,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clear-users': {
+      id: '/clear-users'
+      path: '/clear-users'
+      fullPath: '/clear-users'
+      preLoaderRoute: typeof ClearUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -511,6 +543,13 @@ declare module '@tanstack/react-router' {
       path: '/audit'
       fullPath: '/audit'
       preLoaderRoute: typeof AppAuditRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/patients/': {
@@ -663,6 +702,7 @@ const AppClinicianConsultationsRouteWithChildren =
   )
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
   AppAuditRoute: typeof AppAuditRoute
   AppCalculatorRoute: typeof AppCalculatorRoute
   AppConsultationsRoute: typeof AppConsultationsRouteWithChildren
@@ -684,6 +724,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
   AppAuditRoute: AppAuditRoute,
   AppCalculatorRoute: AppCalculatorRoute,
   AppConsultationsRoute: AppConsultationsRouteWithChildren,
@@ -721,6 +762,7 @@ const ApiFhirResourceRouteWithChildren = ApiFhirResourceRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  ClearUsersRoute: ClearUsersRoute,
   LoginRoute: LoginRoute,
   ApiFhirResourceRoute: ApiFhirResourceRouteWithChildren,
 }

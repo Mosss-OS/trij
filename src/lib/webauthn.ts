@@ -14,7 +14,7 @@ export async function isBiometricRegistered(): Promise<boolean> {
       publicKey: {
         challenge: crypto.getRandomValues(new Uint8Array(32)),
         allowCredentials: [{ id: base64ToBytes(id) as BufferSource, type: "public-key" }],
-        timeout: 1000,
+        timeout: 3000,
       },
       mediation: "silent",
     });
@@ -28,8 +28,8 @@ export function getBiometricUserId(): string | null {
   return localStorage.getItem(USER_KEY);
 }
 
-export async function registerBiometric(userId: string): Promise<boolean> {
-  if (!(await isBiometricAvailable())) return false;
+export async function registerBiometric(userId: string): Promise<{ ok: boolean; credentialId: string | null }> {
+  if (!(await isBiometricAvailable())) return { ok: false, credentialId: null };
   try {
     const challenge = crypto.getRandomValues(new Uint8Array(32));
     const cred = await navigator.credentials.create({
@@ -53,19 +53,20 @@ export async function registerBiometric(userId: string): Promise<boolean> {
       },
     }) as PublicKeyCredential | null;
 
-    if (!cred) return false;
-    localStorage.setItem(STORAGE_KEY, bytesToBase64(new Uint8Array(cred.rawId)));
+    if (!cred) return { ok: false, credentialId: null };
+    const rawId = bytesToBase64(new Uint8Array(cred.rawId));
+    localStorage.setItem(STORAGE_KEY, rawId);
     localStorage.setItem(USER_KEY, userId);
-    return true;
+    return { ok: true, credentialId: rawId };
   } catch {
-    return false;
+    return { ok: false, credentialId: null };
   }
 }
 
-export async function authenticateBiometric(): Promise<{ userId: string | null; error: string | null }> {
-  if (!(await isBiometricAvailable())) return { userId: null, error: "Biometric authentication not available on this device" };
+export async function authenticateBiometric(): Promise<{ userId: string | null; error: string | null; credentialId: string | null }> {
+  if (!(await isBiometricAvailable())) return { userId: null, error: "Biometric authentication not available on this device", credentialId: null };
   const credentialId = localStorage.getItem(STORAGE_KEY);
-  if (!credentialId) return { userId: null, error: "No biometric credential registered" };
+  if (!credentialId) return { userId: null, error: "No biometric credential registered", credentialId: null };
 
   try {
     const challenge = crypto.getRandomValues(new Uint8Array(32));
@@ -77,8 +78,9 @@ export async function authenticateBiometric(): Promise<{ userId: string | null; 
         timeout: 30000,
       },
     });
-    if (!cred) return { userId: null, error: "Biometric authentication was cancelled" };
-    return { userId: localStorage.getItem(USER_KEY), error: null };
+    if (!cred) return { userId: null, error: "Biometric authentication was cancelled", credentialId: null };
+    const rawId = bytesToBase64(new Uint8Array((cred as PublicKeyCredential).rawId));
+    return { userId: localStorage.getItem(USER_KEY), error: null, credentialId: rawId };
   } catch (err) {
     const msg = err instanceof DOMException
       ? err.name === "NotAllowedError"
@@ -87,7 +89,7 @@ export async function authenticateBiometric(): Promise<{ userId: string | null; 
           ? "Biometric authentication blocked by security policy"
           : `Biometric error: ${err.message}`
       : "Biometric authentication failed unexpectedly";
-    return { userId: null, error: msg };
+    return { userId: null, error: msg, credentialId: null };
   }
 }
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { SystemChecklist } from "@/lib/symptom-checklists";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ClipboardList } from "lucide-react";
+import { ChevronRight, ClipboardList, Mic } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
@@ -10,9 +10,14 @@ interface Props {
   onChange: (ids: string[]) => void;
   onContinue: () => void;
   onSkip: () => void;
+  voice?: {
+    active: boolean;
+    listening: boolean;
+    ask: (prompt: string, timeoutMs?: number) => Promise<string | null>;
+  };
 }
 
-export function SymptomChecklist({ checklist, selected, onChange, onContinue, onSkip }: Props) {
+export function SymptomChecklist({ checklist, selected, onChange, onContinue, onSkip, voice }: Props) {
   const { t } = useI18n();
   const toggle = (id: string) => {
     onChange(
@@ -25,12 +30,33 @@ export function SymptomChecklist({ checklist, selected, onChange, onContinue, on
       <div className="rounded-2xl border bg-card p-5">
         <div className="flex items-start gap-3">
           <ClipboardList className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
-          <div>
+          <div className="flex-1">
             <h3 className="font-display text-base font-semibold">
               {t("symptomChecklist")}: {checklist.label}
             </h3>
             <p className="mt-1 text-xs text-muted-foreground">{t("symptomChecklistDesc")}</p>
           </div>
+          {voice?.active && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={async () => {
+                const val = await voice.ask("Say a symptom name to toggle it");
+                if (val) {
+                  const lower = val.toLowerCase();
+                  const match = checklist.items.find(
+                    (item) =>
+                      item.label.toLowerCase().includes(lower) ||
+                      lower.includes(item.label.toLowerCase()),
+                  );
+                  if (match) toggle(match.id);
+                }
+              }}
+              disabled={voice.listening}
+            >
+              <Mic className="h-4 w-4" />
+            </Button>
+          )}
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-1.5 sm:grid-cols-2">

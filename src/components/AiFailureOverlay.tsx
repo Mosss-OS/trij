@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { X, AlertTriangle, Cpu, Timer, ImageOff, MousePointerClick, Loader2 } from "lucide-react";
+import { X, AlertTriangle, Cpu, Timer, ImageOff, MousePointerClick, Loader2, Mic } from "lucide-react";
 import type { Urgency, TriageResult } from "@/types/trij";
 
 export type AiFailureKind = "model_not_ready" | "timeout" | "oom" | "image_error" | "generic";
@@ -37,6 +37,12 @@ interface AiFailureOverlayProps {
   onRetry: () => void;
   onManualAssessment?: (result: TriageResult) => void;
   onDismiss: () => void;
+  voice?: {
+    active: boolean;
+    listening: boolean;
+    ask: (prompt: string, timeoutMs?: number) => Promise<string | null>;
+    confirm: (prompt: string) => Promise<boolean>;
+  };
 }
 
 export function AiFailureOverlay({
@@ -44,6 +50,7 @@ export function AiFailureOverlay({
   onRetry,
   onManualAssessment,
   onDismiss,
+  voice,
 }: AiFailureOverlayProps) {
   const { t } = useI18n();
   const [showManual, setShowManual] = useState(false);
@@ -148,9 +155,29 @@ export function AiFailureOverlay({
 
             <div className="mt-4 space-y-4">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                  {t("manualUrgency")}
-                </label>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    {t("manualUrgency")}
+                  </label>
+                  {voice?.active && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={async () => {
+                        const val = await voice.ask("Say red for emergency, yellow for referral, or green for home care");
+                        if (val) {
+                          const u = val.trim().toLowerCase();
+                          if (u === "red") setManualUrgency("red");
+                          else if (u === "yellow") setManualUrgency("yellow");
+                          else if (u === "green") setManualUrgency("green");
+                        }
+                      }}
+                      disabled={voice.listening}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
                 <div className="flex gap-2">
                   {(["green", "yellow", "red"] as const).map((u) => (
                     <button
@@ -173,9 +200,24 @@ export function AiFailureOverlay({
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                  {t("manualCondition")}
-                </label>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <label className="block text-xs font-medium text-muted-foreground">
+                    {t("manualCondition")}
+                  </label>
+                  {voice?.active && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={async () => {
+                        const val = await voice.ask("Say the suspected condition");
+                        if (val) setManualCondition(val.trim());
+                      }}
+                      disabled={voice.listening}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
                 <select
                   value={manualCondition}
                   onChange={(e) => setManualCondition(e.target.value)}

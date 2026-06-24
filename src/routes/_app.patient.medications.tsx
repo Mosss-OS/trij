@@ -147,7 +147,7 @@ function PatientMedicationsPage() {
             <h3 className="mb-3 font-semibold text-amber-800">{t("medicationsAddReminder")}</h3>
 
             <div className="mb-3">
-              <label className="mb-1 block text-sm font-medium text-amber-700">{t("name") || "Name"}</label>
+              <label className="mb-1 block text-sm font-medium text-amber-700">{t("name")}</label>
               <input
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
@@ -157,7 +157,7 @@ function PatientMedicationsPage() {
             </div>
 
             <div className="mb-3">
-              <label className="mb-1 block text-sm font-medium text-amber-700">{t("dosage") || "Dosage"}</label>
+              <label className="mb-1 block text-sm font-medium text-amber-700">{t("dosage")}</label>
               <input
                 value={formDosage}
                 onChange={(e) => setFormDosage(e.target.value)}
@@ -167,16 +167,16 @@ function PatientMedicationsPage() {
             </div>
 
             <div className="mb-3">
-              <label className="mb-1 block text-sm font-medium text-amber-700">Frequency</label>
+              <label className="mb-1 block text-sm font-medium text-amber-700">{t("frequency")}</label>
               <select
                 value={formFrequency}
                 onChange={(e) => setFormFrequency(e.target.value as Medication["frequency"])}
                 className="w-full rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900"
               >
-                <option value="once">Once daily</option>
-                <option value="twice">Twice daily</option>
-                <option value="thrice">Three times daily</option>
-                <option value="as-needed">As needed</option>
+                <option value="once">{t("onceDaily")}</option>
+                <option value="twice">{t("twiceDaily")}</option>
+                <option value="thrice">{t("thriceDaily")}</option>
+                <option value="as-needed">{t("asNeeded")}</option>
               </select>
             </div>
 
@@ -188,7 +188,7 @@ function PatientMedicationsPage() {
                   onChange={(e) => setFormIsOngoing(e.target.checked)}
                   className="h-4 w-4 rounded border-amber-300 text-amber-600"
                 />
-                Ongoing
+                {t("ongoing")}
               </label>
               {!formIsOngoing && (
                 <div className="flex items-center gap-2">
@@ -200,7 +200,7 @@ function PatientMedicationsPage() {
                     min="1"
                     className="w-16 rounded-xl border border-amber-300 bg-amber-50 px-2 py-1 text-sm text-amber-900"
                   />
-                  <span className="text-xs text-amber-600">{t("days") || "days"}</span>
+                  <span className="text-xs text-amber-600">{t("days")}</span>
                 </div>
               )}
             </div>
@@ -266,21 +266,21 @@ function PatientMedicationsPage() {
                     </div>
                     <span className="flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
                       <Calendar className="h-3 w-3" />
-                      {med.isOngoing ? t("ongoing") || "Ongoing" : `${remaining} ${t("days") || "days"}`}
+                      {med.isOngoing ? t("ongoing") : `${remaining} ${t("days")}`}
                     </span>
                   </div>
 
                   {refill && (
                     <div className="mb-2 flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
                       <AlertTriangle className="h-4 w-4" />
-                      {med.name} {t("refill") || "needs refill"}!
+                      {med.name} {t("refill")}!
                     </div>
                   )}
 
                   {totalSlots > 0 && (
                     <div className="mb-2">
                       <div className="mb-1 flex justify-between text-xs text-amber-600">
-                        <span>{t("progress") || "Progress"}</span>
+                        <span>{t("progress")}</span>
                         <span>{takenCount}/{totalSlots}</span>
                       </div>
                       <div className="h-2 overflow-hidden rounded-full bg-amber-100">
@@ -322,7 +322,7 @@ function PatientMedicationsPage() {
                     onClick={() => handleStop(med.id)}
                     className="text-xs text-red-500"
                   >
-                    {t("stop") || "Stop medication"}
+                    {t("stopMedication")}
                   </button>
                 </div>
               </div>
@@ -336,7 +336,7 @@ function PatientMedicationsPage() {
               onClick={() => setShowPast(!showPast)}
               className="flex w-full items-center justify-between rounded-xl bg-amber-100 px-4 py-3 text-sm font-medium text-amber-700"
             >
-              {t("pastMedications") || "Past medications"} ({pastMeds.length})
+              {t("pastMedications")} ({pastMeds.length})
               {showPast ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
 
@@ -349,7 +349,7 @@ function PatientMedicationsPage() {
                   >
                     <p className="font-medium text-amber-800">{med.name}</p>
                     <p className="text-xs text-amber-500">
-                      {med.dosage} — {t("completed") || "Completed"}
+                      {med.dosage} — {t("completed")}
                     </p>
                   </div>
                 ))}
