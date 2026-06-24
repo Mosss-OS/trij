@@ -197,7 +197,7 @@ function Supervisor() {
         supabase
           .from("assessments")
           .select(
-            "id, condition, urgency, referral_status, referral_advised, chw_user_id, created_at, patients(identifier)",
+            "id, patient_id, condition, urgency, referral_status, referral_advised, chw_user_id, created_at, patients(identifier)",
           )
           .order("created_at", { ascending: false })
           .limit(200),
@@ -212,7 +212,7 @@ function Supervisor() {
          ...a,
          location_lat: a.patients?.location_lat ?? null,
          location_lng: a.patients?.location_lng ?? null,
-         patient_id: a.id, // Temporary - would need actual patient ID in real implementation
+         patient_id: a.patient_id ?? a.id,
        }));
        setItems(assessmentsWithLoc as unknown as RemoteAssessment[]);
        setChwLocations((chwRes.data ?? []) as ChwLocation[]);

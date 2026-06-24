@@ -12,6 +12,7 @@ export function useVoiceGuidance() {
   const language = useSettingsStore((s) => s.language);
   const voiceEnabled = useSettingsStore((s) => s.voiceEnabled);
   const voiceGuidedMode = useSettingsStore((s) => s.voiceGuidedMode);
+  const voiceSpeed = useSettingsStore((s) => s.voiceSpeed);
   const voiceRef = useRef<VoiceAssistant | null>(null);
   const [state, setState] = useState<VoiceGuidanceState>({
     speaking: false,
@@ -24,7 +25,8 @@ export function useVoiceGuidance() {
       voiceRef.current = new VoiceAssistant(language);
     }
     voiceRef.current.setLanguage(language);
-  }, [language]);
+    voiceRef.current.setRate(voiceSpeed);
+  }, [language, voiceSpeed]);
 
   const active = voiceEnabled && voiceGuidedMode;
 

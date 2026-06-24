@@ -6,7 +6,7 @@ import { CameraCapture } from "@/components/CameraCapture";
 import { ImageEditor } from "@/components/ImageEditor";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { analyzeDocument, detectEngine } from "@/lib/gemma";
+import { analyzeDocument, detectEngine, loadEngineWithFallback, isLoaded } from "@/lib/gemma";
 import { WebGPUCheck } from "@/components/WebGPUCheck";
 import type { DocumentResult } from "@/types/trij";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -81,9 +81,18 @@ function DocumentScan() {
     setImage(dataUrl);
     setStep("analyzing");
     try {
+      let kind = engineKind === "auto" ? await detectEngine() : engineKind;
+      if (!isLoaded(kind)) {
+        const loadResult = await loadEngineWithFallback(kind, (r) => {
+          setProgressText(r.text || t("preparing") + "...");
+          setProgress(Math.round((r.progress || 0) * 100));
+        });
+        if (loadResult.fallbackUsed) {
+          kind = loadResult.kind;
+        }
+      }
       setProgressText(t("readingDocument"));
       setProgress(100);
-      const kind = engineKind === "auto" ? await detectEngine() : engineKind;
       const r = await analyzeDocument(dataUrl, language, kind, ollamaUrl);
       setResult(r);
       setStep("result");

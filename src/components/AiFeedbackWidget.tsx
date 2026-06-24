@@ -1,12 +1,18 @@
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, Minus, Check, Loader2 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Minus, Check, Loader2, Mic } from "lucide-react";
 import type { AiFeedbackRating, AiFeedback } from "@/types/trij";
 
 interface Props {
   onFeedback: (feedback: AiFeedback) => void;
   userId: string;
+  voice?: {
+    active: boolean;
+    listening: boolean;
+    ask: (prompt: string, timeoutMs?: number) => Promise<string | null>;
+    confirm: (prompt: string) => Promise<boolean>;
+  };
 }
 
 const CONDITIONS = [
@@ -27,7 +33,7 @@ const CONDITIONS = [
   "Other",
 ];
 
-export function AiFeedbackWidget({ onFeedback, userId }: Props) {
+export function AiFeedbackWidget({ onFeedback, userId, voice }: Props) {
   const { t } = useI18n();
   const [selected, setSelected] = useState<AiFeedbackRating | null>(null);
   const [actualCondition, setActualCondition] = useState("");
@@ -64,7 +70,29 @@ export function AiFeedbackWidget({ onFeedback, userId }: Props) {
 
   return (
     <div className="rounded-3xl border bg-card p-5">
-      <p className="text-sm font-medium">{t("feedbackPrompt")}</p>
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-medium">{t("feedbackPrompt")}</p>
+        {voice?.active && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={async () => {
+              const correct = await voice.confirm("Was the diagnosis correct? Say yes or no");
+              if (correct) {
+                handleRating("correct");
+              } else {
+                setShowCondition(true);
+                setSelected("incorrect");
+                const condition = await voice.ask("What was the actual diagnosis?");
+                if (condition) setActualCondition(condition.trim());
+              }
+            }}
+            disabled={voice.listening}
+          >
+            <Mic className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
 
       <div className="mt-3 flex gap-3">
         <Button

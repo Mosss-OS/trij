@@ -6,6 +6,7 @@ import type { Assessment, Patient, ReferralFeedback } from "@/types/trij";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { UrgencyPill } from "@/components/UrgencyPill";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
 import {
   Select,
   SelectContent,
@@ -57,12 +58,12 @@ export const Route = createFileRoute("/_app/referrals")({
   component: ReferralsPage,
 });
 
-const REFERRAL_STATUS_LABELS: Record<string, string> = {
-  pending: "Pending",
-  active: "In transit",
-  awaiting_feedback: "Awaiting feedback",
-  feedback_received: "Feedback received",
-  resolved: "Resolved",
+const STATUS_I18N_KEYS: Record<string, string> = {
+  pending: "pending_status",
+  active: "inTransit",
+  awaiting_feedback: "awaitingFeedback",
+  feedback_received: "feedbackReceived",
+  resolved: "resolved",
 };
 
 const REFERRAL_STATUS_COLORS: Record<string, string> = {
@@ -78,6 +79,7 @@ type TabType = "all" | "pending" | "active" | "awaiting_feedback" | "feedback_re
 type ReferralItem = Assessment & { patient?: Patient };
 
 function ReferralsPage() {
+  const { t } = useI18n();
   const [items, setItems] = useState<ReferralItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TabType>("all");
@@ -146,17 +148,17 @@ function ReferralsPage() {
   }, [items]);
 
   const tabs: { key: TabType; label: string }[] = [
-    { key: "all", label: "All" },
-    { key: "pending", label: "Pending" },
-    { key: "active", label: "In transit" },
-    { key: "awaiting_feedback", label: "Awaiting feedback" },
-    { key: "feedback_received", label: "Feedback received" },
-    { key: "resolved", label: "Resolved" },
+    { key: "all", label: t("all") },
+    { key: "pending", label: t("pending_status") },
+    { key: "active", label: t("inTransit") },
+    { key: "awaiting_feedback", label: t("awaitingFeedback") },
+    { key: "feedback_received", label: t("feedbackReceived") },
+    { key: "resolved", label: t("resolved") },
   ];
 
   return (
     <>
-      <AppHeader title="Referrals" />
+      <AppHeader title={t("referrals")} />
       <div className="mx-auto max-w-4xl px-5 py-6">
         <div className="mb-5 flex gap-1 rounded-xl bg-muted p-1">
           {tabs.map(({ key, label }) => (
@@ -212,11 +214,11 @@ function ReferralsPage() {
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {a.urgency && <UrgencyPill urgency={a.urgency} />}
-                    {REFERRAL_STATUS_LABELS[a.referralStatus] && (
+                    {STATUS_I18N_KEYS[a.referralStatus] && (
                       <span
                         className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium ${REFERRAL_STATUS_COLORS[a.referralStatus] || ""}`}
                       >
-                        {REFERRAL_STATUS_LABELS[a.referralStatus]}
+                        {t(STATUS_I18N_KEYS[a.referralStatus] as "pending_status" | "inTransit" | "awaitingFeedback" | "feedbackReceived" | "resolved")}
                       </span>
                     )}
                   </div>
@@ -254,7 +256,7 @@ function ReferralsPage() {
                   )}
                   {a.referralFeedback && (a.referralStatus === "feedback_received" || a.referralStatus === "resolved") && (
                     <div className="mt-2 w-full rounded-xl border bg-muted/20 p-3 text-xs">
-                      <p className="font-medium text-foreground">Referral feedback</p>
+                      <p className="font-medium text-foreground">{t("referralFeedback")}</p>
                       {a.referralFeedback.facilityName && (
                         <p className="mt-1 text-muted-foreground">
                           Facility: {a.referralFeedback.facilityName}
@@ -285,7 +287,7 @@ function ReferralsPage() {
                       if (a.patient) downloadReferralPdf(a.patient, a);
                     }}
                   >
-                    <FileDown className="h-3.5 w-3.5" /> PDF
+                    <FileDown className="h-3.5 w-3.5" /> {t("pdfButton")}
                   </Button>
                   <Button
                     variant="outline"
@@ -295,7 +297,7 @@ function ReferralsPage() {
                       if (a.patient) shareReferralPdf(a.patient, a);
                     }}
                   >
-                    <Share2 className="h-3.5 w-3.5" /> Share
+                    <Share2 className="h-3.5 w-3.5" /> {t("share")}
                   </Button>
                 </div>
               </li>

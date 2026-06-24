@@ -2,6 +2,7 @@ import type { Urgency } from "@/types/trij";
 import { cn } from "@/lib/utils";
 import { UrgencyLow, UrgencyMedium, UrgencyHigh } from "./PictogramIcons";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useI18n } from "@/lib/i18n";
 
 const styles: Record<Urgency, string> = {
   green: "bg-urgency-green-bg text-urgency-green",
@@ -10,9 +11,9 @@ const styles: Record<Urgency, string> = {
 };
 
 const labels: Record<Urgency, string> = {
-  green: "Routine",
-  yellow: "Soon",
-  red: "Urgent",
+  green: "routine",
+  yellow: "soon",
+  red: "urgent",
 };
 
 const pictogramIcons: Record<Urgency, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
@@ -29,6 +30,7 @@ const pictogramLabels: Record<Urgency, string> = {
 
 export function UrgencyPill({ urgency, className }: { urgency: Urgency; className?: string }) {
   const pictogramMode = useSettingsStore((s) => s.pictogramMode);
+  const { t } = useI18n();
   const PictogramIcon = pictogramIcons[urgency];
   
   return (
@@ -47,7 +49,7 @@ export function UrgencyPill({ urgency, className }: { urgency: Urgency; classNam
               "bg-urgency-red": urgency === "red",
             })}
           />
-          {labels[urgency]}
+          {t(labels[urgency] as "routine" | "soon" | "urgent")}
         </>
       )}
     </span>

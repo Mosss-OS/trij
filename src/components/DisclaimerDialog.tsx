@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ShieldAlert } from "lucide-react";
+import { Mic, ShieldAlert } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import { useSettingsStore } from "@/stores/settingsStore";
 
-export function DisclaimerDialog() {
+export function DisclaimerDialog({ voice }: { voice?: { active: boolean; listening: boolean; confirm: (prompt: string) => Promise<boolean> } }) {
+  const { t } = useI18n();
   const acceptDisclaimer = useSettingsStore((s) => s.acceptDisclaimer);
   const chwName = useSettingsStore((s) => s.chwName);
   const [name, setName] = useState(chwName);
@@ -23,38 +25,25 @@ export function DisclaimerDialog() {
             <ShieldAlert className="h-6 w-6 text-urgency-yellow" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold">Important notice</h1>
-            <p className="text-xs text-muted-foreground">Before you begin using Trij</p>
+            <h1 className="font-display text-xl font-bold">{t("disclaimerTitle")}</h1>
+            <p className="text-xs text-muted-foreground">{t("disclaimerSubtitle")}</p>
           </div>
         </div>
 
         <div className="space-y-4 rounded-2xl border bg-secondary/30 p-5 text-sm leading-relaxed">
-          <p className="font-semibold">
-            Trij is an AI-assisted tool, not a clinical diagnostic device.
-          </p>
+          <p className="font-semibold">{t("disclaimerLead")}</p>
           <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
-            <li>
-              All assessments are <strong>preliminary</strong> and must be verified with clinical
-              judgment.
-            </li>
-            <li>
-              Trij does <strong>not</strong> replace professional medical evaluation.
-            </li>
-            <li>
-              Always refer patients to a clinic or hospital when in doubt or when the assessment
-              indicates urgency.
-            </li>
-            <li>
-              Patient data is stored on-device and only synced to your authorized backend when
-              connectivity is available.
-            </li>
-            <li>You are responsible for complying with local health data privacy regulations.</li>
+            <li>{t("disclaimerItem1")}</li>
+            <li>{t("disclaimerItem2")}</li>
+            <li>{t("disclaimerItem3")}</li>
+            <li>{t("disclaimerItem4")}</li>
+            <li>{t("disclaimerItem5")}</li>
           </ul>
         </div>
 
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="chw-name">Your name (CHW)</Label>
+            <Label htmlFor="chw-name">{t("chwNameLabel")}</Label>
             <Input
               id="chw-name"
               value={name}
@@ -69,15 +58,25 @@ export function DisclaimerDialog() {
               onCheckedChange={(v) => setAgreed(v === true)}
               disabled={!name.trim()}
             />
-            <span className="text-xs leading-relaxed text-muted-foreground">
-              I understand and agree that Trij provides AI-assisted preliminary assessments only. I
-              will use clinical judgment for all patient care decisions. I have read and understand
-              the above notice.
-            </span>
+            <span className="text-xs leading-relaxed text-muted-foreground">{t("disclaimerAgreeText")}</span>
           </label>
         </div>
 
-        <Button
+          {voice?.active && !agreed && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2"
+              onClick={async () => {
+                const ok = await voice.confirm(t("disclaimerVoiceConfirm"));
+                if (ok) setAgreed(true);
+              }}
+              disabled={voice.listening}
+            >
+              <Mic className="h-4 w-4" /> {t("voiceGuide")}
+            </Button>
+          )}
+          <Button
           className="w-full"
           size="lg"
           disabled={!name.trim() || !agreed}
@@ -86,7 +85,7 @@ export function DisclaimerDialog() {
             setSubmitted(true);
           }}
         >
-          I understand — begin using Trij
+          {t("disclaimerAccept")}
         </Button>
       </div>
     </div>

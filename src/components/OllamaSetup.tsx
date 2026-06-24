@@ -18,10 +18,11 @@ import {
   Loader2,
   RefreshCw,
   Terminal,
+  Mic,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-export function OllamaSetup() {
+export function OllamaSetup({ voice }: { voice?: { active: boolean; listening: boolean; ask: (prompt: string, timeoutMs?: number) => Promise<string | null> } }) {
   const { t } = useI18n();
   const s = useSettingsStore();
   const [ollamaOk, setOllamaOk] = useState<boolean | null>(null);
@@ -54,14 +55,30 @@ export function OllamaSetup() {
     <div className="space-y-4">
       <div className="space-y-1.5">
         <Label>{t("ollamaUrl")}</Label>
-        <Input
-          value={s.ollamaUrl}
-          onChange={(e) => {
-            s.setOllamaUrl(e.target.value);
-            clearOllamaCache();
-          }}
-          placeholder="http://localhost:11434"
-        />
+        <div className="flex gap-2">
+          <Input
+            value={s.ollamaUrl}
+            onChange={(e) => {
+              s.setOllamaUrl(e.target.value);
+              clearOllamaCache();
+            }}
+            placeholder="http://localhost:11434"
+            className="flex-1"
+          />
+          {voice?.active && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={async () => {
+                const val = await voice.ask("Say the Ollama server URL");
+                if (val) { s.setOllamaUrl(val.trim()); clearOllamaCache(); }
+              }}
+              disabled={voice.listening}
+            >
+              <Mic className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
@@ -155,11 +172,27 @@ export function OllamaSetup() {
         <>
           <div className="space-y-1.5">
             <Label>{t("ollamaModel")}</Label>
-            <Input
-              value={s.ollamaModel}
-              onChange={(e) => s.setOllamaModel(e.target.value)}
-              placeholder="gemma4"
-            />
+            <div className="flex gap-2">
+              <Input
+                value={s.ollamaModel}
+                onChange={(e) => s.setOllamaModel(e.target.value)}
+                placeholder="gemma4"
+                className="flex-1"
+              />
+              {voice?.active && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={async () => {
+                    const val = await voice.ask("Say the model name");
+                    if (val) s.setOllamaModel(val.trim());
+                  }}
+                  disabled={voice.listening}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {hasModel === false && (

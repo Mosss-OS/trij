@@ -46,6 +46,7 @@ function LandingPage() {
   const session = useSessionStore((s) => s.session);
   const offlineUser = useSessionStore((s) => s.offlineUser);
   const authed = !!(session || offlineUser);
+  const { t } = useI18n();
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[oklch(0.98_0.008_85)] text-[oklch(0.18_0.02_240)] antialiased pt-20 pb-16">
@@ -97,59 +98,37 @@ function Nav({ authed }: { authed: boolean }) {
       if (window.scrollY < 50) {
         setShowNav(true);
       } else if (window.scrollY < lastScrollY) {
-        // scrolling UP
         setShowNav(true);
       } else {
-        // scrolling DOWN
         setShowNav(false);
       }
-
       setLastScrollY(window.scrollY);
     };
-
     window.addEventListener("scroll", controlNavbar);
-
-    return () => {
-      window.removeEventListener("scroll", controlNavbar);
-    };
+    return () => window.removeEventListener("scroll", controlNavbar);
   }, [lastScrollY]);
 
   return (
     <header className="fixed top-4 left-1/2 z-50 w-full max-w-6xl -translate-x-1/2 px-4">
       <motion.div className="flex items-center justify-between rounded-full border border-white/30 bg-white/40 px-4 py-2.5 backdrop-blur-xl sm:px-6">
-
         <Link to="/" className="flex items-center gap-2">
           <img
             src="https://res.cloudinary.com/dv0tt80vn/image/upload/v1778960068/Trij_l7tyxj.png"
             alt={t("logoSlogan")}
             className="h-8 w-8 rounded-lg object-contain"
           />
-
-          <span className="font-sans text-base font-semibold tracking-tight">
-            Trij
-          </span>
+          <span className="font-sans text-base font-semibold tracking-tight">Trij</span>
         </Link>
-
         <nav className="hidden items-center gap-7 font-sans text-sm text-foreground/70 md:flex">
-          <a href="#features" className="transition-colors hover:text-foreground">
-            Features
-          </a>
-
-          <a href="#flow" className="transition-colors hover:text-foreground">
-            How it works
-          </a>
-
-          <a href="#privacy" className="transition-colors hover:text-foreground">
-            Privacy
-          </a>
+          <a href="#features" className="transition-colors hover:text-foreground">{t("footerFeatures")}</a>
+          <a href="#flow" className="transition-colors hover:text-foreground">{t("howItWorks")}</a>
+          <a href="#privacy" className="transition-colors hover:text-foreground">{t("privacy")}</a>
         </nav>
-
         <Link
           to={authed ? "/dashboard" : "/login"}
           className="group inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-1.5 font-sans text-sm font-medium text-background transition-all hover:opacity-90"
         >
-          {authed ? "Open app" : "Sign in"}
-
+          {authed ? t("openApp") : t("signIn")}
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
       </motion.div>
@@ -158,6 +137,7 @@ function Nav({ authed }: { authed: boolean }) {
 }
 /* ---------- hero ---------- */
 function Hero({ authed }: { authed: boolean }) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], [0, 100]);
@@ -176,7 +156,7 @@ function Hero({ authed }: { authed: boolean }) {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
           </span>
-          Powered by on-device Gemma
+          {t("poweredByOnDevice")}
         </motion.div>
 
         <motion.h1
@@ -185,10 +165,10 @@ function Hero({ authed }: { authed: boolean }) {
           transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="font-serif text-[2rem] font-medium leading-[1.05] tracking-tight sm:text-6xl md:text-7xl"
         >
-          Triage at the speed of
+          {t("triageSpeedPrefix")}
           <br />
           <span className="bg-gradient-to-br from-[oklch(0.45_0.08_220)] via-[oklch(0.55_0.10_200)] to-[oklch(0.65_0.13_185)] bg-clip-text italic text-transparent">
-            human care.
+            {t("humanCare")}
           </span>
         </motion.h1>
 
@@ -198,9 +178,7 @@ function Hero({ authed }: { authed: boolean }) {
           transition={{ delay: 0.35, duration: 0.7 }}
           className="mx-auto mt-6 max-w-2xl font-sans text-base leading-relaxed text-foreground/65 sm:text-lg"
         >
-          Trij is an offline-first AI assistant built for community health workers. Capture, listen,
-          and assess — all on the device. No cloud, no compromises, no patient data leaves the
-          phone.
+          {t("trijSubtitle")}
         </motion.p>
 
         <motion.div
@@ -213,14 +191,14 @@ function Hero({ authed }: { authed: boolean }) {
             to={authed ? "/dashboard" : "/login"}
             className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 font-sans text-sm font-medium text-background shadow-lg shadow-black/10 transition-all hover:shadow-xl hover:shadow-black/20"
           >
-            {authed ? "Continue to dashboard" : "Get started for free"}
+            {authed ? t("continueToDashboard") : t("getStartedFree")}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <a
             href="#features"
             className="inline-flex items-center gap-2 rounded-full border border-foreground/15 bg-white/40 px-6 py-3 font-sans text-sm font-medium text-foreground/80 backdrop-blur-xl transition-colors hover:bg-white/60"
           >
-            Explore the product
+            {t("exploreProduct")}
           </a>
         </motion.div>
       </motion.div>
@@ -231,6 +209,7 @@ function Hero({ authed }: { authed: boolean }) {
 }
 
 function PhoneMockup() {
+  const { t } = useI18n();
   return (
     <motion.div
       initial={{ opacity: 0, y: 60, rotateX: 12 }}
@@ -241,7 +220,6 @@ function PhoneMockup() {
       className="mx-auto mt-16 w-[85vw] max-w-[320px] sm:max-w-[360px]"
     >
       <div className="relative rounded-[3rem] border border-black/10 bg-gradient-to-b from-zinc-900 to-black p-3 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.3)]">
-        {/* notch */}
         <div className="absolute left-1/2 top-5 z-10 h-6 w-28 -translate-x-1/2 rounded-full bg-black" />
         <div className="relative aspect-[9/19.5] overflow-hidden rounded-[2.4rem] bg-gradient-to-br from-[oklch(0.96_0.01_85)] to-[oklch(0.92_0.02_200)] p-5">
           <div className="mt-10 space-y-4">
@@ -252,15 +230,11 @@ function PhoneMockup() {
               transition={{ delay: 0.3 }}
               className="rounded-2xl border border-white/60 bg-white/60 p-3 backdrop-blur-xl"
             >
-              <p className="font-sans text-[10px] uppercase tracking-wider text-foreground/50">
-                Assessment
-              </p>
-              <p className="mt-1 font-serif text-sm font-semibold">Suspected dermatitis</p>
+              <p className="font-sans text-[10px] uppercase tracking-wider text-foreground/50">{t("assessment")}</p>
+              <p className="mt-1 font-serif text-sm font-semibold">{t("suspectedDermatitis")}</p>
               <div className="mt-2 flex items-center gap-1.5">
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 font-sans text-[10px] font-medium text-amber-800">
-                  Yellow
-                </span>
-                <span className="font-sans text-[10px] text-foreground/50">92% confidence</span>
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 font-sans text-[10px] font-medium text-amber-800">{t("yellow")}</span>
+                <span className="font-sans text-[10px] text-foreground/50">{t("confidencePercent").replace("{pct}", "92")}</span>
               </div>
             </motion.div>
             <motion.div
@@ -272,11 +246,9 @@ function PhoneMockup() {
             >
               <div className="flex items-center gap-2">
                 <Mic className="h-3.5 w-3.5 text-emerald-700" />
-                <p className="font-sans text-xs">Voice follow-up</p>
+                <p className="font-sans text-xs">{t("voiceFollowUp")}</p>
               </div>
-              <p className="mt-1 font-serif text-xs italic text-foreground/70">
-                "How long has the rash been present?"
-              </p>
+              <p className="mt-1 font-serif text-xs italic text-foreground/70">{t("howLongRash")}</p>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -286,12 +258,10 @@ function PhoneMockup() {
               className="rounded-2xl border border-white/60 bg-white/60 p-3 backdrop-blur-xl"
             >
               <div className="flex items-center justify-between">
-                <p className="font-sans text-[10px] uppercase tracking-wider text-foreground/50">
-                  Saved offline
-                </p>
+                <p className="font-sans text-[10px] uppercase tracking-wider text-foreground/50">{t("savedOffline")}</p>
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
               </div>
-              <p className="mt-1 font-sans text-xs text-foreground/70">3 pending in sync queue</p>
+              <p className="mt-1 font-sans text-xs text-foreground/70">{t("pendingInSync").replace("{count}", "3")}</p>
             </motion.div>
           </div>
         </div>
@@ -302,7 +272,8 @@ function PhoneMockup() {
 
 /* ---------- logos ---------- */
 function LogosStrip() {
-  const items = ["Offline-first", "On-device AI", "WebGPU", "Gemma 3n", "PWA installable"];
+  const { t } = useI18n();
+  const items = [t("logosOfflineFirst"), t("logosOnDeviceAi"), t("logosWebgpu"), t("logosGemma"), t("logosPwa")];
   return (
     <section className="mx-auto max-w-6xl px-5 py-8">
       <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 font-sans text-xs uppercase tracking-[0.18em] text-foreground/40">
@@ -316,12 +287,13 @@ function LogosStrip() {
 
 /* ---------- bento ---------- */
 function BentoFeatures() {
+  const { t } = useI18n();
   return (
     <section id="features" className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
       <SectionHeading
-        eyebrow="Built for the field"
-        title="A complete kit, in one quiet app."
-        subtitle="Every piece designed for low-bandwidth, low-light, high-stakes work."
+        eyebrow={t("builtForField")}
+        title={t("completeKit")}
+        subtitle={t("completeKitSub")}
       />
 
       <div className="mt-14 grid auto-rows-auto grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 sm:auto-rows-[12rem] lg:auto-rows-[14rem]">
@@ -329,57 +301,42 @@ function BentoFeatures() {
           <div className="flex h-full flex-col justify-between">
             <Camera className="h-7 w-7 text-[oklch(0.45_0.08_220)]" />
             <div>
-              <h3 className="font-serif text-2xl font-medium tracking-tight">
-                Capture &amp; analyze
-              </h3>
-              <p className="mt-2 max-w-sm font-sans text-sm text-foreground/65">
-                Snap a photo of skin, wounds, or documents. Gemma runs locally on the device —
-                returning condition, urgency, and confidence in seconds.
-              </p>
+              <h3 className="font-serif text-2xl font-medium tracking-tight">{t("captureAnalyze")}</h3>
+              <p className="mt-2 max-w-sm font-sans text-sm text-foreground/65">{t("captureAnalyzeDesc")}</p>
             </div>
           </div>
         </BentoCard>
 
         <BentoCard delay={0.1}>
           <Mic className="h-6 w-6 text-emerald-700" />
-          <h3 className="mt-auto font-serif text-lg font-medium">Voice-guided</h3>
-          <p className="font-sans text-xs text-foreground/60">
-            Iterative follow-ups via on-device speech.
-          </p>
+          <h3 className="mt-auto font-serif text-lg font-medium">{t("voiceGuidedFeature")}</h3>
+          <p className="font-sans text-xs text-foreground/60">{t("voiceGuidedFeatureDesc")}</p>
         </BentoCard>
 
         <BentoCard delay={0.15}>
           <WifiOff className="h-6 w-6 text-[oklch(0.55_0.13_30)]" />
-          <h3 className="mt-auto font-serif text-lg font-medium">Offline-first</h3>
-          <p className="font-sans text-xs text-foreground/60">
-            Works on a plane, in a clinic, in a village.
-          </p>
+          <h3 className="mt-auto font-serif text-lg font-medium">{t("offlineFirstFeature")}</h3>
+          <p className="font-sans text-xs text-foreground/60">{t("offlineFirstFeatureDesc")}</p>
         </BentoCard>
 
         <BentoCard delay={0.2}>
           <Languages className="h-6 w-6 text-[oklch(0.55_0.13_280)]" />
-          <h3 className="mt-auto font-serif text-lg font-medium">Multilingual</h3>
-          <p className="font-sans text-xs text-foreground/60">
-            English, French, Swahili, Hindi, Portuguese, Arabic.
-          </p>
+          <h3 className="mt-auto font-serif text-lg font-medium">{t("multilingualFeature")}</h3>
+          <p className="font-sans text-xs text-foreground/60">{t("multilingualFeatureDesc")}</p>
         </BentoCard>
 
         <BentoCard delay={0.25}>
           <MapPin className="h-6 w-6 text-rose-600" />
-          <h3 className="mt-auto font-serif text-lg font-medium">Geo-aware</h3>
-          <p className="font-sans text-xs text-foreground/60">
-            Every patient pin lives on the supervisor map.
-          </p>
+          <h3 className="mt-auto font-serif text-lg font-medium">{t("geoAwareFeature")}</h3>
+          <p className="font-sans text-xs text-foreground/60">{t("geoAwareFeatureDesc")}</p>
         </BentoCard>
 
         <BentoCard className="lg:col-span-2" delay={0.3}>
           <div className="flex h-full items-center justify-between gap-4">
             <div>
               <Activity className="h-6 w-6 text-[oklch(0.55_0.10_200)]" />
-              <h3 className="mt-3 font-serif text-lg font-medium">Supervisor dashboard</h3>
-              <p className="font-sans text-xs text-foreground/60">
-                Live queue, regional analytics, CSV export.
-              </p>
+              <h3 className="mt-3 font-serif text-lg font-medium">{t("supervisorDashboardFeature")}</h3>
+              <p className="font-sans text-xs text-foreground/60">{t("supervisorDashboardFeatureDesc")}</p>
             </div>
             <div className="hidden h-24 w-32 shrink-0 rounded-xl border border-white/60 bg-white/40 p-2 backdrop-blur sm:block">
               <div className="space-y-1.5">
@@ -403,10 +360,8 @@ function BentoFeatures() {
           <div className="flex h-full flex-col justify-between">
             <Sparkles className="h-6 w-6 text-amber-600" />
             <div>
-              <h3 className="font-serif text-lg font-medium">Resumable interviews</h3>
-              <p className="font-sans text-xs text-foreground/60">
-                Step away, come back — the voice interview picks up where you left off.
-              </p>
+              <h3 className="font-serif text-lg font-medium">{t("resumableInterviewsFeature")}</h3>
+              <p className="font-sans text-xs text-foreground/60">{t("resumableInterviewsFeatureDesc")}</p>
             </div>
           </div>
         </BentoCard>
@@ -441,34 +396,19 @@ function BentoCard({
 
 /* ---------- flow ---------- */
 function FlowSection() {
+  const { t } = useI18n();
   const steps = [
-    {
-      n: "01",
-      title: "Capture",
-      body: "Take a photo of the patient's skin, wound, or document with the in-app camera.",
-    },
-    {
-      n: "02",
-      title: "Analyze",
-      body: "Gemma runs locally through WebGPU — no upload, no waiting on connectivity.",
-    },
-    {
-      n: "03",
-      title: "Interview",
-      body: "Voice follow-up gathers context with function-calling and adapts each question.",
-    },
-    {
-      n: "04",
-      title: "Refer & sync",
-      body: "Save offline. When you're back online, records sync to your supervisor's dashboard.",
-    },
+    { n: "01", title: t("flowCapture"), body: t("flowCaptureDesc") },
+    { n: "02", title: t("flowAnalyze"), body: t("flowAnalyzeDesc") },
+    { n: "03", title: t("flowInterview"), body: t("flowInterviewDesc") },
+    { n: "04", title: t("flowRefer"), body: t("flowReferDesc") },
   ];
   return (
     <section id="flow" className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
       <SectionHeading
-        eyebrow="The flow"
-        title="Four taps. One quiet decision."
-        subtitle="A workflow tuned for the realities of community health."
+        eyebrow={t("flowEyebrow")}
+        title={t("flowTitle")}
+        subtitle={t("flowSubtitle")}
       />
       <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {steps.map((s, i) => (
@@ -494,6 +434,8 @@ function FlowSection() {
 
 /* ---------- privacy ---------- */
 function PrivacySection() {
+  const { t } = useI18n();
+  const items = [t("privacyListItem1"), t("privacyListItem2"), t("privacyListItem3"), t("privacyListItem4"), t("privacyListItem5")];
   return (
     <section id="privacy" className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
       <motion.div
@@ -506,23 +448,16 @@ function PrivacySection() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(120,200,255,0.18),transparent_60%)]" />
         <div className="relative grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
-            <p className="font-sans text-xs uppercase tracking-[0.2em] text-white/50">Privacy</p>
+            <p className="font-sans text-xs uppercase tracking-[0.2em] text-white/50">{t("privacy")}</p>
             <h2 className="mt-3 font-serif text-3xl font-medium leading-tight tracking-tight sm:text-5xl">
-              Patient data <em className="italic text-white/80">never</em> leaves the device.
+              {t("privacyTitle")}
             </h2>
             <p className="mt-5 max-w-md font-sans text-sm leading-relaxed text-white/65">
-              Images are analyzed locally with Gemma through WebGPU. Only structured, consented
-              assessment records sync to your encrypted backend — and only when you choose.
+              {t("privacyDescLanding")}
             </p>
           </div>
           <ul className="space-y-3 font-sans text-sm">
-            {[
-              "Local-only image inference",
-              "Encrypted, queued sync",
-              "Consent captured per patient",
-              "Role-based access with RLS",
-              "PIN fallback for offline auth",
-            ].map((f) => (
+            {items.map((f) => (
               <li
                 key={f}
                 className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur"
@@ -540,11 +475,12 @@ function PrivacySection() {
 
 /* ---------- stats ---------- */
 function StatsSection() {
+  const { t } = useI18n();
   const stats = [
-    { v: "0 ms", l: "Network latency at inference" },
-    { v: "6", l: "Supported languages" },
-    { v: "~2B", l: "On-device model parameters" },
-    { v: "100%", l: "Of triage runs offline" },
+    { v: t("statInference"), l: t("statInferenceLabel") },
+    { v: t("statLanguages"), l: t("statLanguagesLabel") },
+    { v: t("statParams"), l: t("statParamsLabel") },
+    { v: t("statOffline"), l: t("statOfflineLabel") },
   ];
   return (
     <section className="mx-auto max-w-6xl px-5 py-16">
@@ -569,6 +505,7 @@ function StatsSection() {
 
 /* ---------- cta ---------- */
 function CTASection({ authed }: { authed: boolean }) {
+  const { t } = useI18n();
   return (
     <section className="mx-auto max-w-6xl px-5 py-24 sm:py-32">
       <motion.div
@@ -579,19 +516,17 @@ function CTASection({ authed }: { authed: boolean }) {
         className="text-center"
       >
         <h2 className="font-serif text-4xl font-medium leading-tight tracking-tight sm:text-6xl">
-          Make a quiet,
+          {t("ctaTitle")}
           <br />
-          <span className="italic text-foreground/60">confident decision.</span>
+          <span className="italic text-foreground/60">{t("ctaTitleItalic")}</span>
         </h2>
-        <p className="mx-auto mt-5 max-w-lg font-sans text-base text-foreground/65">
-          Trij is free to try. Install it as a PWA and you're ready for the next visit.
-        </p>
+        <p className="mx-auto mt-5 max-w-lg font-sans text-base text-foreground/65">{t("ctaDesc")}</p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             to={authed ? "/dashboard" : "/login"}
             className="group inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-3.5 font-sans text-sm font-medium text-background shadow-lg shadow-black/10 transition-all hover:shadow-xl"
           >
-            {authed ? "Open Trij" : "Start your first triage"}
+            {authed ? t("openTrij") : t("startFirstTriage")}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
@@ -602,23 +537,18 @@ function CTASection({ authed }: { authed: boolean }) {
 
 /* ---------- footer ---------- */
 function Footer() {
+  const { t } = useI18n();
   return (
     <footer className="mx-auto max-w-6xl px-5 py-10">
       <div className="flex flex-col items-center justify-between gap-4 border-t border-foreground/10 pt-8 font-sans text-xs text-foreground/50 sm:flex-row">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-3.5 w-3.5" />
-          <span>© {new Date().getFullYear()} Trij. Built for the field.</span>
+          <span>{t("copyright").replace("{year}", String(new Date().getFullYear()))}</span>
         </div>
         <div className="flex items-center gap-5">
-          <a href="#privacy" className="hover:text-foreground">
-            Privacy
-          </a>
-          <a href="#features" className="hover:text-foreground">
-            Features
-          </a>
-          <Link to="/login" className="hover:text-foreground">
-            Sign in
-          </Link>
+          <a href="#privacy" className="hover:text-foreground">{t("footerPrivacy")}</a>
+          <a href="#features" className="hover:text-foreground">{t("footerFeatures")}</a>
+          <Link to="/login" className="hover:text-foreground">{t("signIn")}</Link>
         </div>
       </div>
     </footer>

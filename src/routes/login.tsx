@@ -237,7 +237,7 @@ function LoginPage() {
     try {
       const { userId, error } = await authenticateBiometric();
       if (!userId) {
-        toast.error(error || "Biometric authentication failed", { duration: 5000 });
+        toast.error(error || t("biometricAuthFailed"), { duration: 5000 });
         return;
       }
       const rec = await getDB().pinAuth.get(userId);
@@ -248,7 +248,7 @@ function LoginPage() {
         setOfflineSession({ id: userId, email: storedEmail });
       }
     } catch {
-      toast.error("Biometric authentication failed unexpectedly");
+      toast.error(t("biometricUnexpectedError"));
     } finally {
       if (mountedRef.current) setBioVerifying(false);
     }
@@ -272,7 +272,7 @@ function LoginPage() {
     const timer = setTimeout(() => {
       if (!mountedRef.current) return;
       setBusy(false);
-      toast.error("Request timed out — check your connection and try again.");
+      toast.error(t("requestTimedOut"));
     }, AUTH_TIMEOUT);
     try {
       if (mode === "signup") {

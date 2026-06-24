@@ -10,7 +10,7 @@ export function OfflineIndicator({ className }: { className?: string }) {
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
-        online ? "bg-urgency-green-bg text-urgency-green" : "bg-muted text-muted-foreground",
+        online ? "bg-urgency-green-bg text-urgency-green" : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-300 dark:border-amber-700",
         className,
       )}
       aria-label={online ? t("online") : t("offline")}

@@ -25,9 +25,15 @@ type ConsentMethod = "verbal" | "thumbprint" | "signature" | "voice";
 interface ConsentCaptureProps {
   onConsent: (record: ConsentRecord) => void;
   disabled?: boolean;
+  voice?: {
+    active: boolean;
+    listening: boolean;
+    ask: (prompt: string, timeoutMs?: number) => Promise<string | null>;
+    confirm: (prompt: string) => Promise<boolean>;
+  };
 }
 
-export function ConsentCapture({ onConsent, disabled }: ConsentCaptureProps) {
+export function ConsentCapture({ onConsent, disabled, voice }: ConsentCaptureProps) {
   const { t } = useI18n();
   const [agreed, setAgreed] = useState<Record<string, boolean>>(
     Object.fromEntries(CONSENT_ITEMS.map((item) => [item.id, false])),
@@ -119,6 +125,25 @@ export function ConsentCapture({ onConsent, disabled }: ConsentCaptureProps) {
           })}
         </div>
       </div>
+
+      {voice?.active && !confirmed && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full gap-2"
+          onClick={async () => {
+            for (const item of CONSENT_ITEMS) {
+              const ok = await voice.confirm(t(item.key as any));
+              if (ok) {
+                setAgreed((prev) => ({ ...prev, [item.id]: true }));
+              }
+            }
+          }}
+          disabled={voice.listening}
+        >
+          <Mic className="h-4 w-4" /> {t("voiceGuide")}
+        </Button>
+      )}
 
       <Button
         onClick={handleConfirm}
