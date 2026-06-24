@@ -344,6 +344,7 @@ export const translations = {
     referralAdvised: "Referral advised",
     treatLocally: "Treat locally",
     readAloud: "Read aloud",
+    shareResult: "Share result",
     differential: "Differential",
     keyFeatures: "Key features",
     closeDifferentialWarning: "Close differential — consider referral for full workup",
