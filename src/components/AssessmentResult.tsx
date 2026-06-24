@@ -18,11 +18,13 @@ import {
   HelpCircle,
   ThumbsUp,
   ThumbsDown,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useI18n } from "@/lib/i18n";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useVoiceGuidance } from "@/hooks/useVoiceGuidance";
 import {
   FeverIcon,
   WoundIcon,
@@ -31,6 +33,20 @@ import {
   MedicalCross,
   Hospital,
 } from "./PictogramIcons";
+
+function buildWhatsAppText(result: TriageResult, t: ReturnType<typeof useI18n>["t"]): string {
+  const lines = [
+    `Trij Assessment Result`,
+    `Condition: ${result.condition}`,
+    `Confidence: ${typeof result.confidence === 'number' ? Math.round(result.confidence) : result.confidence?.confidence_point ?? 0}%`,
+    `Urgency: ${result.urgency?.toUpperCase() ?? "—"}`,
+  ];
+  if (result.recommendation) lines.push(`Recommendation: ${result.recommendation}`);
+  lines.push(`—`);
+  lines.push(`Assessed via Trij (offline-first AI triage)`);
+  lines.push(`https://trij.vercel.app`);
+  return lines.join("\n");
+}
 
 interface Props {
   result: TriageResult;
@@ -632,6 +648,18 @@ export function AssessmentResult({
             <Volume2 className="h-4 w-4" /> {t("readAloud")}
           </Button>
         )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-4 gap-2 ml-2"
+          onClick={() => {
+            const text = buildWhatsAppText(result, t);
+            const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(url, "_blank", "noopener,noreferrer");
+          }}
+        >
+          <Share2 className="h-4 w-4" /> {t("shareResult")}
+          </Button>
       </div>
 
       {result.possible_conditions.length > 0 && (
