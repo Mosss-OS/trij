@@ -32,6 +32,8 @@ import type {
 } from "@/types/trij";
 import { registerBackgroundSync } from "./sw-register";
 
+let isSyncing = false;
+
 /**
  * Enhanced error logging for sync operations
  * Provides detailed diagnostic information for troubleshooting sync failures
@@ -109,6 +111,33 @@ export type SyncProgressCallback = (item: SyncProgressItem) => void;
 
 function nextVersion(v?: number): number {
   return (v ?? 0) + 1;
+}
+
+export async function canSyncNow(): Promise<boolean> {
+  if (typeof navigator !== "undefined" && !navigator.onLine) return false;
+  if (isSyncing) return false;
+  
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !session) {
+    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError || !refreshData.session) return false;
+  }
+  return true;
+}
+
+export async function tryProcessSyncQueue(
+  onProgress?: SyncProgressCallback,
+): Promise<{ ok: number; failed: number; deadLetter: number }> {
+  if (!(await canSyncNow())) {
+    return { ok: 0, failed: 0, deadLetter: 0 };
+  }
+
+  isSyncing = true;
+  try {
+    return await processSyncQueue(onProgress);
+  } finally {
+    isSyncing = false;
+  }
 }
 
 export async function queuePatient(patient: Patient) {
@@ -533,7 +562,7 @@ export async function triggerManualSync(): Promise<{ ok: number; failed: number;
       await db.syncQueue.update(item.id!, { nextRetryAt: undefined });
     }
   }
-  return processSyncQueue();
+  return tryProcessSyncQueue();
 }
 
 export async function getDeadLetterItems(): Promise<DeadLetterItem[]> {

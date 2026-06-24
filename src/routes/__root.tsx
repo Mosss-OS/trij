@@ -11,10 +11,11 @@ import {
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { registerSW, listenForSyncMessages } from "@/lib/sw-register";
-import { processSyncQueue } from "@/lib/sync";
+import { processSyncQueue, tryProcessSyncQueue, pendingCount } from "@/lib/sync";
 import { useI18n } from "@/lib/i18n";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useAuthSession } from "@/hooks/useAuthSession";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { Loader2 } from "lucide-react";
 
 function NotFoundComponent() {
@@ -220,6 +221,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const { isInitialized } = useSessionStore();
   useAuthSession();
+  const online = useOnlineStatus();
 
   useEffect(() => {
     registerSW();
@@ -227,9 +229,33 @@ function RootComponent() {
 
   useEffect(() => {
     const unsub = listenForSyncMessages(() => {
-      processSyncQueue().catch(() => {});
+      tryProcessSyncQueue().catch(() => {});
     });
     return unsub;
+  }, []);
+
+  // Sync on startup if there are pending items
+  useEffect(() => {
+    pendingCount().then((count) => {
+      if (count > 0) tryProcessSyncQueue().catch(() => {});
+    });
+  }, []);
+
+  // Sync when coming back online
+  useEffect(() => {
+    if (online) {
+      pendingCount().then((count) => {
+        if (count > 0) tryProcessSyncQueue().catch(() => {});
+      });
+    }
+  }, [online]);
+
+  // Periodic sync check every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      tryProcessSyncQueue().catch(() => {});
+    }, 60_000);
+    return () => clearInterval(interval);
   }, []);
 
   if (!isInitialized) {
