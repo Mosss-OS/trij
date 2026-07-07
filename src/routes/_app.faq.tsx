@@ -84,14 +84,14 @@ function FaqPage() {
 
   return (
     <>
-      <AppHeader title="FAQ" subtitle="Frequently asked questions" />
+      <AppHeader title={t("faq")} subtitle={t("faqSubtitle")} />
       <div className="mx-auto max-w-3xl px-5 py-6">
         <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search questions..."
+            placeholder={t("faqSearchPlaceholder")}
             className="pl-9"
           />
         </div>
@@ -122,7 +122,7 @@ function FaqPage() {
           ))}
           {filtered.length === 0 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No questions match your search. Try a different term.
+              {t("faqNoResults")}
             </p>
           )}
         </div>

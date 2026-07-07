@@ -94,6 +94,7 @@ function StackedBar({
   primaryPct: number;
   differentials: PossibleCondition[];
 }) {
+  const { t } = useI18n();
   const all = [{ name: primary, probability: primaryPct }, ...differentials];
   const total = all.reduce((s, c) => s + c.probability, 0);
   if (total === 0) return null;
@@ -106,14 +107,14 @@ function StackedBar({
 
   const remaining = segments.reduce((s, seg) => s - seg.pct, 100);
   if (remaining > 0) {
-    segments.push({ name: "Other", pct: remaining, color: "bg-muted" });
+    segments.push({ name: t("other"), pct: remaining, color: "bg-muted" });
   }
 
   return (
     <div
       className="mt-3 flex h-6 w-full overflow-hidden rounded-lg"
       role="img"
-      aria-label={`Stacked bar: ${segments.map((s) => `${s.name} ${Math.round(s.pct)}%`).join(", ")}`}
+      aria-label={`${t("stackedBar")}: ${segments.map((s) => `${s.name} ${Math.round(s.pct)}%`).join(", ")}`}
     >
       {segments.map((s, i) => (
         <div
@@ -469,7 +470,7 @@ export function AssessmentResult({
             </div>
             {result.icd10_code && (
               <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-                ICD-10: {result.icd10_code}
+                {t("icd10")}: {result.icd10_code}
               </p>
             )}
             {result.presentation_type && result.presentation_type !== "dermatology" && (
@@ -519,7 +520,7 @@ export function AssessmentResult({
           {typeof result.confidence !== 'number' && result.confidence?.confidence_interval && (
             <div className="mt-3 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Range (95% CI)</span>
+                <span className="text-muted-foreground">{t("range95ci")}</span>
                 <span className="font-mono text-xs">
                   {Math.round(result.confidence.confidence_interval[0])}% - {Math.round(result.confidence.confidence_interval[1])}%
                 </span>
@@ -544,10 +545,10 @@ export function AssessmentResult({
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {(result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) > 30 
-                    ? "High Uncertainty" 
+                    ? t("highUncertainty")
                     : (result.confidence.confidence_interval[1] - result.confidence.confidence_interval[0]) > 15 
-                      ? "Moderate Uncertainty" 
-                      : "Low Uncertainty"}
+                      ? t("moderateUncertainty")
+                      : t("lowUncertainty")}
                 </span>
               </div>
               
@@ -561,12 +562,12 @@ export function AssessmentResult({
                 }`}>
                   <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                     <Info className="h-3 w-3" />
-                    <span>Uncertainty Factor: {
+                    <span>{t("uncertaintyFactor")}: {
                       result.confidence.uncertainty_source === "image_quality" 
-                        ? "Image Quality" 
+                        ? t("uncertaintyImageQuality")
                         : result.confidence.uncertainty_source === "model_knowledge" 
-                          ? "Model Knowledge" 
-                          : "Multiple Factors"
+                          ? t("uncertaintyModelKnowledge")
+                          : t("uncertaintyMultipleFactors")
                     }</span>
                   </div>
                   <p className="text-xs text-muted-foreground/80">

@@ -78,7 +78,7 @@ function ConsultationRequestPage() {
       toast.success(t("consultationSent"));
       navigate({ to: "/consultations" });
     } catch {
-      toast.error("Failed to send consultation request");
+      toast.error(t("failedToSendConsultation"));
     } finally {
       setSaving(false);
     }

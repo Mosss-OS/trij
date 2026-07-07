@@ -133,14 +133,14 @@ function ClinicianConsultationDetailPage() {
       .update({ status, version: newVersion })
       .eq("id", id);
     if (error) {
-      toast.error("Failed to update status");
+      toast.error(t("failedToUpdateStatus"));
     } else {
       await getDB().consultations.put({
         ...toConsultationRequest(consultation),
         status: status as ConsultationRequest["status"],
         version: newVersion,
       });
-      toast.success(t("clinicianStatusUpdated") || "Status updated");
+      toast.success(t("clinicianStatusUpdated"));
       loadConsultation();
     }
     setSaving(false);
@@ -171,7 +171,7 @@ function ClinicianConsultationDetailPage() {
       })
       .eq("id", id);
     if (error) {
-      toast.error("Failed to submit response");
+      toast.error(t("failedToSubmitResponse"));
     } else {
       await getDB().consultations.put({
         ...toConsultationRequest(consultation),
@@ -180,7 +180,7 @@ function ClinicianConsultationDetailPage() {
         respondedAt: now,
         version: newVersion,
       });
-      toast.success(t("clinicianResponseSaved") || "Response saved");
+      toast.success(t("clinicianResponseSaved"));
       loadConsultation();
     }
     setSaving(false);

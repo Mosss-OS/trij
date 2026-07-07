@@ -77,22 +77,22 @@ export function AiFailureOverlay({
   const handleManualSubmit = () => {
     setSubmitting(true);
     const result: TriageResult = {
-      condition: manualCondition || "Unspecified condition",
+      condition: manualCondition || t("unspecifiedCondition"),
       confidence: {
         confidence_point: 0,
         confidence_interval: [0, 0] as [number, number],
         uncertainty_source: "model_knowledge",
-        uncertainty_reason: "Manual override",
+        uncertainty_reason: t("manualOverride"),
       },
       urgency: manualUrgency,
       possible_conditions: manualCondition ? [{ name: manualCondition, probability: 100 }] : [],
       key_visual_features: [],
       recommendation:
         manualUrgency === "red"
-          ? "Immediate referral required."
+          ? t("immediateReferral")
           : manualUrgency === "yellow"
-            ? "Refer to clinic within 24 hours."
-            : "Home care with monitoring. Refer if symptoms worsen.",
+            ? t("referClinic24h")
+            : t("homeCareMonitor"),
       referral_advised: manualUrgency !== "green",
       follow_up_questions: [],
     };
@@ -164,7 +164,7 @@ export function AiFailureOverlay({
                       variant="outline"
                       size="icon"
                       onClick={async () => {
-                        const val = await voice.ask("Say red for emergency, yellow for referral, or green for home care");
+                        const val = await voice.ask(t("voiceUrgencyPrompt"));
                         if (val) {
                           const u = val.trim().toLowerCase();
                           if (u === "red") setManualUrgency("red");
@@ -193,7 +193,7 @@ export function AiFailureOverlay({
                           : "border-border text-muted-foreground hover:border-foreground/30"
                       }`}
                     >
-                      {u === "red" ? "Red" : u === "yellow" ? "Yellow" : "Green"}
+                      {u === "red" ? t("triageResultEmergency") : u === "yellow" ? t("triageResultClinic") : t("triageResultWait")}
                     </button>
                   ))}
                 </div>
@@ -209,7 +209,7 @@ export function AiFailureOverlay({
                       variant="outline"
                       size="icon"
                       onClick={async () => {
-                        const val = await voice.ask("Say the suspected condition");
+                        const val = await voice.ask(t("voiceConditionPrompt"));
                         if (val) setManualCondition(val.trim());
                       }}
                       disabled={voice.listening}
@@ -223,7 +223,7 @@ export function AiFailureOverlay({
                   onChange={(e) => setManualCondition(e.target.value)}
                   className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 >
-                  <option value="">Select condition...</option>
+                  <option value="">{t("selectCondition")}</option>
                   {MANUAL_CONDITIONS.map((c) => (
                     <option key={c} value={c}>
                       {c}
@@ -247,7 +247,7 @@ export function AiFailureOverlay({
                 {t("manualSubmit")}
               </Button>
               <Button variant="ghost" onClick={() => setShowManual(false)} className="w-full">
-                {t("cancel") || "Cancel"}
+                {t("cancel")}
               </Button>
             </div>
           </>

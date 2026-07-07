@@ -70,12 +70,12 @@ export function CameraCapture({ onCapture, onCancel, onSource }: Props) {
         const err = e as DOMException;
         const msg =
           err.name === "NotAllowedError"
-            ? "Camera permission denied. Allow camera access or upload from gallery."
+            ? t("cameraPermissionDenied")
             : err.name === "NotFoundError"
-              ? "No camera found on this device."
+              ? t("cameraNotFound")
               : err.name === "NotReadableError"
-                ? "Camera is in use by another app."
-                : err.message || "Could not open camera.";
+                ? t("cameraInUse")
+                : err.message || t("cameraCouldNotOpen");
         setError(msg);
       }
     };

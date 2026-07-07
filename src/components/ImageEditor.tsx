@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { RotateCw, RotateCcw, Check, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
 
 interface Props {
   image: string;
@@ -20,6 +21,7 @@ interface CropRect {
 const MIN_CROP = 10;
 
 export function ImageEditor({ image, onConfirm, onRetake }: Props) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [rotation, setRotation] = useState(0);
@@ -199,7 +201,7 @@ export function ImageEditor({ image, onConfirm, onRetake }: Props) {
         <img
           ref={imgRef}
           src={image}
-          alt="Medical image preview for cropping before AI analysis"
+          alt={t("medicalImagePreview")}
           onLoad={initCrop}
           className="block w-full select-none"
           draggable={false}
@@ -267,22 +269,22 @@ export function ImageEditor({ image, onConfirm, onRetake }: Props) {
           variant="outline"
           size="icon"
           onClick={() => rotate(-1)}
-          title="Rotate counter-clockwise"
+          title={t("rotateCounterClockwise")}
         >
           <RotateCcw className="h-4 w-4" />
         </Button>
         <span className="min-w-[4rem] text-center text-xs text-muted-foreground">{rotation}°</span>
-        <Button variant="outline" size="icon" onClick={() => rotate(1)} title="Rotate clockwise">
+        <Button variant="outline" size="icon" onClick={() => rotate(1)} title={t("rotateClockwise")}>
           <RotateCw className="h-4 w-4" />
         </Button>
       </div>
 
       <div className="flex items-center justify-center gap-3">
         <Button variant="ghost" onClick={onRetake} className="gap-2">
-          <Undo2 className="h-4 w-4" /> Retake
+          <Undo2 className="h-4 w-4" /> {t("retake")}
         </Button>
         <Button onClick={handleConfirm} className="gap-2">
-          <Check className="h-4 w-4" /> Use this crop
+          <Check className="h-4 w-4" /> {t("useThisCrop")}
         </Button>
       </div>
     </div>

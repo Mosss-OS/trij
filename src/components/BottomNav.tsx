@@ -57,7 +57,7 @@ export function BottomNav() {
         <div className="flex h-full flex-col">
           <div className="border-b p-6">
             <h2 className="text-lg font-bold text-foreground">Trij</h2>
-            <p className="text-xs text-muted-foreground">Medical Triage System</p>
+            <p className="text-xs text-muted-foreground">{t("medicalTriageSystem")}</p>
           </div>
           <nav className="flex-1 space-y-1 p-4">
             {items.map(({ to, labelKey, icon: Icon, pictogramIcon: PictogramIcon }) => {
@@ -96,7 +96,7 @@ export function BottomNav() {
 
       {/* Mobile Bottom Navigation */}
       <nav
-        aria-label="Main navigation"
+        aria-label={t("mainNavigation")}
         className={`lg:hidden fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 backdrop-blur safe-area-bottom ${kioskMode || fieldMode ? "pb-2 pt-1" : ""}`}
       >
         <div className={`mx-auto grid max-w-4xl ${fieldMode ? "grid-cols-3" : "grid-cols-5"}`}>

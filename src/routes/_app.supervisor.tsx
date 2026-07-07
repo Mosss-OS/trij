@@ -396,7 +396,7 @@ function Supervisor() {
 
     const settings = useSettingsStore.getState();
     if (!settings.dhis2BaseUrl || !settings.dhis2Username || !settings.dhis2Password) {
-      toast.error("Configure DHIS2 credentials in Settings first");
+      toast.error(t("configureDhis2First"));
       return;
     }
 

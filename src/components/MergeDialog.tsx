@@ -87,9 +87,9 @@ export function MergeDialog({ match, open, onOpenChange, onMerged }: Props) {
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={busy}>{t("cancel")}</AlertDialogCancel>
           <AlertDialogAction onClick={handleMerge} disabled={busy}>
-            {busy ? "Merging..." : "Merge"}
+            {busy ? t("merging") : t("merge")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -106,6 +106,7 @@ function PatientCard({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
@@ -117,13 +118,13 @@ function PatientCard({
       }`}
     >
       <div className="flex items-center justify-between">
-        <p className="font-medium text-sm">{patient.identifier || "Unknown"}</p>
-        {selected && <span className="text-xs font-medium text-primary">Keep</span>}
+        <p className="font-medium text-sm">{patient.identifier || t("unknown")}</p>
+        {selected && <span className="text-xs font-medium text-primary">{t("keep")}</span>}
       </div>
       <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-        <p>Age: {patient.ageYears ?? "?"}</p>
-        <p>Sex: {patient.sex ?? "?"}</p>
-        <p>Created: {new Date(patient.createdAt).toLocaleDateString()}</p>
+        <p>{t("age")}: {patient.ageYears ?? "?"}</p>
+        <p>{t("sex")}: {patient.sex ?? "?"}</p>
+        <p>{t("created")}: {new Date(patient.createdAt).toLocaleDateString()}</p>
       </div>
     </button>
   );

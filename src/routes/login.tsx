@@ -150,7 +150,7 @@ function LoginPage() {
         options: { emailRedirectTo: `${window.location.origin}/dashboard` },
       });
       if (error) throw error;
-      toast.success("Verification email sent. Check your inbox.");
+      toast.success(t("verificationEmailSent"));
       setResendCooldown(30);
     } catch (err) {
       toast.error((err as Error).message);
@@ -607,13 +607,12 @@ function LoginPage() {
           <div className="mt-12 flex items-center gap-3">
             <MailCheck className="h-8 w-8 text-primary" />
             <h1 className="font-display text-2xl font-bold leading-tight tracking-tight">
-              Verify your email
+              {t("verifyEmail")}
             </h1>
           </div>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            We sent a verification link to{" "}
-            <span className="font-medium text-foreground">{awaitingVerification}</span>. Click the
-            link in the email to activate your account, then sign in.
+            {t("weSentVerificationLink")}{" "}
+            <span className="font-medium text-foreground">{awaitingVerification}</span>. {t("clickLinkToActivate")}
           </p>
 
           <div className="mt-10 space-y-3 rounded-3xl border bg-card p-6 shadow-sm">
@@ -626,8 +625,8 @@ function LoginPage() {
             >
               {resending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {resendCooldown > 0
-                ? `Resend verification email (${resendCooldown}s)`
-                : "Resend verification email"}
+                ? `${t("resendVerificationEmail")} (${resendCooldown}s)`
+                : t("resendVerificationEmail")}
             </Button>
             <Button
               type="button"
@@ -639,7 +638,7 @@ function LoginPage() {
               className="w-full"
               size="lg"
             >
-              Back to sign in
+              {t("backToSignIn")}
             </Button>
           </div>
 
@@ -691,7 +690,7 @@ function LoginPage() {
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="A. Patel"
+                  placeholder={t("namePlaceholder")}
                   required
                 />
               </div>
@@ -728,7 +727,7 @@ function LoginPage() {
               {signupRole === "chw" && (
               <div className="space-y-1.5">
                 <Label htmlFor="supervisor-code">
-                  {t("supervisorCode")} <span className="text-xs text-muted-foreground">(optional)</span>
+                  {t("supervisorCode")} <span className="text-xs text-muted-foreground">({t("optional")})</span>
                 </Label>
                 <div className="relative">
                   <Input
@@ -739,7 +738,7 @@ function LoginPage() {
                       setCodeValid(null);
                       setSupervisorName("");
                     }}
-                    placeholder="e.g. ABC3X7K2"
+                    placeholder={t("supervisorCodePlaceholder")}
                     className={
                       codeValid === true
                         ? "pr-10"
@@ -764,10 +763,10 @@ function LoginPage() {
                   )}
                 </div>
                 {supervisorName && codeValid && (
-                  <p className="text-xs text-emerald-600">Linked to {supervisorName}</p>
+                  <p className="text-xs text-emerald-600">{t("linkedToSupervisor").replace("{name}", supervisorName)}</p>
                 )}
                 {codeValid === false && (
-                  <p className="text-xs text-destructive">Code not found or already used</p>
+                  <p className="text-xs text-destructive">{t("supervisorCodeNotFound")}</p>
                 )}
                 <p className="text-xs text-muted-foreground">
                   {t("supervisorCodeDesc")}

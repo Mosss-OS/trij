@@ -30,7 +30,7 @@ export function RedFlagAlert({ redFlagResult, onDismiss, onContinueToFacility }:
           <button
             onClick={onDismiss}
             className="text-white hover:text-red-200 transition-colors"
-            aria-label="Dismiss alert"
+            aria-label={t("dismissAlert")}
           >
             <X className="h-6 w-6" />
           </button>

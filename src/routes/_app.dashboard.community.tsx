@@ -14,11 +14,13 @@ import {
   MapPin,
 } from "lucide-react";
 import { getDB } from "@/lib/db";
+import { supabase } from "@/integrations/supabase/client";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
 export const Route = createFileRoute("/_app/dashboard/community")({
   component: CommunityDashboardPage,
   head: () => ({
-    meta: [{ title: "Community Health" }],
+    meta: [{ title: "Community Health — Trij" }],
   }),
 });
 
@@ -31,6 +33,7 @@ interface Report {
   condition: string;
   ageYears?: number;
   date: string;
+  chwName?: string;
 }
 
 function getUrgencyColor(u: string): string {
@@ -94,6 +97,7 @@ function MarkerCluster({ reports }: { reports: Report[] }) {
             Urgency: <strong>${r.urgency.toUpperCase()}</strong>
           </div>
           <div style="color:#888;font-size:11px;margin-top:2px;">Age: ${r.ageYears ?? "?"}</div>
+          ${r.chwName ? `<div style="color:#888;font-size:11px;margin-top:2px;">CHW: ${r.chwName}</div>` : ""}
         </div>
       `);
       mcg.addLayer(m);
@@ -107,12 +111,14 @@ function MarkerCluster({ reports }: { reports: Report[] }) {
 function CommunityDashboardPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const online = useOnlineStatus();
   const [mounted, setMounted] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterUrgency, setFilterUrgency] = useState<string>("all");
   const [filterSymptom, setFilterSymptom] = useState<string>("all");
   const [filterDays, setFilterDays] = useState<number>(90);
+  const [serverCount, setServerCount] = useState(0);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -139,7 +145,7 @@ function CommunityDashboardPage() {
               lat: p.locationLat!,
               lng: p.locationLng!,
               urgency: a.urgency ?? "green",
-              condition: a.condition ?? "Unknown",
+              condition: a.condition ?? t("unknown"),
               ageYears: p.ageYears,
               date: a.createdAt,
             };
@@ -152,7 +158,54 @@ function CommunityDashboardPage() {
       }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [t]);
+
+  useEffect(() => {
+    if (!online) { setServerCount(0); return; }
+    let alive = true;
+    (async () => {
+      const { data, error } = await supabase
+        .from("assessments")
+        .select("id, condition, urgency, chw_user_id, created_at, patients!inner(id, location_lat, location_lng, age_years)")
+        .not("patients.location_lat", "is", null)
+        .not("patients.location_lng", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (error) { console.debug("Community: supabase fetch error", error); return; }
+      if (!alive) return;
+      if (!data || data.length === 0) return;
+
+      const { data: profiles } = await supabase
+        .from("chw_profiles")
+        .select("user_id, name");
+      const nameMap = new Map<string, string>();
+      if (profiles) profiles.forEach(p => nameMap.set(p.user_id, p.name));
+
+      const serverReports: Report[] = data
+        .filter((r: Record<string, unknown>) => {
+          const p = r.patients as Record<string, unknown> | undefined;
+          return p && p.location_lat != null && p.location_lng != null;
+        })
+        .map((r: Record<string, unknown>) => {
+          const p = r.patients as Record<string, unknown>;
+          return {
+            id: r.id as string,
+            patientId: p.id as string,
+            lat: Number(p.location_lat),
+            lng: Number(p.location_lng),
+            urgency: (r.urgency as "red" | "yellow" | "green") || "green",
+            condition: (r.condition as string) || t("unknown"),
+            ageYears: p.age_years ? Number(p.age_years) : undefined,
+            date: r.created_at as string,
+            chwName: nameMap.get(r.chw_user_id as string),
+          };
+        });
+
+      setServerCount(serverReports.length);
+      setReports(serverReports);
+    })();
+    return () => { alive = false; };
+  }, [online, t]);
 
   const allConditions = useMemo(() => {
     const set = new Set<string>();
@@ -204,20 +257,23 @@ function CommunityDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
-      <AppHeader title="Community Health" subtitle="Anonymized public health data" />
+      <AppHeader title={t("communityHealth")} subtitle={t("anonymizedPublicHealthData")} />
 
       <div className="mx-auto max-w-4xl px-4 py-4">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <p className="text-emerald-600">{t("loading") || "Loading..."}</p>
+            <p className="text-emerald-600">{t("loading")}</p>
           </div>
         ) : (
           <>
+            {serverCount > 0 && (
+              <p className="mb-2 text-xs text-emerald-500">{t("dataSource")}: {t("fromServer")} ({serverCount} {t("reports").toLowerCase()})</p>
+            )}
             <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm">
                 <Activity className="mb-1 h-5 w-5 text-emerald-500" />
                 <p className="text-2xl font-bold text-emerald-900">{stats.total}</p>
-                <p className="text-xs text-emerald-600">{t("totalReports") || "Total reports"}</p>
+                <p className="text-xs text-emerald-600">{t("totalReports")}</p>
               </div>
               <div className="rounded-2xl border border-red-200 bg-white p-4 shadow-sm">
                 <AlertTriangle className="mb-1 h-5 w-5 text-red-500" />
@@ -232,21 +288,21 @@ function CommunityDashboardPage() {
               <div className="rounded-2xl border border-green-200 bg-white p-4 shadow-sm">
                 <MapPin className="mb-1 h-5 w-5 text-green-500" />
                 <p className="text-2xl font-bold text-green-900">{stats.green}</p>
-                <p className="text-xs text-green-600">{t("routine") || "Minor"}</p>
+                <p className="text-xs text-green-600">{t("minor")}</p>
               </div>
             </div>
 
             <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div className="rounded-xl border border-emerald-200 bg-white/70 p-3 text-center">
-                <p className="text-xs text-emerald-600">{t("common") || "Most common"}</p>
+                <p className="text-xs text-emerald-600">{t("mostCommon")}</p>
                 <p className="text-sm font-bold text-emerald-900">{stats.topCondition}</p>
               </div>
               <div className="rounded-xl border border-emerald-200 bg-white/70 p-3 text-center">
-                <p className="text-xs text-emerald-600">{t("patients") || "Patients"}</p>
+                <p className="text-xs text-emerald-600">{t("patients")}</p>
                 <p className="text-sm font-bold text-emerald-900">{stats.patients}</p>
               </div>
               <div className="rounded-xl border border-emerald-200 bg-white/70 p-3 text-center">
-                <p className="text-xs text-emerald-600">{t("weeksTracked") || "Period"}</p>
+                <p className="text-xs text-emerald-600">{t("weeksTracked")}</p>
                 <p className="text-sm font-bold text-emerald-900">{filterDays} {t("days")}</p>
               </div>
               <Button
@@ -255,7 +311,7 @@ function CommunityDashboardPage() {
                 className="flex items-center justify-center gap-1 rounded-xl border-emerald-300 text-emerald-700"
               >
                 <Download className="h-4 w-4" />
-                CSV
+                {t("csvExport")}
               </Button>
             </div>
 
@@ -265,7 +321,7 @@ function CommunityDashboardPage() {
                 onChange={(e) => setFilterUrgency(e.target.value)}
                 className="rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs text-emerald-800"
               >
-                <option value="all">{t("all") || "All urgency"}</option>
+                <option value="all">{t("allUrgency")}</option>
                 <option value="red">{t("triageResultEmergency")}</option>
                 <option value="yellow">{t("triageResultClinic")}</option>
                 <option value="green">{t("triageResultWait")}</option>
@@ -275,12 +331,12 @@ function CommunityDashboardPage() {
                 onChange={(e) => setFilterSymptom(e.target.value)}
                 className="rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs text-emerald-800"
               >
-                <option value="all">{t("all") || "All conditions"}</option>
+                <option value="all">{t("allConditions")}</option>
                 {allConditions.length > 0
                   ? allConditions.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))
-                  : <option disabled>No data</option>
+                  : <option disabled>{t("noData")}</option>
                 }
               </select>
               <select
@@ -311,10 +367,10 @@ function CommunityDashboardPage() {
 
             <div className="mt-4 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm">
               <h3 className="mb-2 font-semibold text-emerald-800">
-                {t("report") || "About this data"}
+                {t("aboutThisData")}
               </h3>
               <p className="text-sm text-emerald-600">
-                {t("anonymized") || "Data shown is anonymized and aggregated from opt-in triage reports. No personally identifiable information is stored. The heatmap helps identify disease hotspots and emerging public health trends across Nigeria."}
+                {t("anonymized")}
               </p>
             </div>
           </>

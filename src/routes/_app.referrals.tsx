@@ -130,9 +130,9 @@ function ReferralsPage() {
             : a,
         ),
       );
-      toast.success(`Referral marked as ${status}`);
+      toast.success(t("referralMarkedAs").replace("{status}", status));
     } catch {
-      toast.error("Failed to update referral status");
+      toast.error(t("failedToUpdateReferralStatus"));
     } finally {
       if (reqSeq.current.get(assessmentId) === seq) setSyncingId(null);
     }

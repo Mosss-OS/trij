@@ -48,7 +48,7 @@ export function DisclaimerDialog({ voice }: { voice?: { active: boolean; listeni
               id="chw-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="A. Patel"
+              placeholder={t("namePlaceholder")}
             />
           </div>
 

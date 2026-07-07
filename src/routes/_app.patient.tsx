@@ -43,21 +43,6 @@ type Step =
   | "step-5"
   | "result";
 
-const AGE_RANGES = [
-  { value: "0-2", label: "Baby (0-2 years)", icon: Baby },
-  { value: "3-12", label: "Child (3-12 years)", icon: GraduationCap },
-  { value: "13-17", label: "Teen (13-17 years)", icon: User },
-  { value: "18-60", label: "Adult (18-60 years)", icon: User },
-  { value: "60+", label: "Elder (60+ years)", icon: Users },
-];
-
-const DURATIONS = [
-  { value: "just-started", label: "Just started (today)" },
-  { value: "1-2-days", label: "1-2 days" },
-  { value: "3-7-days", label: "3-7 days" },
-  { value: "more-than-week", label: "More than a week" },
-];
-
 const CHIP_SYMPTOMS = [
   "Fever",
   "Cough",
@@ -80,6 +65,22 @@ const CHIP_SYMPTOMS = [
 function PatientPortalPage() {
   const { t, language } = useI18n();
   const navigate = useNavigate();
+
+  const AGE_RANGES = [
+    { value: "0-2", label: t("ageRangeBaby"), icon: Baby },
+    { value: "3-12", label: t("ageRangeChild"), icon: GraduationCap },
+    { value: "13-17", label: t("ageRangeTeen"), icon: User },
+    { value: "18-60", label: t("ageRangeAdult"), icon: User },
+    { value: "60+", label: t("ageRangeElder"), icon: Users },
+  ];
+
+  const DURATIONS = [
+    { value: "just-started", label: t("durationJustStarted") },
+    { value: "1-2-days", label: t("duration1to2Days") },
+    { value: "3-7-days", label: t("duration3to7Days") },
+    { value: "more-than-week", label: t("durationMoreThanWeek") },
+  ];
+
   const [step, setStep] = useState<Step>("landing");
   const [stepIndex, setStepIndex] = useState(1);
   const [whoFor, setWhoFor] = useState<"self" | "someone-else" | null>(null);
@@ -117,10 +118,10 @@ function PatientPortalPage() {
   const getFullDescription = () => {
     const parts = [symptoms];
     if (additionalSymptoms.length > 0) {
-      parts.push("Also experiencing: " + additionalSymptoms.join(", "));
+      parts.push(t("alsoExperiencing") + " " + additionalSymptoms.join(", "));
     }
     const whoDesc =
-      whoFor === "someone-else" ? " (for someone else / a dependent)" : " (for myself)";
+      whoFor === "someone-else" ? " " + t("forDependent") : " " + t("forMyself");
     return parts.join(". ") + whoDesc;
   };
 
@@ -171,10 +172,10 @@ function PatientPortalPage() {
         <div className="text-center">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-amber-600" />
           <p className="mt-4 text-lg font-medium text-amber-800">
-            Analyzing your symptoms...
+            {t("analyzingSymptoms")}
           </p>
           <p className="mt-2 text-sm text-amber-600">
-            This will just take a moment
+            {t("moment")}
           </p>
         </div>
       </div>
@@ -220,7 +221,7 @@ function PatientPortalPage() {
               className="mb-6 h-14 w-full rounded-2xl border-amber-300 text-base font-bold text-amber-700 hover:bg-amber-100"
             >
               <QrCode className="mr-2 h-5 w-5" />
-              {t("qrScanTitle") || "Scan Patient Card"}
+              {t("qrScanTitle")}
             </Button>
 
             <div className="mb-8 rounded-2xl border border-amber-200 bg-white p-4 shadow-sm">
@@ -378,7 +379,7 @@ function PatientPortalPage() {
         {step === "step-1" && (
           <div>
             <h2 className="mb-6 text-2xl font-bold text-amber-900">
-              Who is this for?
+              {t("whoIsThisFor")}
             </h2>
             <div className="space-y-4">
               <button
@@ -389,7 +390,7 @@ function PatientPortalPage() {
                 className="flex h-20 w-full items-center gap-4 rounded-2xl border-2 border-amber-200 bg-white px-6 text-left text-lg font-medium text-amber-900 shadow-sm transition-all hover:border-amber-400 hover:shadow-md"
               >
                 <User className="h-8 w-8 text-amber-500" />
-                Myself
+                {t("myself")}
               </button>
               <button
                 onClick={() => {
@@ -399,7 +400,7 @@ function PatientPortalPage() {
                 className="flex h-20 w-full items-center gap-4 rounded-2xl border-2 border-amber-200 bg-white px-6 text-left text-lg font-medium text-amber-900 shadow-sm transition-all hover:border-amber-400 hover:shadow-md"
               >
                 <Users className="h-8 w-8 text-amber-500" />
-                Someone else
+                {t("someoneElse")}
               </button>
             </div>
           </div>
@@ -408,7 +409,7 @@ function PatientPortalPage() {
         {step === "step-2" && (
           <div>
             <h2 className="mb-6 text-2xl font-bold text-amber-900">
-              What is their age range?
+              {t("ageRangeQuestion")}
             </h2>
             <div className="space-y-3">
               {AGE_RANGES.map((range) => (
@@ -439,7 +440,7 @@ function PatientPortalPage() {
               {t("triageDescribeSymptoms")}
             </h2>
             <p className="mb-4 text-sm text-amber-600">
-              Tell us what you are feeling or what is wrong
+              {t("describeSymptomsHint")}
             </p>
 
             <div className="mb-4 flex flex-wrap gap-2">
@@ -461,7 +462,7 @@ function PatientPortalPage() {
             <textarea
               value={symptoms}
               onChange={(e) => setSymptoms(e.target.value)}
-              placeholder="Describe your symptoms in detail... (e.g., I have a fever and my head hurts)"
+              placeholder={t("symptomsPlaceholder")}
               className="min-h-[140px] w-full resize-none rounded-2xl border-2 border-amber-200 bg-white p-4 text-base text-amber-900 placeholder:text-amber-400 focus:border-amber-500 focus:outline-none"
             />
 
@@ -471,7 +472,7 @@ function PatientPortalPage() {
                 disabled={!symptoms.trim()}
                 className="h-14 w-full rounded-2xl bg-amber-600 text-base font-bold text-white hover:bg-amber-700 disabled:opacity-50"
               >
-                {t("next") || "Next"}
+                {t("next")}
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
@@ -481,7 +482,7 @@ function PatientPortalPage() {
         {step === "step-4" && (
           <div>
             <h2 className="mb-6 text-2xl font-bold text-amber-900">
-              How long have you had these symptoms?
+              {t("durationQuestion")}
             </h2>
             <div className="space-y-3">
               {DURATIONS.map((d) => (
@@ -509,10 +510,10 @@ function PatientPortalPage() {
         {step === "step-5" && (
           <div>
             <h2 className="mb-2 text-2xl font-bold text-amber-900">
-              Any additional symptoms?
+              {t("additionalSymptoms")}
             </h2>
             <p className="mb-4 text-sm text-amber-600">
-              Select any other symptoms you are experiencing (optional)
+              {t("additionalSymptomsHint")}
             </p>
 
             <div className="mb-6 flex flex-wrap gap-2">
@@ -547,11 +548,11 @@ function PatientPortalPage() {
               <p className="mt-1 text-sm text-gray-600">
                 <strong>{t("duration")}:</strong>{" "}
                 {DURATIONS.find((d) => d.value === duration)?.label ||
-                  "Just started"}
+                  t("justStarted")}
               </p>
               <p className="mt-1 text-sm text-gray-600">
                 <strong>{t("patient")}:</strong>{" "}
-                {whoFor === "self" ? "Myself" : "Someone else"}{" "}
+                                {whoFor === "self" ? t("myself") : t("someoneElse")} {" "}
                 {ageRange &&
                   `(${AGE_RANGES.find((a) => a.value === ageRange)?.label})`}
               </p>

@@ -220,12 +220,12 @@ function SettingsPage() {
           ...prev,
         ]);
         navigator.clipboard?.writeText(data.code);
-        toast.success(`Code ${data.code} generated and copied!`);
+        toast.success(t("codeGeneratedCopied").replace("{code}", data.code));
       } else {
-        toast.error(data.error ?? "Failed to generate code");
+        toast.error(data.error ?? t("failedToGenerateCode"));
       }
     } catch {
-      toast.error("Failed to generate code");
+      toast.error(t("failedToGenerateCode"));
     } finally {
       setGenBusy(false);
     }
