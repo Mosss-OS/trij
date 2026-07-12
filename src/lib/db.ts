@@ -147,6 +147,21 @@ export class TrijDB extends Dexie {
       deadLetterQueue: "++id, table, recordId, movedAt",
       consultations: "id, patientId, chwUserId, status, priority, createdAt, syncedAt",
     });
+    this.version(11).stores({
+      patients: "id, chwUserId, identifier, createdAt, syncedAt",
+      assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
+      followUps: "id, patientId, chwUserId, status, scheduledFor, createdAt, syncedAt",
+      syncQueue: "++id, table, action, recordId, createdAt",
+      errorLogs: "++id, timestamp",
+      pinAuth: "userId, email",
+      voiceDrafts: "patientId, chwUserId, updatedAt",
+      syncConflicts: "++id, table, recordId, createdAt",
+      notifications: "id, kind, read, createdAt",
+      auditLogs: "++id, action, userId, patientId, resourceType, timestamp, synced",
+      deadLetterQueue: "++id, table, recordId, movedAt",
+      consultations: "id, patientId, chwUserId, status, priority, createdAt, syncedAt",
+      roadGraphs: "++id, graphId, region, boundsSouth, boundsNorth, boundsWest, boundsEast",
+    });
   }
 }
 

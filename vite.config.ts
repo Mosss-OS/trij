@@ -7,5 +7,10 @@ export default defineConfig({
   },
   vite: {
     server: { port: 5173, strictPort: true },
+    build: {
+      rollupOptions: {
+        external: ["graphhopper-js-api-client", "osrm"],
+      },
+    },
   },
 });

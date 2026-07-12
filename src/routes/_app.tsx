@@ -15,6 +15,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { Loader2, ShieldAlert, X, Beaker } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { NavigationPanel } from "@/components/NavigationPanel";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -163,6 +164,7 @@ function AppLayout() {
         <Outlet />
       </main>
       <SyncStatusIndicator />
+      <NavigationPanel />
       <BottomNav />
     </div>
     </>
