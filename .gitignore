@@ -42,3 +42,4 @@ docs/bias-audit/env/
 docs/bias-audit/scripts/__pycache__/
 .env.vercel
 trij-extension-dev-prompt.md
+Fitzpatrick17k_CategorizedAbbrvs.zip
