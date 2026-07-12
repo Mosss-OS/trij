@@ -1,28 +1,29 @@
 {
-  "timestamp": "2026-06-11T23:25:55Z",
-  "total_samples": 4872,
-  "simulated": false,
+  "timestamp": "2026-07-08T00:11:00Z",
+  "total_samples": 16012,
+  "simulated": true,
+  "dataset": "fitzpatrick17k",
   "metrics": {
     "accuracy": {
-      "light_mean": 0.9212961413271243,
-      "dark_mean": 0.7933652597215524,
-      "gap": 0.12793088160557198
+      "light_mean": 0.9192815093834673,
+      "dark_mean": 0.796202700689811,
+      "gap": 0.12307880869365628
     },
     "sensitivity": {
-      "light_mean": 0.46064807066356217,
-      "dark_mean": 0.3966826298607762,
-      "gap": 0.06396544080278599
+      "light_mean": 0.9154484705920602,
+      "dark_mean": 0.8050658200198199,
+      "gap": 0.11038265057224039
     },
     "specificity": {
-      "light_mean": 0.46064807066356217,
-      "dark_mean": 0.3966826298607762,
-      "gap": 0.06396544080278599
+      "light_mean": 0.9992981000815954,
+      "dark_mean": 0.9979649864654299,
+      "gap": 0.0013331136161655044
     },
     "urgency_agreement": {
-      "light_mean": 0.8908621795429683,
-      "dark_mean": 0.9041023049227989,
-      "gap": -0.013240125379830547
+      "light_mean": 0.8972410251661775,
+      "dark_mean": 0.9041352707623875,
+      "gap": -0.006894245596209991
     }
   },
-  "overall_status": "RED - Block deployment"
+  "overall_status": "RED \u2014 Block deployment"
 }

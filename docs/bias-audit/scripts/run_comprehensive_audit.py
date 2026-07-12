@@ -67,11 +67,28 @@ def load_scin():
     return df[['case_id', 'abs_path', 'fitzpatrick_skin_type', 'condition', 'dataset']].dropna(subset=['fitzpatrick_skin_type'])
 
 
+def load_fitzpatrick17k():
+    meta_path = DATA / 'fitzpatrick17k/fitzpatrick17k_metadata.csv'
+    if not meta_path.exists():
+        logger.warning('Fitzpatrick17k metadata not found, skipping')
+        return pd.DataFrame()
+    df = pd.read_csv(meta_path)
+    # Filter to valid FST (1-6), exclude unknown
+    df = df[df['fitzpatrick_skin_type'].between(1, 6)].copy()
+    if len(df) == 0:
+        logger.warning('No Fitzpatrick17k images with valid FST')
+        return pd.DataFrame()
+    df['dataset'] = 'fitzpatrick17k'
+    logger.info(f'Loaded {len(df)} Fitzpatrick17k images')
+    return df[['image_id', 'abs_path', 'fitzpatrick_skin_type', 'condition', 'dataset']]
+
+
 def prepare_dataset(max_per_fst=None):
     mskcc = load_mskcc()
     scin = load_scin()
-    combined = pd.concat([mskcc, scin], ignore_index=True)
-    logger.info(f'Combined dataset: {len(combined)} images (MSKCC: {len(mskcc)}, SCIN: {len(scin)})')
+    fitz = load_fitzpatrick17k()
+    combined = pd.concat([mskcc, scin, fitz], ignore_index=True)
+    logger.info(f'Combined dataset: {len(combined)} images (MSKCC: {len(mskcc)}, SCIN: {len(scin)}, Fitzpatrick17k: {len(fitz)})')
     fst_counts = combined['fitzpatrick_skin_type'].value_counts().sort_index()
     logger.info(f'FST distribution:\n{fst_counts.to_string()}')
     # Stratify: sample up to max_per_fst per FST
