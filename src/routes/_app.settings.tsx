@@ -491,6 +491,32 @@ function SettingsPage() {
           <OllamaSetup voice={voice} />
         </Section>
 
+        <Section title={t("navigationSection")}>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>{t("voiceNavigation")}</Label>
+                <p className="text-xs text-muted-foreground">{t("voiceNavigationDesc")}</p>
+              </div>
+              <Switch checked={s.voiceNavigation ?? true} onCheckedChange={(v) => s.setSetting("voiceNavigation", v)} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>{t("autoReroute")}</Label>
+                <p className="text-xs text-muted-foreground">{t("autoRerouteDesc")}</p>
+              </div>
+              <Switch checked={s.autoReroute ?? true} onCheckedChange={(v) => s.setSetting("autoReroute", v)} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>{t("batterySaver")}</Label>
+                <p className="text-xs text-muted-foreground">{t("batterySaverDesc")}</p>
+              </div>
+              <Switch checked={s.batterySaver ?? false} onCheckedChange={(v) => s.setSetting("batterySaver", v)} />
+            </div>
+          </div>
+        </Section>
+
         <Section title={t("privacy")}>
           <div className="flex items-start gap-3 rounded-2xl border bg-secondary/30 p-4">
             <ShieldCheck className="mt-0.5 h-5 w-5 text-primary" />

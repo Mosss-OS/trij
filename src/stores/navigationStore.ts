@@ -8,6 +8,7 @@ import type { GeoCoords } from "@/lib/geolocation";
 import type { EngineKind } from "@/lib/navigation/routing-engine";
 import type { NavigationStatus } from "@/lib/navigation/offline-nav";
 import type { DirectionStep } from "@/lib/navigation/directions";
+import type { RouteSegment } from "@/lib/navigation/pathfinding";
 import {
   getNavigationManager,
   type NavigationCallbacks,
@@ -28,6 +29,7 @@ interface NavigationStoreState {
   destinationName: string | null;
   destinationCoords: GeoCoords | null;
   isNavigating: boolean;
+  routeSegments: RouteSegment[];
 
   startNavigation: (
     origin: GeoCoords,
@@ -56,6 +58,7 @@ export const useNavigationStore = create<NavigationStoreState>()(
       destinationName: null,
       destinationCoords: null,
       isNavigating: false,
+      routeSegments: [],
 
       startNavigation: async (
         origin: GeoCoords,
@@ -91,6 +94,7 @@ export const useNavigationStore = create<NavigationStoreState>()(
             destinationName: destinationName ?? null,
             destinationCoords: destination,
             isNavigating: true,
+            routeSegments: state.routeSegments,
           });
         } else {
           const state = mgr.getState();
@@ -121,6 +125,7 @@ export const useNavigationStore = create<NavigationStoreState>()(
           destinationName: null,
           destinationCoords: null,
           isNavigating: false,
+          routeSegments: [],
         });
       },
 
@@ -139,6 +144,7 @@ export const useNavigationStore = create<NavigationStoreState>()(
           engine: state.engine,
           error: state.error,
           isNavigating: state.status === "navigating" || state.status === "off_route",
+          routeSegments: state.routeSegments,
         });
       },
     }),

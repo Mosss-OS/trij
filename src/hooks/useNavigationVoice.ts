@@ -18,6 +18,7 @@ export function useNavigationVoice() {
   const currentStepIndex = nav.currentStepIndex;
   const isNavigating = nav.isNavigating;
   const voiceEnabled = useSettingsStore((s) => s.voiceEnabled);
+  const voiceNavigation = useSettingsStore((s) => s.voiceNavigation);
   const voiceSpeed = useSettingsStore((s) => s.voiceSpeed);
   const language = useSettingsStore((s) => s.language);
   const lastSpokenIndex = useRef(-1);
@@ -31,7 +32,7 @@ export function useNavigationVoice() {
 
   const speak = useCallback(
     (text: string) => {
-      if (!voiceEnabled || !synthRef.current) return;
+      if (!voiceEnabled || !voiceNavigation || !synthRef.current) return;
       synthRef.current.cancel();
 
       const utterance = new SpeechSynthesisUtterance(text);
@@ -41,7 +42,7 @@ export function useNavigationVoice() {
       utterance.volume = 1;
       synthRef.current.speak(utterance);
     },
-    [voiceEnabled, voiceSpeed, language],
+    [voiceEnabled, voiceNavigation, voiceSpeed, language],
   );
 
   // Speak new step when it changes

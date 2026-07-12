@@ -36,6 +36,7 @@ export interface NavigationState {
   offRouteDistance: number;
   engine: EngineKind | null;
   error: string | null;
+  routeSegments: import("./pathfinding").RouteSegment[];
 }
 
 export interface NavigationCallbacks {
@@ -53,6 +54,8 @@ const REROUTE_THRESHOLD = 50; // metres off-route before recalculating
 const ARRIVAL_THRESHOLD = 20; // metres from destination to consider arrived
 const POSITION_UPDATE_INTERVAL = 3000; // ms between GPS polls
 const BEARING_WINDOW = 5; // positions to average for bearing calculation
+const BATTERY_SAVER_INTERVAL = 10000; // ms between GPS polls in battery saver mode
+const STATIONARY_THRESHOLD = 5; // metres movement to consider stationary
 
 /* ------------------------------------------------------------------ */
 /*  NavigationManager class                                            */
@@ -72,6 +75,7 @@ export class NavigationManager {
     offRouteDistance: 0,
     engine: null,
     error: null,
+    routeSegments: [],
   };
 
   private watchId: number | null = null;
@@ -80,6 +84,10 @@ export class NavigationManager {
   private routeResult: RoutingResult | null = null;
   private positionHistory: GeoCoords[] = [];
   private lastReroutePos: GeoCoords | null = null;
+  private batterySaver = false;
+  private autoReroute = true;
+  private lastPosition: GeoCoords | null = null;
+  private stationaryCount = 0;
 
   getState(): Readonly<NavigationState> {
     return { ...this.state };
@@ -124,6 +132,7 @@ export class NavigationManager {
       distanceToNextTurn: directions.steps[0]?.distance ?? 0,
       distanceToDestination: directions.totalDistance,
       engine: result.engine,
+      routeSegments: result.route.segments,
     });
 
     this.callbacks.onStepChange?.(0, this.state.steps[0]);
@@ -138,10 +147,27 @@ export class NavigationManager {
 
   stop(): void {
     this.stopGpsTracking();
-    this.updateState({ status: "idle" });
+    this.updateState({ status: "idle", routeSegments: [] });
     this.goal = null;
     this.routeResult = null;
     this.positionHistory = [];
+  }
+
+  /* -------------------------------------------------------------- */
+  /*  Battery saver                                                   */
+  /* -------------------------------------------------------------- */
+
+  setBatterySaver(enabled: boolean): void {
+    this.batterySaver = enabled;
+    // Restart GPS tracking with new settings if currently navigating
+    if (this.state.status === "navigating" || this.state.status === "off_route") {
+      this.stopGpsTracking();
+      this.startGpsTracking();
+    }
+  }
+
+  setAutoReroute(enabled: boolean): void {
+    this.autoReroute = enabled;
   }
 
   /* -------------------------------------------------------------- */
@@ -153,6 +179,9 @@ export class NavigationManager {
       this.updateState({ status: "error", error: "GPS not available on this device" });
       return;
     }
+
+    const highAccuracy = !this.batterySaver;
+    const maxAge = this.batterySaver ? BATTERY_SAVER_INTERVAL : POSITION_UPDATE_INTERVAL;
 
     this.watchId = navigator.geolocation.watchPosition(
       (pos) => {
@@ -167,9 +196,9 @@ export class NavigationManager {
         // GPS error — continue with last known position
       },
       {
-        enableHighAccuracy: true,
+        enableHighAccuracy: highAccuracy,
         timeout: 10_000,
-        maximumAge: POSITION_UPDATE_INTERVAL,
+        maximumAge: maxAge,
       },
     );
   }
@@ -188,6 +217,24 @@ export class NavigationManager {
   private handlePositionUpdate(position: GeoCoords): void {
     if (this.state.status !== "navigating" && this.state.status !== "off_route") return;
     if (!this.goal) return;
+
+    // Battery saver: detect stationary and reduce updates
+    if (this.batterySaver && this.lastPosition) {
+      const moved = haversine(
+        this.lastPosition.lat,
+        this.lastPosition.lng,
+        position.lat,
+        position.lng,
+      );
+      if (moved < STATIONARY_THRESHOLD) {
+        this.stationaryCount++;
+        // If stationary for 3+ updates, skip this update
+        if (this.stationaryCount >= 3) return;
+      } else {
+        this.stationaryCount = 0;
+      }
+    }
+    this.lastPosition = position;
 
     // Track position history for bearing calculation
     this.positionHistory.push(position);
@@ -215,7 +262,7 @@ export class NavigationManager {
     }
 
     // Check if off-route
-    if (this.lastReroutePos) {
+    if (this.autoReroute && this.lastReroutePos) {
       const distFromLastReroute = haversine(
         position.lat,
         position.lng,
@@ -298,6 +345,7 @@ export class NavigationManager {
       distanceToNextTurn: result.directions.steps[0]?.distance ?? 0,
       distanceToDestination: result.directions.totalDistance,
       engine: result.engine,
+      routeSegments: result.route.segments,
     });
 
     this.callbacks.onStepChange?.(0, this.state.steps[0]);

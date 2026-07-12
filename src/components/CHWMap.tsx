@@ -2,6 +2,9 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from "react-le
 import L from "leaflet";
 import { useEffect, useState } from "react";
 import { Outbreak } from "@/lib/outbreak";
+import { RouteOverlay } from "@/components/NavigationRouteMap";
+import { useNavigationStore } from "@/stores/navigationStore";
+import type { RouteSegment } from "@/lib/navigation/pathfinding";
 
 function syncColor(lastSync: string | null): string {
   if (!lastSync) return "#ef4444";
@@ -149,6 +152,9 @@ export default function CHWMap({
   outbreaks = [] 
 }: Props) {
   const [mounted, setMounted] = useState(false);
+  const routeSegments = useNavigationStore((s) => s.routeSegments);
+  const destinationCoords = useNavigationStore((s) => s.destinationCoords);
+  const destinationName = useNavigationStore((s) => s.destinationName);
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -188,6 +194,13 @@ export default function CHWMap({
             pathOptions={{ color: "#dc2626", fillColor: "#dc2626", fillOpacity: 0.2, weight: 3 }}
           />
         ))}
+        {routeSegments.length > 0 && (
+          <RouteOverlay
+            segments={routeSegments}
+            destinationCoords={destinationCoords}
+            destinationName={destinationName ?? undefined}
+          />
+        )}
      </MapContainer>
   );
 }

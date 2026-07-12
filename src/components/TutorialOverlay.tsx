@@ -14,7 +14,10 @@ import {
   Stethoscope,
   CheckCircle2,
   SkipForward,
+  MapPin,
+  Download,
 } from "lucide-react";
+import { precacheGraphs } from "@/lib/navigation/routing-engine";
 
 interface TutorialStep {
   icon: typeof Camera;
@@ -46,6 +49,13 @@ const steps: TutorialStep[] = [
     actionLabel: "Try Voice Step",
   },
   {
+    icon: MapPin,
+    title: "Offline Navigation",
+    description:
+      "Trij can navigate you to the nearest medical facility — even without internet. Download road data for your area to enable offline turn-by-turn directions.",
+    actionLabel: "Download Road Data",
+  },
+  {
     icon: Save,
     title: "Save & Sync",
     description:
@@ -60,6 +70,8 @@ export function TutorialOverlay({ onComplete }: { onComplete?: () => void }) {
   const skipTutorial = useSettingsStore((s) => s.skipTutorial);
   const [currentStep, setCurrentStep] = useState(0);
   const [showSample, setShowSample] = useState(false);
+  const [downloadingMaps, setDownloadingMaps] = useState(false);
+  const [mapsDownloaded, setMapsDownloaded] = useState(false);
   const step = steps[currentStep];
 
   const handleNext = () => {
@@ -85,7 +97,20 @@ export function TutorialOverlay({ onComplete }: { onComplete?: () => void }) {
   };
 
   const handleAction = () => {
-    setShowSample(true);
+    if (currentStep === 3 && !mapsDownloaded) {
+      // Download road graphs for navigation
+      setDownloadingMaps(true);
+      precacheGraphs()
+        .then(() => {
+          setMapsDownloaded(true);
+          setDownloadingMaps(false);
+        })
+        .catch(() => {
+          setDownloadingMaps(false);
+        });
+    } else {
+      setShowSample(true);
+    }
   };
 
   return (
@@ -167,6 +192,23 @@ export function TutorialOverlay({ onComplete }: { onComplete?: () => void }) {
           )}
 
           {showSample && currentStep === 3 && (
+            <div className="mb-6 w-full space-y-3 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-left dark:border-blue-800 dark:bg-blue-950">
+              <div className="flex items-center gap-2 text-blue-600">
+                <MapPin className="h-5 w-5" />
+                <p className="text-sm font-medium">Offline Navigation Ready</p>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Road data has been downloaded. You can now navigate to the nearest
+                medical facility without internet.
+              </p>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Download className="h-3.5 w-3.5" />
+                <span>Lagos, Nairobi, Delhi road networks cached</span>
+              </div>
+            </div>
+          )}
+
+          {showSample && currentStep === 4 && (
             <div className="mb-6 w-full space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-left dark:border-emerald-800 dark:bg-emerald-950">
               <div className="flex items-center gap-2 text-emerald-600">
                 <CheckCircle2 className="h-5 w-5" />
@@ -180,8 +222,20 @@ export function TutorialOverlay({ onComplete }: { onComplete?: () => void }) {
           )}
 
           {!showSample ? (
-            <Button onClick={handleAction} size="lg" className="w-full gap-2">
-              {step.actionLabel} <ChevronRight className="h-4 w-4" />
+            <Button onClick={handleAction} size="lg" className="w-full gap-2" disabled={downloadingMaps}>
+              {downloadingMaps ? (
+                <>
+                  <Download className="h-4 w-4 animate-spin" /> Downloading...
+                </>
+              ) : currentStep === 3 && mapsDownloaded ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4" /> Continue <ChevronRight className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  {step.actionLabel} <ChevronRight className="h-4 w-4" />
+                </>
+              )}
             </Button>
           ) : (
             <div className="flex w-full gap-3">

@@ -5,6 +5,7 @@ import { getDB } from "@/lib/db";
 import type { Patient, Assessment, FollowUp } from "@/types/trij";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { UrgencyPill } from "@/components/UrgencyPill";
+import { FacilityDirections } from "@/components/FacilityDirections";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -344,6 +345,18 @@ function PatientDetail() {
                     alt={t("altPatientPhoto")}
                     className="mt-3 h-32 w-32 rounded-xl object-cover"
                   />
+                )}
+                {(a.urgency === "red" || a.urgency === "yellow") && (
+                  <div className="mt-3">
+                    <FacilityDirections
+                      assessmentUrgency={a.urgency}
+                      patientCoords={
+                        patient.locationLat && patient.locationLng
+                          ? { lat: patient.locationLat, lng: patient.locationLng }
+                          : undefined
+                      }
+                    />
+                  </div>
                 )}
                 {a.referralAdvised && (
                   <div className="mt-3 flex flex-wrap items-center gap-2">

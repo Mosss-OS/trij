@@ -38,6 +38,9 @@ interface SettingsState {
   dhis2Password: string;
   dhis2OrgUnit: string;
   dhis2DataSet: string;
+  voiceNavigation: boolean;
+  autoReroute: boolean;
+  batterySaver: boolean;
   completeTutorial: () => void;
   skipTutorial: () => void;
   resetTutorial: () => void;
@@ -67,6 +70,7 @@ interface SettingsState {
   setLocalAntibioticProtocol: (protocol: string) => void;
   setTheme: (theme: "light" | "dark" | "system") => void;
   setDhis2Config: (config: { dhis2BaseUrl: string; dhis2Username: string; dhis2Password: string; dhis2OrgUnit: string; dhis2DataSet: string }) => void;
+  setSetting: (key: string, value: unknown) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -106,6 +110,9 @@ export const useSettingsStore = create<SettingsState>()(
       dhis2Password: "",
       dhis2OrgUnit: "",
       dhis2DataSet: "",
+      voiceNavigation: true,
+      autoReroute: true,
+      batterySaver: false,
       completeTutorial: () => set({ tutorialCompleted: true }),
       skipTutorial: () => set({ tutorialSkipped: true }),
       resetTutorial: () => set({ tutorialCompleted: false, tutorialSkipped: false }),
@@ -153,6 +160,7 @@ export const useSettingsStore = create<SettingsState>()(
           dhis2OrgUnit: config.dhis2OrgUnit,
           dhis2DataSet: config.dhis2DataSet,
         }),
+      setSetting: (key, value) => set({ [key]: value } as Partial<SettingsState>),
     }),
     {
       name: "trij-settings",

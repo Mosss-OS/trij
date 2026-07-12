@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { I18nErrorBoundary } from "@/components/ErrorBoundary";
 import { CameraCapture } from "@/components/CameraCapture";
 import { AssessmentResult } from "@/components/AssessmentResult";
+import { FacilityDirections } from "@/components/FacilityDirections";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -2129,6 +2130,14 @@ function TriagePage() {
                 aiFeedbackRef.current = fb;
               }}
               userId={user?.id || ""}
+            />
+            <FacilityDirections
+              assessmentUrgency={result.urgency}
+              patientCoords={
+                patient && "locationLat" in patient && patient.locationLat && patient.locationLng
+                  ? { lat: patient.locationLat, lng: patient.locationLng }
+                  : undefined
+              }
             />
             <div className="flex flex-wrap gap-3">
               <Button
