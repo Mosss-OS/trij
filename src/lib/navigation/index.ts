@@ -18,7 +18,7 @@ export { aStar, type Route, type RouteSegment } from "./pathfinding";
 export { generateDirections, formatStep, formatStepWithDistance, formatDistance, formatDuration, type Directions, type DirectionStep, type TurnInstruction } from "./directions";
 
 // Road graph
-export { haversine, findNearestNode, SAMPLE_GRAPHS, buildAdjacency, type RoadGraph, type RoadNode, type RoadEdge, type RoadClass } from "./road-graph";
+export { haversine, findNearestNode, REGIONS, buildAdjacency, loadGraphFromNetwork, findRegionForCoords, type RoadGraph, type RoadNode, type RoadEdge, type RoadClass, type RegionInfo } from "./road-graph";
 
 // Storage
 export { storeRoadGraph, getStoredRoadGraph, listStoredGraphs, deleteStoredGraph } from "./road-graph-store";

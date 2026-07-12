@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { Download, Check, MapPin, Wifi, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { listStoredGraphs } from "@/lib/navigation/road-graph-store";
-import { SAMPLE_GRAPHS } from "@/lib/navigation/road-graph";
+import { REGIONS, loadGraphFromNetwork } from "@/lib/navigation/road-graph";
 import { storeRoadGraph } from "@/lib/navigation/road-graph-store";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { cn } from "@/lib/utils";
@@ -21,14 +21,15 @@ export function OfflineGraphStatus() {
     listStoredGraphs().then((graphs) => setCached(graphs));
   }, []);
 
-  const handleDownload = async (graphId: string) => {
-    const graph = SAMPLE_GRAPHS.find((g) => g.id === graphId);
-    if (!graph) return;
-    setDownloading(graphId);
+  const handleDownload = async (regionId: string) => {
+    setDownloading(regionId);
     try {
-      await storeRoadGraph(graph);
-      const updated = await listStoredGraphs();
-      setCached(updated);
+      const graph = await loadGraphFromNetwork(regionId);
+      if (graph) {
+        await storeRoadGraph(graph);
+        const updated = await listStoredGraphs();
+        setCached(updated);
+      }
     } finally {
       setDownloading(null);
     }
@@ -54,22 +55,19 @@ export function OfflineGraphStatus() {
       </div>
 
       <div className="space-y-2">
-        {SAMPLE_GRAPHS.map((graph) => {
-          const isCached = cached.some((c) => c.id === graph.id);
-          const isDownloadingThis = downloading === graph.id;
+        {REGIONS.map((region) => {
+          const isCached = cached.some((c) => c.id === region.id);
+          const isDownloadingThis = downloading === region.id;
 
           return (
             <div
-              key={graph.id}
+              key={region.id}
               className="flex items-center justify-between p-2.5 rounded-lg border border-border"
             >
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="text-xs font-medium">{graph.region}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {graph.nodes.length} road nodes • {graph.edges.length} segments
-                  </p>
+                  <p className="text-xs font-medium">{region.region}</p>
                 </div>
               </div>
 
@@ -82,7 +80,7 @@ export function OfflineGraphStatus() {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => handleDownload(graph.id)}
+                  onClick={() => handleDownload(region.id)}
                   disabled={isDownloadingThis || !isOnline}
                   className="h-7 text-xs"
                 >

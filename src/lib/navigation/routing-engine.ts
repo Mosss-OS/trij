@@ -8,7 +8,7 @@
 
 import type { GeoCoords } from "@/lib/geolocation";
 import type { RoadGraph } from "./road-graph";
-import { SAMPLE_GRAPHS, deserialiseGraph } from "./road-graph";
+import { loadGraphFromNetwork, findRegionForCoords } from "./road-graph";
 import { aStar, type Route } from "./pathfinding";
 import { generateDirections, type Directions } from "./directions";
 import { getStoredRoadGraph, storeRoadGraph } from "./road-graph-store";
@@ -229,33 +229,23 @@ async function callEngine(
 /* ------------------------------------------------------------------ */
 
 async function loadGraphForLocation(coords: GeoCoords): Promise<RoadGraph | null> {
-  // 1. Try loading from IndexedDB
+  // 1. Try loading from IndexedDB (cached from previous load)
   const stored = await getStoredRoadGraph(coords);
   if (stored) return stored;
 
-  // 2. Try sample graphs (check if coords are within bounds)
-  for (const sample of SAMPLE_GRAPHS) {
-    if (isInBounds(coords, sample.bounds)) {
-      // Store for future use
-      await storeRoadGraph(sample);
-      return sample;
-    }
+  // 2. Check if coords fall within a known region
+  const region = findRegionForCoords(coords);
+  if (!region) return null;
+
+  // 3. Fetch from public/road-graphs/ (network or service-worker cache)
+  const graph = await loadGraphFromNetwork(region.id);
+  if (graph) {
+    // Cache in IndexedDB for offline use next time
+    await storeRoadGraph(graph);
+    return graph;
   }
 
-  // 3. No graph available for this region
   return null;
-}
-
-function isInBounds(
-  coords: GeoCoords,
-  bounds: { south: number; north: number; west: number; east: number },
-): boolean {
-  return (
-    coords.lat >= bounds.south &&
-    coords.lat <= bounds.north &&
-    coords.lng >= bounds.west &&
-    coords.lng <= bounds.east
-  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -263,13 +253,18 @@ function isInBounds(
 /* ------------------------------------------------------------------ */
 
 export async function precacheGraphs(): Promise<void> {
-  for (const graph of SAMPLE_GRAPHS) {
+  // Only pre-cache if online (graphs are fetched from public/)
+  if (typeof navigator !== "undefined" && !navigator.onLine) return;
+
+  const { REGIONS } = await import("./road-graph");
+  for (const region of REGIONS) {
     const existing = await getStoredRoadGraph({
-      lat: (graph.bounds.south + graph.bounds.north) / 2,
-      lng: (graph.bounds.west + graph.bounds.east) / 2,
+      lat: (region.bounds.south + region.bounds.north) / 2,
+      lng: (region.bounds.west + region.bounds.east) / 2,
     });
     if (!existing) {
-      await storeRoadGraph(graph);
+      const graph = await loadGraphFromNetwork(region.id);
+      if (graph) await storeRoadGraph(graph);
     }
   }
 }

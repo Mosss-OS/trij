@@ -16,6 +16,7 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { Loader2, ShieldAlert, X, Beaker } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { NavigationPanel } from "@/components/NavigationPanel";
+import { useNavigationVoice } from "@/hooks/useNavigationVoice";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -107,6 +108,7 @@ function AppLayout() {
   const [showTutorial, setShowTutorial] = useState(false);
   const isNewUser = !tutorialCompleted && !tutorialSkipped;
   useInactivityLock();
+  useNavigationVoice();
 
   useEffect(() => {
     if (isNewUser) setShowTutorial(true);
