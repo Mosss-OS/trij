@@ -65,6 +65,23 @@ const FACILITIES: Facility[] = [
   // France (Paris area)
   { id: "fr-paris-1", name: "Hôpital Pitié-Salpêtrière", lat: 48.8460, lng: 2.3655, type: "hospital", phone: "+33-1-42-16-00-00", capabilities: ["surgery", "emergency"] },
   { id: "fr-paris-2", name: "Hôpital Necker-Enfants Malades", lat: 48.8493, lng: 2.3160, type: "hospital", phone: "+33-1-44-49-40-00", capabilities: ["pediatrics", "emergency"] },
+
+  // Ghana (Accra area)
+  { id: "gh-accra-1", name: "Korle Bu Teaching Hospital", lat: 5.5430, lng: -0.2370, type: "hospital", phone: "+233-30-2773431", capabilities: ["surgery", "emergency", "maternity"] },
+  { id: "gh-accra-2", name: "Ridge Hospital", lat: 5.5600, lng: -0.2170, type: "hospital", phone: "+233-30-2776528", capabilities: ["emergency", "maternity"] },
+  { id: "gh-accra-3", name: "Tema General Hospital", lat: 5.6690, lng: -0.0160, type: "hospital", phone: "+233-30-3202250", capabilities: ["emergency"] },
+  { id: "gh-accra-4", name: "Madina Health Centre", lat: 5.6500, lng: -0.1700, type: "health_center", capabilities: ["primary_care"] },
+
+  // Tanzania (Dar es Salaam area)
+  { id: "tz-dar-1", name: "Muhimbili National Hospital", lat: -6.7730, lng: 39.2420, type: "hospital", phone: "+255-22-2150172", capabilities: ["surgery", "emergency", "maternity"] },
+  { id: "tz-dar-2", name: "Amana Hospital", lat: -6.8100, lng: 39.2600, type: "hospital", phone: "+255-22-2120712", capabilities: ["emergency"] },
+  { id: "tz-dar-3", name: "Temeke Hospital", lat: -6.8500, lng: 39.2800, type: "hospital", phone: "+255-22-2832222", capabilities: ["emergency", "maternity"] },
+
+  // South Africa (Johannesburg area)
+  { id: "za-jhb-1", name: "Chris Hani Baragwanath Hospital", lat: -26.2640, lng: 27.8950, type: "hospital", phone: "+27-11-933-0000", capabilities: ["surgery", "emergency", "maternity", "pediatrics"] },
+  { id: "za-jhb-2", name: "Charlotte Maxeke Hospital", lat: -26.2040, lng: 28.0540, type: "hospital", phone: "+27-11-488-0000", capabilities: ["surgery", "emergency"] },
+  { id: "za-jhb-3", name: "South Rand Hospital", lat: -26.2800, lng: 27.9500, type: "hospital", phone: "+27-11-686-0000", capabilities: ["emergency"] },
+  { id: "za-jhb-4", name: "Lenasia South Clinic", lat: -26.3200, lng: 27.8600, type: "clinic", capabilities: ["primary_care"] },
 ];
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {

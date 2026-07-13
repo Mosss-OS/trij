@@ -10,6 +10,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { useNavigation } from "@/hooks/useNavigation";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { formatStep } from "@/lib/navigation/directions";
+import { getNavLanguage, getNavInstruction, getNavAnnouncement } from "@/lib/navigation/nav-voice-translations";
 
 export function useNavigationVoice() {
   const nav = useNavigation();
@@ -61,43 +62,29 @@ export function useNavigationVoice() {
 
     lastSpokenIndex.current = currentStepIndex;
 
-    // Build spoken instruction
-    let text: string;
-    if (step.instruction === "depart") {
-      const road = step.roadName ? ` onto ${step.roadName}` : "";
-      text = `Start navigating${road}. Continue for ${formatMetres(step.distance)}.`;
-    } else if (step.instruction === "arrive") {
-      text = "You have arrived at your destination.";
-    } else {
-      const road = step.roadName ? ` onto ${step.roadName}` : "";
-      const dir = step.instruction
-        .replace("turn_slight_left", "bear left")
-        .replace("turn_slight_right", "bear right")
-        .replace("turn_sharp_left", "sharp left")
-        .replace("turn_sharp_right", "sharp right")
-        .replace("turn_left", "turn left")
-        .replace("turn_right", "turn right")
-        .replace("continue", "continue");
-      text = `${dir}${road}. Then ${formatMetres(step.distance)}.`;
-    }
+    // Build spoken instruction using multi-language support
+    const navLang = getNavLanguage(language);
+    const text = getNavInstruction(navLang, step.instruction, step.roadName);
 
     speak(text);
-  }, [currentStepIndex, isNavigating, status, steps, speak]);
+  }, [currentStepIndex, isNavigating, status, steps, speak, language]);
 
   // Announce arrival
   useEffect(() => {
     if (status === "arrived") {
-      speak("You have arrived at your destination.");
+      const navLang = getNavLanguage(language);
+      speak(getNavAnnouncement(navLang, "arrived"));
       lastSpokenIndex.current = -1;
     }
-  }, [status, speak]);
+  }, [status, speak, language]);
 
   // Announce off-route
   useEffect(() => {
     if (status === "off_route") {
-      speak("You are off route. Recalculating.");
+      const navLang = getNavLanguage(language);
+      speak(getNavAnnouncement(navLang, "off_route"));
     }
-  }, [status, speak]);
+  }, [status, speak, language]);
 
   // Cleanup: cancel speech on unmount
   useEffect(() => {

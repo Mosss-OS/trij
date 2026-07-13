@@ -203,7 +203,7 @@ export function TutorialOverlay({ onComplete }: { onComplete?: () => void }) {
               </p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Download className="h-3.5 w-3.5" />
-                <span>Lagos, Nairobi, Delhi road networks cached</span>
+                <span>Lagos, Nairobi, Delhi, Accra, Dar es Salaam, Johannesburg, São Paulo road networks cached</span>
               </div>
             </div>
           )}

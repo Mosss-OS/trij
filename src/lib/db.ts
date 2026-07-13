@@ -147,7 +147,7 @@ export class TrijDB extends Dexie {
       deadLetterQueue: "++id, table, recordId, movedAt",
       consultations: "id, patientId, chwUserId, status, priority, createdAt, syncedAt",
     });
-    this.version(11).stores({
+    this.version(12).stores({
       patients: "id, chwUserId, identifier, createdAt, syncedAt",
       assessments: "id, patientId, chwUserId, urgency, createdAt, syncedAt",
       followUps: "id, patientId, chwUserId, status, scheduledFor, createdAt, syncedAt",
@@ -161,6 +161,8 @@ export class TrijDB extends Dexie {
       deadLetterQueue: "++id, table, recordId, movedAt",
       consultations: "id, patientId, chwUserId, status, priority, createdAt, syncedAt",
       roadGraphs: "++id, graphId, region, boundsSouth, boundsNorth, boundsWest, boundsEast",
+      navigationHistory: "++id, facilityId, patientId, completedAt, region",
+      facilityRatings: "++id, facilityId, tripId, rating, completedAt",
     });
   }
 }

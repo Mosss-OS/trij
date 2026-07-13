@@ -75,7 +75,7 @@ export const useNavigationStore = create<NavigationStoreState>()(
           onArrival: () => get().syncFromManager(),
         };
 
-        const success = await mgr.start(origin, destination, callbacks, preferredEngine);
+        const success = await mgr.start(origin, destination, callbacks, preferredEngine, destinationName);
 
         if (success) {
           const state = mgr.getState();

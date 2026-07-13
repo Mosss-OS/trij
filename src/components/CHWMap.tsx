@@ -1,10 +1,13 @@
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, ZoomControl } from "react-leaflet";
 import L from "leaflet";
 import { useEffect, useState } from "react";
 import { Outbreak } from "@/lib/outbreak";
 import { RouteOverlay } from "@/components/NavigationRouteMap";
 import { useNavigationStore } from "@/stores/navigationStore";
 import type { RouteSegment } from "@/lib/navigation/pathfinding";
+import { REGIONS } from "@/lib/navigation/road-graph";
+import { listStoredGraphs } from "@/lib/navigation/road-graph-store";
+import { Check, Download, HardDrive } from "lucide-react";
 
 function syncColor(lastSync: string | null): string {
   if (!lastSync) return "#ef4444";
@@ -42,6 +45,48 @@ function clusterIcon(cluster: L.MarkerCluster) {
 }
 
 const CACHE_NAME = "trij-tiles";
+
+function RoadDataIndicator() {
+  const [cached, setCached] = useState<string[]>([]);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    listStoredGraphs().then((graphs) => setCached(graphs.map((g) => g.id)));
+  }, []);
+
+  const cachedCount = cached.length;
+  const totalRegions = REGIONS.length;
+
+  return (
+    <div className="absolute bottom-2 left-2 z-[1000]" role="status" aria-label="Road data availability">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-1.5 rounded-lg bg-white/90 px-2.5 py-1.5 text-xs font-medium shadow-md backdrop-blur-sm dark:bg-gray-900/90"
+        aria-expanded={expanded}
+      >
+        <HardDrive className="h-3 w-3" aria-hidden="true" />
+        <span>{cachedCount}/{totalRegions}</span>
+        {cachedCount > 0 && <Check className="h-3 w-3 text-green-600" aria-hidden="true" />}
+      </button>
+      {expanded && (
+        <div className="mt-1 rounded-lg bg-white/95 p-2 shadow-md backdrop-blur-sm dark:bg-gray-900/95" role="region" aria-label="Cached road data regions">
+          {REGIONS.map((region) => (
+            <div key={region.id} className="flex items-center gap-1.5 py-0.5 text-[10px]">
+              {cached.includes(region.id) ? (
+                <Check className="h-2.5 w-2.5 text-green-600" aria-hidden="true" />
+              ) : (
+                <span className="h-2.5 w-2.5" />
+              )}
+              <span className={cached.includes(region.id) ? "font-medium" : "text-muted-foreground"}>
+                {region.region}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function TileCacheHook() {
   const map = useMap();
@@ -178,7 +223,10 @@ export default function CHWMap({
     valid.reduce((s, l) => s + l.location_lng, 0) / valid.length,
   ];
 
+  const hasNavigation = routeSegments.length > 0;
+
   return (
+    <>
     <MapContainer center={center} zoom={10} className="h-80 w-full rounded-2xl sm:h-96 lg:h-[500px]" scrollWheelZoom>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -194,7 +242,7 @@ export default function CHWMap({
             pathOptions={{ color: "#dc2626", fillColor: "#dc2626", fillOpacity: 0.2, weight: 3 }}
           />
         ))}
-        {routeSegments.length > 0 && (
+        {hasNavigation && (
           <RouteOverlay
             segments={routeSegments}
             destinationCoords={destinationCoords}
@@ -202,5 +250,7 @@ export default function CHWMap({
           />
         )}
      </MapContainer>
-  );
+     {hasNavigation && <RoadDataIndicator />}
+   </>
+ );
 }

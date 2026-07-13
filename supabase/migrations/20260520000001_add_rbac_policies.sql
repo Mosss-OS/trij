@@ -8,7 +8,7 @@ returns text
 language sql
 stable
 as $$
-  select coalesce(auth.users().raw_app_meta_data ->> 'role', 'chw')
+  select coalesce((select raw_app_meta_data->>'role' from auth.users where id = auth.uid()), 'chw')
 $$;
 
 -- Helper: is the user a supervisor or admin?

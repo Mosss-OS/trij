@@ -172,6 +172,10 @@ export const REGIONS: RegionInfo[] = [
   { id: "lagos-ng", region: "Lagos, Nigeria", bounds: { south: 6.45, north: 6.70, west: 3.30, east: 3.50 }, file: "/road-graphs/lagos-ng.json" },
   { id: "nairobi-ke", region: "Nairobi, Kenya", bounds: { south: -1.35, north: -1.15, west: 36.75, east: 36.95 }, file: "/road-graphs/nairobi-ke.json" },
   { id: "delhi-in", region: "Delhi, India", bounds: { south: 28.50, north: 28.70, west: 77.05, east: 77.30 }, file: "/road-graphs/delhi-in.json" },
+  { id: "accra-gh", region: "Accra, Ghana", bounds: { south: 5.50, north: 5.70, west: -0.35, east: 0.10 }, file: "/road-graphs/accra-gh.json" },
+  { id: "dar-es-salaam-tz", region: "Dar es Salaam, Tanzania", bounds: { south: -6.90, north: -6.70, west: 39.15, east: 39.35 }, file: "/road-graphs/dar-es-salaam-tz.json" },
+  { id: "johannesburg-za", region: "Johannesburg, South Africa", bounds: { south: -26.35, north: -26.15, west: 27.85, east: 28.15 }, file: "/road-graphs/johannesburg-za.json" },
+  { id: "sao-paulo-br", region: "São Paulo, Brazil", bounds: { south: -23.70, north: -23.40, west: -46.80, east: -46.50 }, file: "/road-graphs/sao-paulo-br.json" },
 ];
 
 /**

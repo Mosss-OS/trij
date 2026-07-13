@@ -78,7 +78,7 @@ export function FacilityDirections({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" role="region" aria-label="Facility directions">
       {/* Urgency indicator */}
       {assessmentUrgency && (
         <div
@@ -88,8 +88,10 @@ export function FacilityDirections({
             assessmentUrgency === "yellow" && "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
             assessmentUrgency === "green" && "bg-green-500/10 text-green-700 dark:text-green-400",
           )}
+          role="status"
+          aria-live="polite"
         >
-          <MapPin className="h-4 w-4" />
+          <MapPin className="h-4 w-4" aria-hidden="true" />
           <span>
             {assessmentUrgency === "red"
               ? "Urgent — nearest facility recommended"
@@ -132,13 +134,14 @@ export function FacilityDirections({
                 disabled={loading || !userCoords}
                 className="flex-1"
                 size="sm"
+                aria-label={`Get directions to ${selectedFacility.name}`}
               >
-                <Navigation className="h-4 w-4 mr-1.5" />
+                <Navigation className="h-4 w-4 mr-1.5" aria-hidden="true" />
                 {loading ? "Calculating..." : "Get Directions"}
               </Button>
               {selectedFacility.phone && (
-                <Button onClick={handleCall} variant="outline" size="sm">
-                  <Phone className="h-4 w-4 mr-1.5" />
+                <Button onClick={handleCall} variant="outline" size="sm" aria-label={`Call ${selectedFacility.name}`}>
+                  <Phone className="h-4 w-4 mr-1.5" aria-hidden="true" />
                   Call
                 </Button>
               )}

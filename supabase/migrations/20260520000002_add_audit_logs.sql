@@ -24,7 +24,7 @@ drop policy if exists "supervisor_read_audit_logs" on audit_logs;
 create policy "supervisor_read_audit_logs" on audit_logs
   for select
   using (
-    coalesce(auth.users().raw_app_meta_data ->> 'role', 'chw') in ('supervisor', 'admin')
+    public.is_supervisor_or_admin()
   );
 
 drop policy if exists "chw_insert_own_audit_logs" on audit_logs;
@@ -35,5 +35,5 @@ create policy "chw_insert_own_audit_logs" on audit_logs
 drop policy if exists "admin_all_audit_logs" on audit_logs;
 create policy "admin_all_audit_logs" on audit_logs
   for all
-  using (auth.users().raw_app_meta_data ->> 'role' = 'admin')
-  with check (auth.users().raw_app_meta_data ->> 'role' = 'admin');
+  using (public.is_admin())
+  with check (public.is_admin());

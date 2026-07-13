@@ -37,6 +37,7 @@ export interface NavigationState {
   engine: EngineKind | null;
   error: string | null;
   routeSegments: import("./pathfinding").RouteSegment[];
+  destinationName: string | null;
 }
 
 export interface NavigationCallbacks {
@@ -76,6 +77,7 @@ export class NavigationManager {
     engine: null,
     error: null,
     routeSegments: [],
+    destinationName: null,
   };
 
   private watchId: number | null = null;
@@ -102,13 +104,14 @@ export class NavigationManager {
     destination: GeoCoords,
     callbacks: NavigationCallbacks = {},
     preferredEngine: EngineKind = "custom-astar",
+    destinationName?: string,
   ): Promise<boolean> {
     this.callbacks = callbacks;
     this.goal = destination;
     this.positionHistory = [];
     this.lastReroutePos = null;
 
-    this.updateState({ status: "calculating", error: null });
+    this.updateState({ status: "calculating", error: null, destinationName: destinationName ?? null });
 
     const result = await getRoute(origin, destination, preferredEngine);
     if (!result) {
@@ -256,6 +259,8 @@ export class NavigationManager {
         distanceToDestination: distToDest,
         currentBearing: bearing,
       });
+      // Log the completed trip
+      this.logTrip(position);
       this.callbacks.onArrival?.();
       this.callbacks.onStatusChange?.("arrived");
       return;
@@ -349,6 +354,39 @@ export class NavigationManager {
     });
 
     this.callbacks.onStepChange?.(0, this.state.steps[0]);
+  }
+
+  /* -------------------------------------------------------------- */
+  /*  Trip logging                                                   */
+  /* -------------------------------------------------------------- */
+
+  private async logTrip(finalPosition: GeoCoords): Promise<void> {
+    if (!this.goal || !this.routeResult) return;
+    try {
+      const { logNavigationTrip } = await import("./history");
+      const origin = this.positionHistory[0];
+      if (!origin) return;
+      const totalDist = this.state.totalDistance;
+      const totalDur = this.state.totalDuration;
+      // Find region from coordinates
+      const { findRegionForCoords } = await import("./road-graph");
+      const regionInfo = findRegionForCoords(this.goal);
+      await logNavigationTrip({
+        facilityId: this.state.destinationName ?? "unknown",
+        facilityName: this.state.destinationName ?? "Unknown Facility",
+        originLat: origin.lat,
+        originLng: origin.lng,
+        destLat: this.goal.lat,
+        destLng: this.goal.lng,
+        distanceMetres: totalDist,
+        durationSeconds: totalDur,
+        engine: this.state.engine ?? "unknown",
+        region: regionInfo?.id ?? "unknown",
+        completedAt: new Date().toISOString(),
+      });
+    } catch {
+      // Non-critical — don't break navigation if logging fails
+    }
   }
 
   /* -------------------------------------------------------------- */

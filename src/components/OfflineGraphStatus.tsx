@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { Download, Check, MapPin, Wifi, WifiOff } from "lucide-react";
+import { Download, Check, MapPin, Wifi, WifiOff, HardDrive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { listStoredGraphs } from "@/lib/navigation/road-graph-store";
 import { REGIONS, loadGraphFromNetwork } from "@/lib/navigation/road-graph";
@@ -12,8 +12,13 @@ import { storeRoadGraph } from "@/lib/navigation/road-graph-store";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { cn } from "@/lib/utils";
 
+interface CachedGraph {
+  id: string;
+  region: string;
+}
+
 export function OfflineGraphStatus() {
-  const [cached, setCached] = useState<Array<{ id: string; region: string }>>([]);
+  const [cached, setCached] = useState<CachedGraph[]>([]);
   const [downloading, setDownloading] = useState<string | null>(null);
   const isOnline = useOnlineStatus();
 
@@ -35,23 +40,32 @@ export function OfflineGraphStatus() {
     }
   };
 
+  const cachedCount = cached.length;
+  const totalRegions = REGIONS.length;
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" role="region" aria-label="Offline road data status">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium">Offline Maps</h4>
-        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-          {isOnline ? (
-            <>
-              <Wifi className="h-3 w-3 text-green-500" />
-              Online
-            </>
-          ) : (
-            <>
-              <WifiOff className="h-3 w-3 text-yellow-500" />
-              Offline
-            </>
-          )}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <HardDrive className="h-3 w-3" />
+            {cachedCount}/{totalRegions}
+          </span>
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            {isOnline ? (
+              <>
+                <Wifi className="h-3 w-3 text-green-500" aria-hidden="true" />
+                <span className="sr-only">Online</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="h-3 w-3 text-yellow-500" aria-hidden="true" />
+                <span className="sr-only">Offline</span>
+              </>
+            )}
+          </span>
+        </div>
       </div>
 
       <div className="space-y-2">

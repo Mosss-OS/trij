@@ -8,8 +8,11 @@
 
 import { useNavigation } from "@/hooks/useNavigation";
 import { formatDistance, formatDuration } from "@/lib/navigation/directions";
-import { Navigation, X, MapPin, Clock, Route, AlertTriangle } from "lucide-react";
+import { Navigation, X, MapPin, Clock, Route, AlertTriangle, Star, Share2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState, useCallback } from "react";
+import { FacilityRatingDialog } from "@/components/FacilityRatingDialog";
+import { useNavigationKeyboard } from "@/hooks/useNavigationKeyboard";
 
 const BEARING_ARROWS: Record<number, string> = {
   0: "↑",
@@ -52,14 +55,20 @@ export function NavigationPanel() {
     isNavigating,
     stop,
   } = useNavigation();
+  const [showRating, setShowRating] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const handleRateShortcut = useCallback(() => {
+    if (status === "arrived") setShowRating(true);
+  }, [status]);
+  useNavigationKeyboard(handleRateShortcut);
 
   if (!isNavigating && status === "idle") return null;
 
   if (status === "error") {
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border p-4 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border p-4 shadow-lg" role="alert" aria-live="assertive">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+          <AlertTriangle className="h-5 w-5 text-destructive mt-0.5 shrink-0" aria-hidden="true" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-destructive">Navigation Error</p>
             <p className="text-xs text-muted-foreground mt-1">{error}</p>
@@ -78,9 +87,9 @@ export function NavigationPanel() {
 
   if (status === "calculating") {
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border p-4 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border p-4 shadow-lg" role="status" aria-live="polite">
         <div className="flex items-center gap-3">
-          <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" aria-hidden="true" />
           <p className="text-sm text-muted-foreground">Calculating route{destinationName ? ` to ${destinationName}` : ""}...</p>
         </div>
       </div>
@@ -89,35 +98,79 @@ export function NavigationPanel() {
 
   if (status === "arrived") {
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-green-500 p-4 shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center">
-            <MapPin className="h-5 w-5 text-white" />
+      <>
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-green-500 p-4 shadow-lg" role="status" aria-live="polite">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center" aria-hidden="true">
+              <MapPin className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                You have arrived!
+              </p>
+              {destinationName && (
+                <p className="text-xs text-muted-foreground mt-0.5">{destinationName}</p>
+              )}
+            </div>
+            <button
+              onClick={() => setShowRating(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500 text-white text-xs font-medium rounded-lg hover:bg-yellow-600 transition-colors"
+              aria-label="Rate this facility"
+            >
+              <Star className="h-3.5 w-3.5" /> Rate
+            </button>
+            <button
+              onClick={stop}
+              className="px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded-lg hover:bg-green-600 transition-colors"
+            >
+              Done
+            </button>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-green-700 dark:text-green-400">
-              You have arrived!
-            </p>
-            {destinationName && (
-              <p className="text-xs text-muted-foreground mt-0.5">{destinationName}</p>
-            )}
-          </div>
-          <button
-            onClick={stop}
-            className="px-3 py-1.5 bg-green-500 text-white text-xs font-medium rounded-lg hover:bg-green-600 transition-colors"
-          >
-            Done
-          </button>
         </div>
-      </div>
+        <FacilityRatingDialog
+          open={showRating}
+          onOpenChange={setShowRating}
+          facilityId={destinationName ?? "unknown"}
+          facilityName={destinationName ?? "Unknown Facility"}
+        />
+      </>
     );
   }
+
+  const handleShareRoute = useCallback(async () => {
+    const lines: string[] = [];
+    lines.push(`Route to ${destinationName ?? "destination"}`);
+    lines.push(`${formatDistance(distanceToDestination)} total · ${formatDuration(totalDuration)}`);
+    lines.push("");
+    steps.forEach((step, i) => {
+      const arrow = bearingArrow(step.bearing);
+      const road = step.roadName ? ` on ${step.roadName}` : "";
+      lines.push(`${i + 1}. ${arrow} ${step.instruction.replace(/_/g, " ")}${road} (${formatDistance(step.distance)})`);
+    });
+
+    const text = lines.join("\n");
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `Route to ${destinationName ?? "destination"}`, text });
+      } catch {
+        // User cancelled or share failed — fall through to clipboard
+        await navigator.clipboard.writeText(text);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2000);
+      }
+    } else {
+      await navigator.clipboard.writeText(text);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    }
+  }, [destinationName, distanceToDestination, totalDuration, steps]);
 
   const currentStep = steps[currentStepIndex];
   const remainingSteps = steps.length - currentStepIndex - 1;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg" role="navigation" aria-label="Turn-by-turn navigation">
       {/* Main instruction */}
       <div className="p-4">
         <div className="flex items-center gap-4">
@@ -167,6 +220,23 @@ export function NavigationPanel() {
           <Navigation className="h-3.5 w-3.5" />
           <span>{remainingSteps} turns left</span>
         </div>
+        <button
+          onClick={handleShareRoute}
+          className="flex items-center gap-1 px-2 py-1 rounded hover:bg-muted transition-colors"
+          aria-label="Share route directions"
+        >
+          {shareCopied ? (
+            <>
+              <Check className="h-3 w-3 text-green-600" />
+              <span className="text-green-600">Copied</span>
+            </>
+          ) : (
+            <>
+              <Share2 className="h-3.5 w-3.5" />
+              <span>Share</span>
+            </>
+          )}
+        </button>
         {engine && (
           <span className="text-[10px] text-muted-foreground/60 uppercase">
             {engine}

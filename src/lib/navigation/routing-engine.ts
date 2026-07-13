@@ -35,14 +35,13 @@ async function tryGraphHopper(
   _graph: RoadGraph,
 ): Promise<Route | null> {
   try {
-    // GraphHopper JS API: dynamically import to avoid bundle bloat
-    // Requires @graphhopper/routing-api-client or self-hosted instance
+    // GraphHopper requires a pre-built .ghz file per region.
+    // To enable: place a .ghz file in public/road-graphs/<region>.ghz
+    // and install: bun add graphhopper-js-api-client
+    // See: https://www.graphhopper.com/docs/#/./web-module
     const mod = await import(/* @viteIgnore */ "graphhopper-js-api-client").catch(() => null);
     if (!mod) return null;
 
-    // If the library loaded, try to use it
-    // In practice, GraphHopper needs a pre-built .ghz file per region
-    // This is a placeholder for when the library is available
     const gh = new (mod as any).Graphhopper({
       key: "", // offline mode — no API key needed for local .ghz files
       vehicle: "foot",
@@ -202,6 +201,30 @@ export async function getRoute(
     if (route) {
       const directions = generateDirections(route);
       return { route, directions, engine: kind };
+    }
+  }
+
+  // Error recovery: if no route found, try routing to nearest road node
+  // This helps when GPS is slightly off from the road network
+  const { findNearestNode } = await import("./road-graph");
+  const nearestToStart = findNearestNode(graph, start);
+  const nearestToGoal = findNearestNode(graph, goal);
+
+  // If both are within 500m of a road, try routing between the nearest nodes
+  if (nearestToStart.distance < 500 && nearestToGoal.distance < 500) {
+    const adjustedStart = { lat: nearestToStart.node.lat, lng: nearestToStart.node.lng };
+    const adjustedGoal = { lat: nearestToGoal.node.lat, lng: nearestToGoal.node.lng };
+
+    const recoveryEngines: Array<{ kind: EngineKind; fn: () => Promise<Route | null> }> = [
+      { kind: "custom-astar", fn: () => callEngine("custom-astar", adjustedStart, adjustedGoal, graph!) },
+    ];
+
+    for (const { kind, fn } of recoveryEngines) {
+      const route = await fn();
+      if (route) {
+        const directions = generateDirections(route);
+        return { route, directions, engine: kind };
+      }
     }
   }
 

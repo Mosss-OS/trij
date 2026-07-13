@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useI18n } from "@/lib/i18n";
 import { useSessionStore } from "@/stores/sessionStore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { hasPinForUser, verifyPin } from "@/lib/pin-auth";
+import { hasPinForUser, verifyPin, recordFailedAttempt } from "@/lib/pin-auth";
 import { authenticateBiometric } from "@/lib/webauthn";
 import { deriveKey, cacheKey, unwrapBiometricKey, hasBiometricKeyWrap } from "@/lib/crypto";
 import { Lock, Fingerprint, AlertTriangle, Loader2, LogOut } from "lucide-react";
@@ -114,7 +114,12 @@ export function LockScreen() {
         cacheKey(key);
         setScreenLocked(false);
       } else {
-        setError(t("incorrectPin"));
+        const result = await recordFailedAttempt(user?.id || "");
+        if (result.locked) {
+          setError(t("accountLocked"));
+        } else {
+          setError(t("incorrectPin"));
+        }
         setPin(["", "", "", "", "", ""]);
         inputRefs.current[0]?.focus();
       }

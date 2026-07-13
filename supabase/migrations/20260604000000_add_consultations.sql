@@ -1,4 +1,4 @@
-create table public.consultations (
+create table if not exists public.consultations (
   id          text primary key,
   patient_id  uuid not null references public.patients(id) on delete cascade,
   assessment_id uuid references public.assessments(id) on delete set null,
