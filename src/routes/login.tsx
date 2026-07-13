@@ -6,8 +6,9 @@ import { useAuthSession } from "@/hooks/useAuthSession";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
-import { ShieldCheck, Loader2, WifiOff, KeyRound, MailCheck, Fingerprint } from "lucide-react";
+import { ShieldCheck, Loader2, WifiOff, KeyRound, MailCheck, Fingerprint, UserPlus, LogIn } from "lucide-react";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { toast } from "sonner";
 import { hasPinForUser, verifyPin, recordFailedAttempt, setupPin } from "@/lib/pin-auth";
@@ -788,9 +789,8 @@ function LoginPage() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="password">{t("password")}</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -805,9 +805,19 @@ function LoginPage() {
           <button
             type="button"
             onClick={() => setMode((m) => (m === "signin" ? "signup" : "signin"))}
-            className="block w-full text-center text-xs text-muted-foreground hover:text-foreground"
+            className="flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-primary/40 bg-primary/5 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
           >
-            {mode === "signin" ? t("firstTimeRegister") : t("haveAccountSignIn")}
+            {mode === "signin" ? (
+              <>
+                <UserPlus className="h-4 w-4" />
+                {t("firstTimeRegister")}
+              </>
+            ) : (
+              <>
+                <LogIn className="h-4 w-4" />
+                {t("haveAccountSignIn")}
+              </>
+            )}
           </button>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
