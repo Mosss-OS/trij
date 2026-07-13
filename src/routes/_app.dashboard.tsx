@@ -108,11 +108,11 @@ function DashboardPage() {
   return (
     <>
       <AppHeader title={t("trij")} subtitle={t("onDeviceTriage")} />
-      <div className="mx-auto max-w-4xl px-5 pb-10">
-        <section className="pt-6">
-          <p className="text-sm text-muted-foreground">{greeting},</p>
-          <h1 className="mt-1 font-display text-3xl font-bold leading-tight">{name}.</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+      <div className="mx-auto max-w-4xl px-4 sm:px-5 pb-10 safe-area-top">
+        <section className="pt-4 sm:pt-6">
+          <p className="text-sm sm:text-base text-muted-foreground">{greeting},</p>
+          <h1 className="mt-1 font-display text-2xl sm:text-3xl font-bold leading-tight">{name}.</h1>
+          <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground">
             {new Date().toLocaleDateString(language, {
               weekday: "long",
               month: "long",
@@ -121,25 +121,25 @@ function DashboardPage() {
           </p>
         </section>
 
-        <section className="mt-7">
+        <section className="mt-5 sm:mt-7">
           <Link to="/triage" className="group block">
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary-glow p-6 text-primary-foreground shadow-lg shadow-primary/20">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary-glow p-5 sm:p-6 text-primary-foreground shadow-lg shadow-primary/20">
               <div className="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-              <div className="relative flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider opacity-80">
+              <div className="relative flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider opacity-80">
                     {t("quickAction")}
                   </p>
-                  <h2 className="mt-1 font-display text-2xl font-bold">{t("newTriage")}</h2>
-                  <p className="mt-2 text-sm opacity-85">
+                  <h2 className="mt-1 font-display text-xl sm:text-2xl font-bold">{t("newTriage")}</h2>
+                  <p className="mt-1.5 text-xs sm:text-sm opacity-85 leading-relaxed">
                     {t("triageDesc")}
                   </p>
                 </div>
-                <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/15 backdrop-blur">
-                  <Camera className="h-6 w-6" />
+                <div className="grid h-12 w-12 sm:h-14 sm:w-14 shrink-0 place-items-center rounded-2xl bg-white/15 backdrop-blur">
+                  <Camera className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
               </div>
-              <div className="relative mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
+              <div className="relative mt-4 sm:mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
                 {t("start")}{" "}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </div>
@@ -281,10 +281,10 @@ function QuickTile({ to, icon: Icon, label }: { to: string; icon: typeof Camera;
   return (
     <Link
       to={to as never}
-      className="flex flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4 text-center transition-colors hover:bg-accent/30"
+      className="flex flex-col items-center justify-center gap-2 rounded-2xl border bg-card p-4 sm:p-5 text-center transition-colors hover:bg-accent/30 min-h-[80px] sm:min-h-[88px]"
     >
-      <Icon className="h-5 w-5 text-primary" />
-      <span className="text-xs font-medium">{label}</span>
+      <Icon className="h-6 w-6 text-primary" />
+      <span className="text-xs sm:text-sm font-medium leading-tight">{label}</span>
     </Link>
   );
 }

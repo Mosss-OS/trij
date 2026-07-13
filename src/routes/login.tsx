@@ -653,11 +653,11 @@ function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background safe-area-top">
       <div className="pointer-events-none absolute -top-40 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-accent/40 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-6 py-10 overflow-y-auto">
+      <div className="relative mx-auto flex min-h-dvh max-w-md flex-col px-5 sm:px-6 py-8 sm:py-10 overflow-y-auto">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
             <img
@@ -670,18 +670,18 @@ function LoginPage() {
           <OfflineIndicator />
         </div>
 
-        <div className="mt-12">
+        <div className="mt-8 sm:mt-12">
           <h1 className="font-display text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
             {t("fieldReadyTriage")}
             <br />
             <span className="text-primary">{t("onEveryDevice")}</span>
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t("gemmaOnDevice")}</p>
+          <p className="mt-3 text-sm sm:text-base leading-relaxed text-muted-foreground">{t("gemmaOnDevice")}</p>
         </div>
 
         <form
           onSubmit={handleOnlineSubmit}
-          className="mt-10 space-y-4 rounded-3xl border bg-card p-6 shadow-sm"
+          className="mt-8 sm:mt-10 space-y-4 rounded-3xl border bg-card p-5 sm:p-6 shadow-sm"
         >
           {mode === "signup" && (
             <>

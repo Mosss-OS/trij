@@ -111,13 +111,13 @@ export function BottomNav() {
                 key={to}
                 to={to as never}
                 className={cn(
-                  "relative flex flex-col items-center gap-1 px-2 py-3 font-medium transition-colors cursor-pointer",
-                  kioskMode ? "gap-2 py-4 text-sm" : "text-[10px] sm:text-xs",
+                  "relative flex flex-col items-center gap-0.5 px-1 py-2 font-medium transition-colors cursor-pointer min-h-[56px]",
+                  kioskMode ? "gap-1 py-3 text-sm" : "text-[11px] sm:text-xs",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {isBell && unreadCount > 0 && (
-                  <span className="absolute right-1/2 top-1.5 z-10 flex h-4 min-w-4 translate-x-[14px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground">
+                  <span className="absolute right-1/2 top-1 z-10 flex h-4 min-w-4 translate-x-[14px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground">
                     {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}
@@ -127,19 +127,19 @@ export function BottomNav() {
                     primary
                       ? kioskMode
                         ? "h-16 w-16 -translate-y-4 bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                        : "h-12 w-12 -translate-y-3 bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                        : "h-13 w-13 -translate-y-3 bg-primary text-primary-foreground shadow-lg shadow-primary/30"
                       : kioskMode
-                        ? "h-10 w-10"
-                        : "h-7 w-7",
+                        ? "h-11 w-11"
+                        : "h-9 w-9",
                   )}
                 >
                   {usePictogram ? (
-                    <PictogramIcon className={kioskMode ? "h-7 w-7" : primary ? "h-5 w-5" : "h-5 w-5"} />
+                    <PictogramIcon className={kioskMode ? "h-7 w-7" : primary ? "h-6 w-6" : "h-5 w-5"} />
                   ) : (
-                    <Icon className={kioskMode ? "h-7 w-7" : primary ? "h-5 w-5" : "h-5 w-5"} />
+                    <Icon className={kioskMode ? "h-7 w-7" : primary ? "h-6 w-6" : "h-5 w-5"} />
                   )}
                 </span>
-                <span className={cn("truncate max-w-[70px] sm:max-w-none", primary ? (kioskMode ? "-mt-3" : "-mt-2") : "")}>
+                <span className={cn("truncate max-w-[72px] sm:max-w-none leading-tight", primary ? (kioskMode ? "-mt-3" : "-mt-2.5") : "")}>
                   {usePictogram ? singleWordLabel : t(labelKey)}
                 </span>
               </Link>
