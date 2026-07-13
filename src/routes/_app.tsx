@@ -17,6 +17,7 @@ import { Loader2, ShieldAlert, X, Beaker } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { NavigationPanel } from "@/components/NavigationPanel";
 import { useNavigationVoice } from "@/hooks/useNavigationVoice";
+import { useAutoGps } from "@/hooks/useAutoGps";
 
 export const Route = createFileRoute("/_app")({
   component: AppLayout,
@@ -109,6 +110,7 @@ function AppLayout() {
   const isNewUser = !tutorialCompleted && !tutorialSkipped;
   useInactivityLock();
   useNavigationVoice();
+  useAutoGps();
 
   useEffect(() => {
     if (isNewUser) setShowTutorial(true);
